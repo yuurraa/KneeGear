@@ -265,7 +265,18 @@ def spawn_heart():
 def update_hearts():
     for heart in game_state.hearts[:]:
         if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(heart[0] - 10, heart[1] - 10, 20, 20)):
+            heal_amount = min(20, 100 - game_state.player_health)
             game_state.player_health = min(game_state.player_health + 20, 100)
+            
+            # Add healing number
+            game_state.damage_numbers.append({
+                "x": game_state.player_x,
+                "y": game_state.player_y,
+                "value": heal_amount,
+                "timer": 60,
+                "color": constants.GREEN
+            })
+            
             game_state.hearts.remove(heart)
 
 def handle_input():

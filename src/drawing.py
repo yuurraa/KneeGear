@@ -61,26 +61,36 @@ def draw_projectiles():
         else:
             pygame.draw.circle(screen, constants.BLUE, (int(bullet[0]), int(bullet[1])), constants.player_bullet_size)
 
-def draw_damage_numbers():
+def draw_health_updates():
     screen = game_state.screen
     font = pygame.font.SysFont(None, 24)  # Adjust font size as needed
 
-    for dmg in game_state.damage_numbers[:]:
-        # Render the damage value
-        text = font.render(str(dmg["value"]), True, dmg["color"])
+    for update in game_state.damage_numbers[:]:
+        # Determine color and prefix based on whether it's healing or damage
+        display_value = update["value"]
+        if update["color"] == constants.YELLOW or update["color"] == constants.RED:
+            # It's damage, show negative number
+            display_value = f"-{display_value}"
+        else:
+            # It's healing, show positive number and use green color
+            display_value = f"+{display_value}"
+            update["color"] = constants.GREEN
+
+        # Render the value
+        text = font.render(str(display_value), True, update["color"])
 
         # Create a surface with per-pixel alpha
         text_surface = text.convert_alpha()
 
         # Position the text
-        screen.blit(text_surface, (dmg["x"] - text.get_width() // 2, dmg["y"] - text.get_height() // 2))
+        screen.blit(text_surface, (update["x"] - text.get_width() // 2, update["y"] - text.get_height() // 2))
 
         # Update position to make the number float upwards
-        dmg["y"] -= 1  # Move up by 1 pixel per frame
+        update["y"] -= 1  # Move up by 1 pixel per frame
 
         # Decrement timer
-        dmg["timer"] -= 1
+        update["timer"] -= 1
 
-        # Remove the damage number if timer has expired
-        if dmg["timer"] <= 0:
-            game_state.damage_numbers.remove(dmg)
+        # Remove the update if timer has expired
+        if update["timer"] <= 0:
+            game_state.damage_numbers.remove(update)

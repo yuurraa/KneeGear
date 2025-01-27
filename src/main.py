@@ -148,7 +148,7 @@ def main():
         # Check if player's health is depleted
         if game_state.player_health <= 0:
             game_state.game_over = True      # Draw damage numbers
-        drawing.draw_damage_numbers()
+        drawing.draw_health_updates()
 
         # Game Over fade
         if game_state.game_over:
