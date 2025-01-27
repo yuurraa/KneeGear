@@ -19,10 +19,7 @@ last_enemy_spawn_time = 0
 
 enemies = []
 hearts = []
-projectiles = []
-enemy_bullets = []
-enemy_aoe_bullets = []
-tank_pellets = []
+projectiles = []  # Will contain all bullets regardless of alignment
 enemy_scaling = 1.0
 
 fade_alpha = 0

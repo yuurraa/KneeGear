@@ -12,10 +12,8 @@ def reset_game():
 
     game_state.enemies.clear()
     game_state.projectiles.clear()
-    game_state.enemy_bullets.clear()
-    game_state.enemy_aoe_bullets.clear()
     game_state.hearts.clear()
-    game_state.tank_pellets.clear()
+    
 
     game_state.fade_alpha = 0
     game_state.game_over = False

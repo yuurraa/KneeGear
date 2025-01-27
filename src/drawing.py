@@ -2,6 +2,7 @@ import pygame
 import math
 import game_state
 import constants
+import random
 from helpers import calculate_angle
 
 
@@ -73,31 +74,29 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=1
     pygame.draw.rect(surface, color, (0, 0, filled_width, bar_height))
     screen.blit(surface, (x, y))
 
-def draw_enemy(x, y, health, enemy_type):
+def draw_enemy(enemy):
     screen = game_state.screen
-    if enemy_type == "tank":
+    if enemy.type == "tank":
         # Draw tank enemy
-        pygame.draw.rect(screen, constants.BLACK, (x - 26, y - 26, 52, 52))  # Larger outline
-        pygame.draw.rect(screen, (139, 69, 19), (x - 25, y - 25, 50, 50))    # Brown
-        max_health = math.floor(constants.base_tank_health * game_state.enemy_scaling)
+        pygame.draw.rect(screen, constants.BLACK, (enemy.x - 26, enemy.y - 26, 52, 52))
+        pygame.draw.rect(screen, (139, 69, 19), (enemy.x - 25, enemy.y - 25, 50, 50))
         bar_width = 50
     else:
         # Draw regular enemy
-        pygame.draw.rect(screen, constants.BLACK, (x - 21, y - 21, 42, 42))  # Regular outline
-        pygame.draw.rect(screen, constants.RED, (x - 20, y - 20, 40, 40))
-        max_health = math.floor(constants.base_basic_enemy_health * game_state.enemy_scaling)
+        pygame.draw.rect(screen, constants.BLACK, (enemy.x - 21, enemy.y - 21, 42, 42))
+        pygame.draw.rect(screen, constants.RED, (enemy.x - 20, enemy.y - 20, 40, 40))
         bar_width = 40
 
-    # Calculate health bar position to center it above the enemy
-    health_bar_x = x - bar_width // 2  # Center the health bar horizontally
-    health_bar_y = y - 35  # Position the health bar above the enemy
+    # Calculate health bar position
+    health_bar_x = enemy.x - bar_width // 2
+    health_bar_y = enemy.y - 35
 
     # Draw health bar
     draw_health_bar(
         health_bar_x,
         health_bar_y,
-        health,
-        max_health,
+        enemy.health,
+        enemy.max_health,
         constants.TRANSLUCENT_RED,
         bar_width=bar_width,
         bar_height=5
@@ -110,33 +109,23 @@ def draw_fade_overlay():
     fade_surface.fill(constants.BLACK)
     screen.blit(fade_surface, (0, 0))
 
-def draw_projectiles():
-    screen = game_state.screen
-    for bullet in game_state.projectiles:
-        # Special bullet
-        if len(bullet) > 3 and bullet[3] == "special":
-            pygame.draw.circle(screen, (255, 165, 0), (int(bullet[0]), int(bullet[1])), constants.player_special_bullet_size)
-        else:
-            pygame.draw.circle(screen, constants.BLUE, (int(bullet[0]), int(bullet[1])), constants.player_bullet_size)
-
 def draw_player_state_value_updates():
     screen = game_state.screen
     font = pygame.font.SysFont(None, 24)  # Adjust font size as needed
 
     # Draw damage numbers
     for update in game_state.damage_numbers[:]:
+        # Generate and store x_offset if it doesn't exist
+        if "x_offset" not in update:
+            update["x_offset"] = random.randint(-60, 60)
+            
         display_value = update["value"]
-        if update["color"] == constants.YELLOW or update["color"] == constants.RED:
-            display_value = f"-{display_value}"
-        else:
-            display_value = f"+{display_value}"
-            update["color"] = constants.GREEN
-
         text = font.render(str(display_value), True, update["color"])
         text_surface = text.convert_alpha()
-        screen.blit(text_surface, (update["x"] - text.get_width() // 2, update["y"] - text.get_height() // 2))
+        screen.blit(text_surface, (update["x"] - text.get_width() // 2 + update["x_offset"], 
+                                 update["y"] - text.get_height() // 2 + random.randint(-1, 1)))
 
-        update["y"] -= 1  # Move up by 1 pixel per frame
+        update["y"] -= 3
         update["timer"] -= 1
 
         if update["timer"] <= 0:
@@ -144,9 +133,14 @@ def draw_player_state_value_updates():
 
     # Draw experience pop-ups
     for exp_update in game_state.experience_updates[:]:
+        # Generate and store x_offset if it doesn't exist
+        if "x_offset" not in exp_update:
+            exp_update["x_offset"] = random.randint(-2, 2)
+            
         text = font.render(f"+{exp_update['value']} EXP", True, exp_update["color"])
         text_surface = text.convert_alpha()
-        screen.blit(text_surface, (exp_update["x"] - text.get_width() // 2, exp_update["y"] - 15 - text.get_height() // 2))
+        screen.blit(text_surface, (exp_update["x"] - text.get_width() // 2 + exp_update["x_offset"], 
+                                 exp_update["y"] - 15 - text.get_height() // 2))
 
         exp_update["y"] -= 1  # Move up by 1 pixel per frame
         exp_update["timer"] -= 1

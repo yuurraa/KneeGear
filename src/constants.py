@@ -2,7 +2,7 @@ FPS = 60
 
 # Colors
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
+RED = (255, 50, 50)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
@@ -12,6 +12,7 @@ YELLOW = (255, 255, 0)
 TRANSLUCENT_GREEN = (0, 255, 0, 128)
 TRANSLUCENT_RED = (255, 0, 0, 128)
 LIGHT_GREY = (200, 200, 200)
+BROWN = (139, 69, 19)
 
 # Speeds, angles, and cooldowns
 player_speed = 4.5
@@ -42,9 +43,9 @@ base_basic_enemy_damage = 5
 base_basic_enemy_xp_reward = 10
 basic_enemy_speed = 3
 basic_enemy_homing_bullet_speed = 7
-basic_enemy_aoe_bullet_speed = 9
+basic_enemy_bullet_speed = 9
 basic_enemy_homing_interval = 1
-basic_enemy_aoe_interval = 5
+basic_enemy_bullet_interval = 5
 basic_enemy_bullet_max_turn_angle = 1.6
 
 # Spawn intervals

@@ -122,35 +122,25 @@ def main():
         # Update all logic
         logic.update_enemies()
         logic.update_projectiles()
-        logic.update_enemy_bullets()
         logic.spawn_heart()
         logic.update_hearts()
 
         # Draw projectiles first so enemies/players appear atop them
-        drawing.draw_projectiles()
 
         # Draw player
         drawing.draw_player(game_state.player_x, game_state.player_y, game_state.player_angle)
 
         # Draw enemies
         for enemy in game_state.enemies:
-            drawing.draw_enemy(enemy["x"], enemy["y"], enemy["health"], enemy["type"])
+            drawing.draw_enemy(enemy)
 
-        # Draw enemy bullets
-        for bullet in game_state.enemy_bullets:
-            pygame.draw.circle(game_state.screen, constants.RED, (int(bullet[0]), int(bullet[1])), 5)
-
-        # Draw enemy AOE bullets
-        for bullet in game_state.enemy_aoe_bullets:
-            pygame.draw.circle(game_state.screen, constants.PURPLE, (int(bullet[0]), int(bullet[1])), 5)
+        for projectile in game_state.projectiles:
+            projectile.draw(game_state.screen)
 
         # Draw hearts
         for heart in game_state.hearts:
             pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)
 
-        # Draw tank pellets
-        for pellet in game_state.tank_pellets:
-            pygame.draw.circle(game_state.screen, (139, 69, 19), (int(pellet[0]), int(pellet[1])), 3)
 
         # Draw player's health bar
         drawing.draw_health_bar(20, 20, game_state.player_health, 100, constants.TRANSLUCENT_GREEN)
