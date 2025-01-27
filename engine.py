@@ -30,12 +30,15 @@ last_special_shot_time = 0
 
 # ENEMIES
 enemy_speed = 3
+tank_speed = 1.5  # Slower tank movement
 enemy_homing_bullet_speed = 5
 enemy_aoe_bullet_speed = 7
+tank_pellet_speed_range = (5, 10)  # Random speed for each pellet
 max_turn_angle = 1.6  # Degrees
 enemy_spawn_interval = 6
 enemy_homing_interval = 1
-enemy_aoe_interval = 5  
+enemy_aoe_interval = 5
+tank_shotgun_interval = 4  # Time between tank shots
 
 # Game State
 enemies = []
@@ -43,6 +46,7 @@ hearts = []
 projectiles = []
 enemy_bullets = []
 enemy_aoe_bullets = []
+tank_pellets = []  # New list for tank pellets
 fade_alpha = 0
 game_over = False
 last_shot_time = 0
@@ -65,17 +69,24 @@ def reset_game():
 
 # Drawing Functions
 def draw_player(x, y, angle):
-    pygame.draw.rect(screen, BLACK, (x - 16, y - 16, 32, 32))  # Outline
-    pygame.draw.rect(screen, GREEN, (x - 15, y - 15, 30, 30))
+    pygame.draw.rect(screen, BLACK, (x - 16, y - 16, 22, 22))  # Outline
+    pygame.draw.rect(screen, GREEN, (x - 15, y - 15, 20, 20))
     arrow_length = 20
     arrow_x = x + arrow_length * math.cos(math.radians(angle))
     arrow_y = y + arrow_length * math.sin(math.radians(angle))
     pygame.draw.line(screen, BLUE, (x, y), (arrow_x, arrow_y), 3)
 
-def draw_enemy(x, y, health):
-    pygame.draw.rect(screen, BLACK, (x - 21, y - 21, 42, 42))  # Outline
-    pygame.draw.rect(screen, RED, (x - 20, y - 20, 40, 40))
-    draw_health_bar(x - 20, y - 30, health, 100, TRANSLUCENT_RED, bar_width=40, bar_height=5)
+def draw_enemy(x, y, health, enemy_type):
+    if enemy_type == "tank":
+        pygame.draw.rect(screen, BLACK, (x - 26, y - 26, 52, 52))  # Larger outline
+        pygame.draw.rect(screen, (139, 69, 19), (x - 25, y - 25, 50, 50))  # Brown color
+    else:
+        pygame.draw.rect(screen, BLACK, (x - 21, y - 21, 42, 42))  # Regular outline
+        pygame.draw.rect(screen, RED, (x - 20, y - 20, 40, 40))
+    
+    max_health = 400 if enemy_type == "tank" else 100
+    draw_health_bar(x - 25, y - 35, health, max_health, TRANSLUCENT_RED, 
+                   bar_width=50 if enemy_type == "tank" else 40, bar_height=5)
 
 def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=10):
     filled_width = int((health / max_health) * bar_width)
@@ -109,9 +120,10 @@ def handle_player_movement(keys, x, y):
     return x, y
 
 def move_enemy(enemy, target_x, target_y):
+    speed = tank_speed if enemy["type"] == "tank" else enemy_speed
     angle = math.radians(calculate_angle(enemy["x"], enemy["y"], target_x, target_y))
-    enemy["x"] += enemy_speed * math.cos(angle)
-    enemy["y"] += enemy_speed * math.sin(angle)
+    enemy["x"] += speed * math.cos(angle)
+    enemy["y"] += speed * math.sin(angle)
     
     # Restrict enemies to screen boundaries
     enemy["x"] = max(20, min(enemy["x"], screen_width - 20))
@@ -234,8 +246,25 @@ def spawn_enemy():
         x = screen_width + 20
         y = random.randint(0, screen_height)
 
-    enemies.append({"x": x, "y": y, "health": 100, "last_shot_time": 0, "last_aoe_time": 0})
-    
+    # 20% chance to spawn a tank
+    if random.random() < 0.5:
+        enemies.append({
+            "x": x, "y": y, 
+            "health": 400, 
+            "last_shot_time": 0, 
+            "last_aoe_time": 0,
+            "type": "tank",
+            "last_shotgun_time": 0
+        })
+    else:
+        enemies.append({
+            "x": x, "y": y, 
+            "health": 100, 
+            "last_shot_time": 0, 
+            "last_aoe_time": 0,
+            "type": "regular"
+        })
+
 def enemy_homing_shoot(enemy, target_x, target_y):
     current_time = pygame.time.get_ticks() / 1000  # Convert to seconds
     if current_time - enemy["last_shot_time"] >= enemy_homing_interval:
@@ -252,17 +281,37 @@ def enemy_aoe_shoot(enemy):
             enemy_aoe_bullets.append([enemy["x"], enemy["y"], angle])
         enemy["last_aoe_time"] = current_time
 
-# Update enemy logic to ensure they die properly when health <= 0
-def update_enemies():
-    global enemies
-    for enemy in enemies[:]:
-        move_enemy(enemy, player_x, player_y)
-        enemy_homing_shoot(enemy, player_x, player_y)
-        enemy_aoe_shoot(enemy)
+def tank_shotgun(enemy, target_x, target_y):
+    current_time = pygame.time.get_ticks() / 1000
+    if current_time - enemy.get("last_shotgun_time", 0) >= tank_shotgun_interval:
+        base_angle = calculate_angle(enemy["x"], enemy["y"], target_x, target_y)
+        spread = 30  # Degrees of spread for the shotgun
         
-        # Check for enemy death and remove if health is zero or less
-        if enemy["health"] <= 0:
-            enemies.remove(enemy)
+        # Fire 20 pellets in a spread pattern
+        for _ in range(20):
+            angle = base_angle + random.uniform(-spread, spread)
+            speed = random.uniform(tank_pellet_speed_range[0], tank_pellet_speed_range[1])
+            tank_pellets.append([enemy["x"], enemy["y"], angle, speed])
+        
+        enemy["last_shotgun_time"] = current_time
+
+def update_tank_pellets():
+    global tank_pellets, player_health
+    for pellet in tank_pellets[:]:
+        # Move pellet
+        pellet[0] += pellet[3] * math.cos(math.radians(pellet[2]))
+        pellet[1] += pellet[3] * math.sin(math.radians(pellet[2]))
+        
+        # Check collision with player
+        if pygame.Rect(pellet[0] - 3, pellet[1] - 3, 6, 6).colliderect(player_x - 15, player_y - 15, 30, 30):
+            player_health -= 3  # Low damage per pellet
+            tank_pellets.remove(pellet)
+            continue
+            
+        # Remove pellets outside screen
+        if (pellet[0] < 0 or pellet[0] > screen_width or 
+            pellet[1] < 0 or pellet[1] > screen_height):
+            tank_pellets.remove(pellet)
 
 def spawn_heart():
     if len(hearts) < 1:
@@ -329,11 +378,25 @@ while running:
     elif first_enemy_spawned and current_time - last_enemy_spawn_time >= enemy_spawn_interval:
         spawn_enemy()
         last_enemy_spawn_time = current_time
-        
+    
+    def update_enemies():
+        global enemies
+        for enemy in enemies[:]:
+            move_enemy(enemy, player_x, player_y)
+            if enemy["type"] == "tank":
+                tank_shotgun(enemy, player_x, player_y)
+            else:
+                enemy_homing_shoot(enemy, player_x, player_y)
+                enemy_aoe_shoot(enemy)
+            
+            if enemy["health"] <= 0:
+                enemies.remove(enemy)
+    
     update_enemies()
     update_projectiles()
     update_enemy_bullets()
     update_enemy_aoe_bullets()
+    update_tank_pellets()
     spawn_heart()
     update_hearts()
     draw_projectiles()
@@ -341,7 +404,7 @@ while running:
     # Draw Elements
     draw_player(player_x, player_y, player_angle)
     for enemy in enemies:
-        draw_enemy(enemy["x"], enemy["y"], enemy["health"])
+        draw_enemy(enemy["x"], enemy["y"], enemy["health"], enemy["type"])
     for bullet in projectiles:
         pygame.draw.circle(screen, BLUE, (int(bullet[0]), int(bullet[1])), 5)
     for bullet in enemy_bullets:
@@ -350,6 +413,8 @@ while running:
         pygame.draw.circle(screen, PURPLE, (int(bullet[0]), int(bullet[1])), 5)
     for heart in hearts:
         pygame.draw.circle(screen, PINK, (heart[0], heart[1]), 10)
+    for pellet in tank_pellets:
+        pygame.draw.circle(screen, (139, 69, 19), (int(pellet[0]), int(pellet[1])), 3)
         
     draw_health_bar(20, 20, player_health, 100, TRANSLUCENT_GREEN)
 
