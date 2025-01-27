@@ -1,12 +1,10 @@
-# main.py
-
 import pygame
 import constants
 import game_state
 import logic
 import drawing
+import score  # Import the new score module
 from helpers import calculate_angle, reset_game
-
 
 def main():
     pygame.init()
@@ -25,6 +23,9 @@ def main():
     game_state.player_x = game_state.screen_width // 2
     game_state.player_y = game_state.screen_height // 2
 
+    # Initialize score
+    score.reset_score()
+
     while game_state.running:
         # Fill background
         game_state.screen.fill(constants.WHITE)
@@ -37,6 +38,7 @@ def main():
             # Press SPACE to reset if game over
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game_state.game_over:
                 reset_game()
+                score.reset_score()
 
         # Handle player input (shooting, movement)
         keys = logic.handle_input()
@@ -94,10 +96,14 @@ def main():
         # Draw player's health bar
         drawing.draw_health_bar(20, 20, game_state.player_health, 100, constants.TRANSLUCENT_GREEN)
 
+        # Draw score
+        score.draw_score(game_state.screen)
+
         # Game Over fade
         if game_state.game_over:
             game_state.fade_alpha = min(game_state.fade_alpha + 5, 255)
             drawing.draw_fade_overlay()
+            score.update_high_score()
 
         # Check if player's health is depleted
         if game_state.player_health <= 0:
@@ -108,7 +114,6 @@ def main():
         clock.tick(constants.FPS)
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()

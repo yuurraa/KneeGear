@@ -3,6 +3,7 @@ import math
 import random
 import game_state
 import constants
+import score
 from helpers import calculate_angle
 
 
@@ -61,6 +62,7 @@ def update_projectiles():
                     hit_enemy = True  # Regular bullets should be removed after the first hit
 
                 if enemy["health"] <= 0:
+                    score.handle_enemy_killed(enemy["type"])  # Update score when enemy is killed
                     game_state.enemies.remove(enemy)
 
         # Remove regular bullet after hitting one enemy
