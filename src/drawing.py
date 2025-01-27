@@ -19,7 +19,7 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     icon_size = 50  # Size of each icon
     padding = 10  # Space between icons
     x = game_state.screen_width - icon_size - padding  # Position at top-right corner
-    y = padding
+    y = padding + 60
 
     # Draw left click icon
     left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
@@ -62,19 +62,26 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=1
 def draw_enemy(x, y, health, enemy_type):
     screen = game_state.screen
     if enemy_type == "tank":
+        # Draw tank enemy
         pygame.draw.rect(screen, constants.BLACK, (x - 26, y - 26, 52, 52))  # Larger outline
         pygame.draw.rect(screen, (139, 69, 19), (x - 25, y - 25, 50, 50))    # Brown
         max_health = 400
         bar_width = 50
     else:
+        # Draw regular enemy
         pygame.draw.rect(screen, constants.BLACK, (x - 21, y - 21, 42, 42))  # Regular outline
         pygame.draw.rect(screen, constants.RED, (x - 20, y - 20, 40, 40))
         max_health = 100
         bar_width = 40
 
+    # Calculate health bar position to center it above the enemy
+    health_bar_x = x - bar_width // 2  # Center the health bar horizontally
+    health_bar_y = y - 35  # Position the health bar above the enemy
+
+    # Draw health bar
     draw_health_bar(
-        x - 25,
-        y - 35,
+        health_bar_x,
+        health_bar_y,
         health,
         max_health,
         constants.TRANSLUCENT_RED,
