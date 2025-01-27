@@ -119,7 +119,7 @@ def draw_projectiles():
         else:
             pygame.draw.circle(screen, constants.BLUE, (int(bullet[0]), int(bullet[1])), constants.player_bullet_size)
 
-def draw_health_updates():
+def draw_player_state_value_updates():
     screen = game_state.screen
     font = pygame.font.SysFont(None, 24)  # Adjust font size as needed
 

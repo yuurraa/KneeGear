@@ -33,9 +33,10 @@ def move_enemy(enemy, target_x, target_y):
     enemy["x"] += speed * math.cos(angle)
     enemy["y"] += speed * math.sin(angle)
 
-    # Restrict enemies to screen boundaries
+    # Restrict enemies to screen boundaries, accounting for experience bar
     enemy["x"] = max(20, min(enemy["x"], game_state.screen_width - 20))
-    enemy["y"] = max(20, min(enemy["y"], game_state.screen_height - 20))
+    # Add padding above experience bar
+    enemy["y"] = max(20, min(enemy["y"], game_state.screen_height - 20 - constants.experience_bar_height))
 
 
 def update_projectiles():
@@ -189,7 +190,7 @@ def check_bullet_collision(bullet, damage, damage_color):
 def is_bullet_out_of_bounds(bullet):
     """Helper function to check if bullet is outside screen boundaries"""
     return (bullet[0] < 0 or bullet[0] > game_state.screen_width or
-            bullet[1] < 0 or bullet[1] > game_state.screen_height)
+            bullet[1] < 0 or bullet[1] > game_state.screen_height - constants.experience_bar_height-3)
 
 
 def spawn_enemy(scaling_factor=1.0):

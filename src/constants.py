@@ -47,4 +47,7 @@ basic_enemy_bullet_max_turn_angle = 1.6
 # Spawn intervals
 enemy_spawn_interval = 6
 
+# Add this with the other constants
+experience_bar_height = 10  # Match the height used in draw_experience_bar
+
 
