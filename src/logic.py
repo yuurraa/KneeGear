@@ -69,6 +69,30 @@ def update_projectiles():
 
                 if enemy["health"] <= 0:
                     score.handle_enemy_killed(enemy["type"])  # Update score when enemy is killed
+
+                    # Grant experience based on enemy type
+                    if enemy["type"] == "tank":
+                        experience_gained = 30
+                    else:
+                        experience_gained = 10
+
+                    game_state.player_experience += experience_gained
+
+                    # Add experience pop-up
+                    game_state.experience_updates.append({
+                        "x": enemy["x"],
+                        "y": enemy["y"],
+                        "value": experience_gained,
+                        "timer": 60,  # Duration of the pop-up
+                        "color": constants.BLUE  # Color for experience pop-ups
+                    })
+
+                    # Check if the player has leveled up
+                    if game_state.player_experience >= game_state.experience_to_next_level:
+                        game_state.player_level += 1
+                        game_state.player_experience -= game_state.experience_to_next_level
+                        game_state.experience_to_next_level = int(game_state.experience_to_next_level * 1.5)  # Increase required experience for next level
+
                     game_state.enemies.remove(enemy)
 
                 if damage == 10:

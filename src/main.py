@@ -98,6 +98,7 @@ def main():
         keys, left_click_cooldown_progress, right_click_cooldown_progress = logic.handle_input()
         logic.handle_player_movement(keys)
         drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
+        drawing.draw_experience_bar()
 
         # Update player angle to mouse
         mx, my = pygame.mouse.get_pos()

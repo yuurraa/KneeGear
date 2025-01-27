@@ -14,6 +14,20 @@ def draw_player(x, y, angle):
     arrow_y = y + arrow_length * math.sin(math.radians(angle))
     pygame.draw.line(screen, constants.BLUE, (x, y), (arrow_x, arrow_y), 3)
     
+def draw_experience_bar():
+    screen = game_state.screen
+    bar_width = game_state.screen_width
+    bar_height = 10
+    bar_x = 0
+    bar_y = game_state.screen_height - bar_height
+
+    # Draw the background of the experience bar
+    pygame.draw.rect(screen, constants.BLACK, (bar_x, bar_y, bar_width, bar_height))
+
+    # Calculate the filled width based on current experience
+    filled_width = int((game_state.player_experience / game_state.experience_to_next_level) * bar_width)
+    pygame.draw.rect(screen, (0, 0, 255, 128), (bar_x, bar_y, filled_width, bar_height))  # Translucent blue
+    
 def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):
     screen = game_state.screen
     icon_size = 50  # Size of each icon
@@ -109,32 +123,34 @@ def draw_health_updates():
     screen = game_state.screen
     font = pygame.font.SysFont(None, 24)  # Adjust font size as needed
 
+    # Draw damage numbers
     for update in game_state.damage_numbers[:]:
-        # Determine color and prefix based on whether it's healing or damage
         display_value = update["value"]
         if update["color"] == constants.YELLOW or update["color"] == constants.RED:
-            # It's damage, show negative number
             display_value = f"-{display_value}"
         else:
-            # It's healing, show positive number and use green color
             display_value = f"+{display_value}"
             update["color"] = constants.GREEN
 
-        # Render the value
         text = font.render(str(display_value), True, update["color"])
-
-        # Create a surface with per-pixel alpha
         text_surface = text.convert_alpha()
-
-        # Position the text
         screen.blit(text_surface, (update["x"] - text.get_width() // 2, update["y"] - text.get_height() // 2))
 
-        # Update position to make the number float upwards
         update["y"] -= 1  # Move up by 1 pixel per frame
-
-        # Decrement timer
         update["timer"] -= 1
 
-        # Remove the update if timer has expired
         if update["timer"] <= 0:
             game_state.damage_numbers.remove(update)
+
+    # Draw experience pop-ups
+    for exp_update in game_state.experience_updates[:]:
+        text = font.render(f"+{exp_update['value']} EXP", True, exp_update["color"])
+        text_surface = text.convert_alpha()
+        screen.blit(text_surface, (exp_update["x"] - text.get_width() // 2, exp_update["y"] - 15 - text.get_height() // 2))
+
+        exp_update["y"] -= 1  # Move up by 1 pixel per frame
+        exp_update["timer"] -= 1
+
+        if exp_update["timer"] <= 0:
+            game_state.experience_updates.remove(exp_update)
+            

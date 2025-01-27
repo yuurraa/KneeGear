@@ -5,6 +5,11 @@ player_x = 0
 player_y = 0
 player_angle = 0
 
+player_experience = 0
+player_level = 1
+experience_to_next_level = 100
+experience_updates = []
+
 last_special_shot_time = 0
 last_shot_time = 0
 shoot_cooldown = constants.shoot_cooldown 
