@@ -28,7 +28,7 @@ def handle_player_movement(keys):
 
 
 def move_enemy(enemy, target_x, target_y):
-    speed = constants.tank_speed if enemy["type"] == "tank" else constants.enemy_speed
+    speed = constants.tank_speed if enemy["type"] == "tank" else constants.basic_enemy_speed
     angle = math.radians(calculate_angle(enemy["x"], enemy["y"], target_x, target_y))
     enemy["x"] += speed * math.cos(angle)
     enemy["y"] += speed * math.sin(angle)
@@ -86,9 +86,10 @@ def update_projectiles():
                 game_state.projectiles.remove(bullet)
 
 
-def update_enemy_bullets():
+def update_enemy_bullets(scaling_factor=1.0):
     current_time = pygame.time.get_ticks() / 1000.0
 
+    # Update enemy homing bullets
     for bullet in game_state.enemy_bullets[:]:
         time_since_homing = current_time - bullet[3]
 
@@ -104,65 +105,70 @@ def update_enemy_bullets():
                 angle_diff += 360
 
             # Limit turn angle
-            if abs(angle_diff) > constants.max_turn_angle:
-                angle_diff = constants.max_turn_angle if angle_diff > 0 else -constants.max_turn_angle
+            if abs(angle_diff) > constants.basic_enemy_bullet_max_turn_angle:
+                angle_diff = constants.basic_enemy_bullet_max_turn_angle if angle_diff > 0 else -constants.basic_enemy_bullet_max_turn_angle
 
             bullet[2] += angle_diff
 
         # Move bullet
-        bullet[0] += constants.enemy_homing_bullet_speed * math.cos(math.radians(bullet[2]))
-        bullet[1] += constants.enemy_homing_bullet_speed * math.sin(math.radians(bullet[2]))
+        bullet[0] += constants.basic_enemy_homing_bullet_speed * math.cos(math.radians(bullet[2]))
+        bullet[1] += constants.basic_enemy_homing_bullet_speed * math.sin(math.radians(bullet[2]))
 
-        # Check collision with player
-        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10)):
-            game_state.player_health -= 10
-
-            # Add damage number at player's position
-            game_state.damage_numbers.append({
-                "x": game_state.player_x,
-                "y": game_state.player_y,
-                "value": 10,
-                "timer": 60,
-                "color": constants.YELLOW  # Color for player damage
-            })
-
+        if check_bullet_collision(bullet, math.floor(constants.base_basic_enemy_damage * scaling_factor), constants.RED):
             game_state.enemy_bullets.remove(bullet)
             continue
 
-        # Remove bullets outside screen
-        if (bullet[0] < 0 or bullet[0] > game_state.screen_width or
-            bullet[1] < 0 or bullet[1] > game_state.screen_height):
+        if is_bullet_out_of_bounds(bullet):
             game_state.enemy_bullets.remove(bullet)
 
-
-def update_enemy_aoe_bullets():
+    # Update enemy AOE bullets
     for bullet in game_state.enemy_aoe_bullets[:]:
-        bullet[0] += constants.enemy_aoe_bullet_speed * math.cos(math.radians(bullet[2]))
-        bullet[1] += constants.enemy_aoe_bullet_speed * math.sin(math.radians(bullet[2]))
+        bullet[0] += constants.basic_enemy_aoe_bullet_speed * math.cos(math.radians(bullet[2]))
+        bullet[1] += constants.basic_enemy_aoe_bullet_speed * math.sin(math.radians(bullet[2]))
 
-        # Check collision with player
-        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10)):
-            game_state.player_health -= 5
-
-            # Add damage number at player's position
-            game_state.damage_numbers.append({
-                "x": game_state.player_x,
-                "y": game_state.player_y,
-                "value": 5,
-                "timer": 60,
-                "color": constants.YELLOW
-            })
-
+        if check_bullet_collision(bullet, math.floor(constants.base_basic_enemy_damage * scaling_factor), constants.YELLOW):
             game_state.enemy_aoe_bullets.remove(bullet)
             continue
 
-        # Remove bullets outside screen
-        if (bullet[0] < 0 or bullet[0] > game_state.screen_width or
-            bullet[1] < 0 or bullet[1] > game_state.screen_height):
+        if is_bullet_out_of_bounds(bullet):
             game_state.enemy_aoe_bullets.remove(bullet)
 
+    # Update tank pellets
+    for pellet in game_state.tank_pellets[:]:
+        pellet[0] += pellet[3] * math.cos(math.radians(pellet[2]))
+        pellet[1] += pellet[3] * math.sin(math.radians(pellet[2]))
 
-def spawn_enemy():
+        if check_bullet_collision(pellet, math.floor(constants.base_tank_damage * scaling_factor), constants.YELLOW):
+            game_state.tank_pellets.remove(pellet)
+            continue
+
+        if is_bullet_out_of_bounds(pellet):
+            game_state.tank_pellets.remove(pellet)
+
+def check_bullet_collision(bullet, damage, damage_color):
+    """Helper function to check bullet collision with player and handle damage"""
+    if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(
+        pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10)):
+        game_state.player_health -= damage
+
+        # Add damage number at player's position
+        game_state.damage_numbers.append({
+            "x": game_state.player_x,
+            "y": game_state.player_y,
+            "value": damage,
+            "timer": 60,
+            "color": damage_color
+        })
+        return True
+    return False
+
+def is_bullet_out_of_bounds(bullet):
+    """Helper function to check if bullet is outside screen boundaries"""
+    return (bullet[0] < 0 or bullet[0] > game_state.screen_width or
+            bullet[1] < 0 or bullet[1] > game_state.screen_height)
+
+
+def spawn_enemy(scaling_factor=1.0):
     side = random.choice(["top", "bottom", "left", "right"])
     if side == "top":
         x = random.randint(0, game_state.screen_width)
@@ -182,7 +188,7 @@ def spawn_enemy():
         game_state.enemies.append({
             "x": x,
             "y": y,
-            "health": 400,
+            "health": math.floor(constants.base_tank_health * scaling_factor),
             "last_shot_time": 0,
             "last_aoe_time": 0,
             "type": "tank",
@@ -192,7 +198,7 @@ def spawn_enemy():
         game_state.enemies.append({
             "x": x,
             "y": y,
-            "health": 100,
+            "health": math.floor(constants.base_basic_enemy_health * scaling_factor),
             "last_shot_time": 0,
             "last_aoe_time": 0,
             "type": "regular"
@@ -201,7 +207,7 @@ def spawn_enemy():
 
 def enemy_homing_shoot(enemy, target_x, target_y):
     current_time = pygame.time.get_ticks() / 1000.0
-    if current_time - enemy["last_shot_time"] >= constants.enemy_homing_interval:
+    if current_time - enemy["last_shot_time"] >= constants.basic_enemy_homing_interval:
         angle = calculate_angle(enemy["x"], enemy["y"], target_x, target_y)
         game_state.enemy_bullets.append([enemy["x"], enemy["y"], angle, current_time])
         enemy["last_shot_time"] = current_time
@@ -209,7 +215,7 @@ def enemy_homing_shoot(enemy, target_x, target_y):
 
 def enemy_aoe_shoot(enemy):
     current_time = pygame.time.get_ticks() / 1000.0
-    if current_time - enemy["last_aoe_time"] >= constants.enemy_aoe_interval:
+    if current_time - enemy["last_aoe_time"] >= constants.basic_enemy_aoe_interval:
         for angle in range(0, 360, 45):
             game_state.enemy_aoe_bullets.append([enemy["x"], enemy["y"], angle])
         enemy["last_aoe_time"] = current_time
@@ -224,33 +230,6 @@ def tank_shotgun(enemy, target_x, target_y):
             speed = random.uniform(*constants.tank_pellet_speed_range)
             game_state.tank_pellets.append([enemy["x"], enemy["y"], angle, speed])
         enemy["last_shotgun_time"] = current_time
-
-
-def update_tank_pellets():
-    for pellet in game_state.tank_pellets[:]:
-        pellet[0] += pellet[3] * math.cos(math.radians(pellet[2]))
-        pellet[1] += pellet[3] * math.sin(math.radians(pellet[2]))
-
-        # Check collision with player
-        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(pellet[0] - 3, pellet[1] - 3, 6, 6)):
-            game_state.player_health -= 3
-
-            # Add damage number at player's position
-            game_state.damage_numbers.append({
-                "x": game_state.player_x,
-                "y": game_state.player_y,
-                "value": 3,
-                "timer": 60,
-                "color": constants.YELLOW
-            })
-
-            game_state.tank_pellets.remove(pellet)
-            continue
-
-        # Remove pellets outside screen
-        if (pellet[0] < 0 or pellet[0] > game_state.screen_width or
-            pellet[1] < 0 or pellet[1] > game_state.screen_height):
-            game_state.tank_pellets.remove(pellet)
 
 
 

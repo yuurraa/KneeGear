@@ -24,6 +24,10 @@ player_special_bullet_size = 20
 shoot_cooldown = 0.4
 special_shot_cooldown = 5
 
+enemy_stat_doubling_time = 200 # seconds
+
+base_tank_health = 200
+base_tank_damage = 2
 tank_speed = 1.5
 tank_shotgun_interval = 4
 tank_shotgun_spread = 20
@@ -31,14 +35,16 @@ tank_shotgun_pellet_count = 20
 tank_pellet_speed_range = (7, 12)
 
 
-
-enemy_speed = 3
-enemy_homing_bullet_speed = 7
-enemy_aoe_bullet_speed = 9
-max_turn_angle = 1.6
+base_basic_enemy_health = 50
+base_basic_enemy_damage = 5
+basic_enemy_speed = 3
+basic_enemy_homing_bullet_speed = 7
+basic_enemy_aoe_bullet_speed = 9
+basic_enemy_homing_interval = 1
+basic_enemy_aoe_interval = 5
+basic_enemy_bullet_max_turn_angle = 1.6
 
 # Spawn intervals
 enemy_spawn_interval = 6
-enemy_homing_interval = 1
-enemy_aoe_interval = 5
+
 

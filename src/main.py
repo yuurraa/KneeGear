@@ -50,6 +50,12 @@ def show_game_over_screen(screen, screen_width, screen_height):
     screen.blit(text_small, text_small_rect)
     pygame.display.flip()
 
+def calculate_enemy_scaling(elapsed_seconds):
+    # Double stats every 200 seconds
+    # Using 2^(t/200) as scaling formula
+    scaling_factor = 2 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
+    return scaling_factor
+
 def main():
     pygame.init()
     # Determine full screen dimensions
@@ -97,22 +103,25 @@ def main():
         mx, my = pygame.mouse.get_pos()
         game_state.player_angle = calculate_angle(game_state.player_x, game_state.player_y, mx, my)
 
+        # Calculate current scaling factor based on elapsed time
+        current_time = pygame.time.get_ticks()
+        elapsed_seconds = (current_time - start_time) // 1000
+        enemy_scaling = calculate_enemy_scaling(elapsed_seconds)
+
         # Spawn enemies over time
         current_time = pygame.time.get_ticks() / 1000.0
         if not game_state.first_enemy_spawned and current_time >= 1:
-            logic.spawn_enemy()
+            logic.spawn_enemy(enemy_scaling)  # Pass scaling factor to spawn_enemy
             game_state.first_enemy_spawned = True
             game_state.last_enemy_spawn_time = current_time
         elif game_state.first_enemy_spawned and (current_time - game_state.last_enemy_spawn_time >= constants.enemy_spawn_interval):
-            logic.spawn_enemy()
+            logic.spawn_enemy(enemy_scaling)  # Pass scaling factor to spawn_enemy
             game_state.last_enemy_spawn_time = current_time
 
         # Update all logic
         logic.update_enemies()
         logic.update_projectiles()
-        logic.update_enemy_bullets()
-        logic.update_enemy_aoe_bullets()
-        logic.update_tank_pellets()
+        logic.update_enemy_bullets(enemy_scaling)
         logic.spawn_heart()
         logic.update_hearts()
 
@@ -124,7 +133,7 @@ def main():
 
         # Draw enemies
         for enemy in game_state.enemies:
-            drawing.draw_enemy(enemy["x"], enemy["y"], enemy["health"], enemy["type"])
+            drawing.draw_enemy(enemy["x"], enemy["y"], enemy["health"], enemy["type"], enemy_scaling)
 
         # Draw enemy bullets
         for bullet in game_state.enemy_bullets:
