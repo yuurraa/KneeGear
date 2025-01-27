@@ -13,6 +13,43 @@ def draw_player(x, y, angle):
     arrow_x = x + arrow_length * math.cos(math.radians(angle))
     arrow_y = y + arrow_length * math.sin(math.radians(angle))
     pygame.draw.line(screen, constants.BLUE, (x, y), (arrow_x, arrow_y), 3)
+    
+def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):
+    screen = game_state.screen
+    icon_size = 50  # Size of each icon
+    padding = 10  # Space between icons
+    x = game_state.screen_width - icon_size - padding  # Position at top-right corner
+    y = padding
+
+    # Draw left click icon
+    left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
+    pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white
+    font = pygame.font.Font(None, 36)
+    text = font.render("L", True, (0, 0, 0))  # Black "L"
+    text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
+    left_icon_surface.blit(text, text_rect)
+
+    # Apply cooldown effect
+    if left_click_cooldown_progress < 1:
+        cooldown_height = int((1 - left_click_cooldown_progress) * icon_size)
+        pygame.draw.rect(left_icon_surface, (0, 0, 0, 128), (0, icon_size - cooldown_height, icon_size, cooldown_height))  # Grey overlay
+
+    screen.blit(left_icon_surface, (x, y))
+
+    # Draw right click icon
+    y += icon_size + padding  # Position below the left icon
+    right_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
+    pygame.draw.rect(right_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white
+    text = font.render("R", True, (0, 0, 0))  # Black "R"
+    text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
+    right_icon_surface.blit(text, text_rect)
+
+    # Apply cooldown effect
+    if right_click_cooldown_progress < 1:
+        cooldown_height = int((1 - right_click_cooldown_progress) * icon_size)
+        pygame.draw.rect(right_icon_surface, (0, 0, 0, 128), (0, icon_size - cooldown_height, icon_size, cooldown_height))  # Grey overlay
+
+    screen.blit(right_icon_surface, (x, y))
 
 def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=10):
     screen = game_state.screen

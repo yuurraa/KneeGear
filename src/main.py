@@ -89,8 +89,9 @@ def main():
                 score.reset_score()
 
         # Handle player input (shooting, movement)
-        keys = logic.handle_input()
+        keys, left_click_cooldown_progress, right_click_cooldown_progress = logic.handle_input()
         logic.handle_player_movement(keys)
+        drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
 
         # Update player angle to mouse
         mx, my = pygame.mouse.get_pos()
@@ -168,6 +169,7 @@ def main():
         if game_state.player_health <= 0:
             game_state.game_over = True      # Draw damage numbers
         drawing.draw_health_updates()
+        
 
         # Game Over fade
         if game_state.game_over:

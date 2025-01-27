@@ -1,3 +1,5 @@
+import constants
+
 player_health = 100
 player_x = 0
 player_y = 0
@@ -5,6 +7,9 @@ player_angle = 0
 
 last_special_shot_time = 0
 last_shot_time = 0
+shoot_cooldown = constants.shoot_cooldown 
+special_shot_cooldown = constants.special_shot_cooldown 
+
 last_enemy_spawn_time = 0
 
 enemies = []
@@ -25,3 +30,4 @@ screen_height = 0
 screen = None
 
 damage_numbers = []
+

@@ -279,6 +279,7 @@ def update_hearts():
             
             game_state.hearts.remove(heart)
 
+# logic.py
 def handle_input():
     keys = pygame.key.get_pressed()
     mouse_pressed = pygame.mouse.get_pressed()
@@ -287,7 +288,7 @@ def handle_input():
     # Left-click for a regular shot
     if (mouse_pressed[0] and
         not game_state.game_over and
-        current_time - game_state.last_shot_time >= constants.shoot_cooldown):
+        current_time - game_state.last_shot_time >= game_state.shoot_cooldown):
         mx, my = pygame.mouse.get_pos()
         angle = calculate_angle(game_state.player_x, game_state.player_y, mx, my)
         game_state.projectiles.append([game_state.player_x, game_state.player_y, angle])
@@ -296,13 +297,17 @@ def handle_input():
     # Right-click for a special shot
     if (mouse_pressed[2] and
         not game_state.game_over and
-        current_time - game_state.last_special_shot_time >= constants.special_shot_cooldown):
+        current_time - game_state.last_special_shot_time >= game_state.special_shot_cooldown):
         mx, my = pygame.mouse.get_pos()
         angle = calculate_angle(game_state.player_x, game_state.player_y, mx, my)
         game_state.projectiles.append([game_state.player_x, game_state.player_y, angle, "special"])
         game_state.last_special_shot_time = current_time
 
-    return keys
+    # Calculate cooldown progress for skill icons
+    left_click_cooldown_progress = max(0, (current_time - game_state.last_shot_time) / game_state.shoot_cooldown)
+    right_click_cooldown_progress = max(0, (current_time - game_state.last_special_shot_time) / game_state.special_shot_cooldown)
+
+    return keys, left_click_cooldown_progress, right_click_cooldown_progress
 
 
 def update_enemies():
