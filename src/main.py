@@ -74,8 +74,8 @@ def main():
     score.reset_score()
 
     while game_state.running:
-        # Fill background
-        game_state.screen.fill(constants.WHITE)
+        # Fill background with GREY instead of WHITE
+        game_state.screen.fill(constants.LIGHT_GREY)
 
         # Process events
         for event in pygame.event.get():
@@ -145,10 +145,10 @@ def main():
 
         # Draw score
         score.draw_score(game_state.screen)
-
         # Check if player's health is depleted
         if game_state.player_health <= 0:
-            game_state.game_over = True
+            game_state.game_over = True      # Draw damage numbers
+        drawing.draw_damage_numbers()
 
         # Game Over fade
         if game_state.game_over:
@@ -162,6 +162,5 @@ def main():
         clock.tick(constants.FPS)
 
     pygame.quit()
-
 if __name__ == "__main__":
     main()

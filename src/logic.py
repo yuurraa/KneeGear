@@ -46,24 +46,33 @@ def update_projectiles():
             bullet[1] += constants.player_bullet_speed * math.sin(math.radians(bullet[2]))
         # Special shot movement (faster, more damage, and piercing)
         if len(bullet) > 3 and bullet[3] == "special":
-            bullet[0] += (constants.player_bullet_speed * 2) * math.cos(math.radians(bullet[2]))
-            bullet[1] += (constants.player_bullet_speed * 2) * math.sin(math.radians(bullet[2]))
+            bullet[0] += (constants.player_special_bullet_speed) * math.cos(math.radians(bullet[2]))
+            bullet[1] += (constants.player_special_bullet_speed) * math.sin(math.radians(bullet[2]))
 
         hit_enemy = False
         for enemy in game_state.enemies[:]:
             # Check collision with the enemy
             if (enemy["health"] > 0 and
-                pygame.Rect(bullet[0] - 10, bullet[1] - 10, 20, 20).colliderect(enemy["x"] - 20, enemy["y"] - 20, 40, 40)):
+                pygame.Rect(enemy["x"] - 20, enemy["y"] - 20, 40, 40).colliderect(pygame.Rect(bullet[0] - 10, bullet[1] - 10, 20, 20))):
 
-                if len(bullet) > 3 and bullet[3] == "special":
-                    enemy["health"] -= 20
-                else:
-                    enemy["health"] -= 10
-                    hit_enemy = True  # Regular bullets should be removed after the first hit
+                damage = 20 if (len(bullet) > 3 and bullet[3] == "special") else 10
+                enemy["health"] -= damage
+
+                # Add damage number at enemy's position
+                game_state.damage_numbers.append({
+                    "x": enemy["x"],
+                    "y": enemy["y"],
+                    "value": damage,
+                    "timer": 60,  # Frames the number will be displayed
+                    "color": constants.RED  # Color for enemy damage
+                })
 
                 if enemy["health"] <= 0:
                     score.handle_enemy_killed(enemy["type"])  # Update score when enemy is killed
                     game_state.enemies.remove(enemy)
+
+                if damage == 10:
+                    hit_enemy = True  # Regular bullets should be removed after the first hit
 
         # Remove regular bullet after hitting one enemy
         if hit_enemy and (len(bullet) <= 3 or bullet[3] != "special"):
@@ -105,8 +114,18 @@ def update_enemy_bullets():
         bullet[1] += constants.enemy_homing_bullet_speed * math.sin(math.radians(bullet[2]))
 
         # Check collision with player
-        if pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10).colliderect(game_state.player_x - 15, game_state.player_y - 15, 30, 30):
+        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10)):
             game_state.player_health -= 10
+
+            # Add damage number at player's position
+            game_state.damage_numbers.append({
+                "x": game_state.player_x,
+                "y": game_state.player_y,
+                "value": 10,
+                "timer": 60,
+                "color": constants.YELLOW  # Color for player damage
+            })
+
             game_state.enemy_bullets.remove(bullet)
             continue
 
@@ -122,8 +141,18 @@ def update_enemy_aoe_bullets():
         bullet[1] += constants.enemy_aoe_bullet_speed * math.sin(math.radians(bullet[2]))
 
         # Check collision with player
-        if pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10).colliderect(game_state.player_x - 15, game_state.player_y - 15, 30, 30):
+        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(bullet[0] - 5, bullet[1] - 5, 10, 10)):
             game_state.player_health -= 5
+
+            # Add damage number at player's position
+            game_state.damage_numbers.append({
+                "x": game_state.player_x,
+                "y": game_state.player_y,
+                "value": 5,
+                "timer": 60,
+                "color": constants.YELLOW
+            })
+
             game_state.enemy_aoe_bullets.remove(bullet)
             continue
 
@@ -149,7 +178,7 @@ def spawn_enemy():
         y = random.randint(0, game_state.screen_height)
 
     # The comment says 20% chance, but original code used 50% probability:
-    if random.random() < 0.5:
+    if random.random() < 0.3:
         game_state.enemies.append({
             "x": x,
             "y": y,
@@ -190,9 +219,8 @@ def tank_shotgun(enemy, target_x, target_y):
     current_time = pygame.time.get_ticks() / 1000.0
     if current_time - enemy.get("last_shotgun_time", 0) >= constants.tank_shotgun_interval:
         base_angle = calculate_angle(enemy["x"], enemy["y"], target_x, target_y)
-        spread = 30
-        for _ in range(20):
-            angle = base_angle + random.uniform(-spread, spread)
+        for _ in range(constants.tank_shotgun_pellet_count):
+            angle = base_angle + random.uniform(-constants.tank_shotgun_spread, constants.tank_shotgun_spread)
             speed = random.uniform(*constants.tank_pellet_speed_range)
             game_state.tank_pellets.append([enemy["x"], enemy["y"], angle, speed])
         enemy["last_shotgun_time"] = current_time
@@ -204,8 +232,18 @@ def update_tank_pellets():
         pellet[1] += pellet[3] * math.sin(math.radians(pellet[2]))
 
         # Check collision with player
-        if pygame.Rect(pellet[0] - 3, pellet[1] - 3, 6, 6).colliderect(game_state.player_x - 15, game_state.player_y - 15, 30, 30):
+        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(pellet[0] - 3, pellet[1] - 3, 6, 6)):
             game_state.player_health -= 3
+
+            # Add damage number at player's position
+            game_state.damage_numbers.append({
+                "x": game_state.player_x,
+                "y": game_state.player_y,
+                "value": 3,
+                "timer": 60,
+                "color": constants.YELLOW
+            })
+
             game_state.tank_pellets.remove(pellet)
             continue
 
@@ -213,6 +251,7 @@ def update_tank_pellets():
         if (pellet[0] < 0 or pellet[0] > game_state.screen_width or
             pellet[1] < 0 or pellet[1] > game_state.screen_height):
             game_state.tank_pellets.remove(pellet)
+
 
 
 def spawn_heart():
@@ -225,10 +264,9 @@ def spawn_heart():
 
 def update_hearts():
     for heart in game_state.hearts[:]:
-        if pygame.Rect(heart[0] - 10, heart[1] - 10, 20, 20).colliderect(game_state.player_x - 15, game_state.player_y - 15, 30, 30):
+        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(heart[0] - 10, heart[1] - 10, 20, 20)):
             game_state.player_health = min(game_state.player_health + 20, 100)
             game_state.hearts.remove(heart)
-
 
 def handle_input():
     keys = pygame.key.get_pressed()

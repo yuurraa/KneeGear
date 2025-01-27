@@ -23,3 +23,5 @@ first_enemy_spawned = False
 screen_width = 0
 screen_height = 0
 screen = None
+
+damage_numbers = []
