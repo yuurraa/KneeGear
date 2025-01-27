@@ -73,19 +73,19 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=1
     pygame.draw.rect(surface, color, (0, 0, filled_width, bar_height))
     screen.blit(surface, (x, y))
 
-def draw_enemy(x, y, health, enemy_type, scaling_factor=1.0):
+def draw_enemy(x, y, health, enemy_type):
     screen = game_state.screen
     if enemy_type == "tank":
         # Draw tank enemy
         pygame.draw.rect(screen, constants.BLACK, (x - 26, y - 26, 52, 52))  # Larger outline
         pygame.draw.rect(screen, (139, 69, 19), (x - 25, y - 25, 50, 50))    # Brown
-        max_health = math.floor(constants.base_tank_health * scaling_factor)
+        max_health = math.floor(constants.base_tank_health * game_state.enemy_scaling)
         bar_width = 50
     else:
         # Draw regular enemy
         pygame.draw.rect(screen, constants.BLACK, (x - 21, y - 21, 42, 42))  # Regular outline
         pygame.draw.rect(screen, constants.RED, (x - 20, y - 20, 40, 40))
-        max_health = math.floor(constants.base_basic_enemy_health * scaling_factor)
+        max_health = math.floor(constants.base_basic_enemy_health * game_state.enemy_scaling)
         bar_width = 40
 
     # Calculate health bar position to center it above the enemy

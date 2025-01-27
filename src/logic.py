@@ -73,9 +73,9 @@ def update_projectiles():
 
                     # Grant experience based on enemy type
                     if enemy["type"] == "tank":
-                        experience_gained = 30
+                        experience_gained = math.floor(constants.base_tank_xp_reward * game_state.enemy_scaling)
                     else:
-                        experience_gained = 10
+                        experience_gained = math.floor(constants.base_basic_enemy_xp_reward * game_state.enemy_scaling)
 
                     game_state.player_experience += experience_gained
 
@@ -111,7 +111,7 @@ def update_projectiles():
                 game_state.projectiles.remove(bullet)
 
 
-def update_enemy_bullets(scaling_factor=1.0):
+def update_enemy_bullets():
     current_time = pygame.time.get_ticks() / 1000.0
 
     # Update enemy homing bullets
@@ -139,7 +139,7 @@ def update_enemy_bullets(scaling_factor=1.0):
         bullet[0] += constants.basic_enemy_homing_bullet_speed * math.cos(math.radians(bullet[2]))
         bullet[1] += constants.basic_enemy_homing_bullet_speed * math.sin(math.radians(bullet[2]))
 
-        if check_bullet_collision(bullet, math.floor(constants.base_basic_enemy_damage * scaling_factor), constants.RED):
+        if check_bullet_collision(bullet, math.floor(constants.base_basic_enemy_damage * game_state.enemy_scaling), constants.RED):
             game_state.enemy_bullets.remove(bullet)
             continue
 
@@ -151,7 +151,7 @@ def update_enemy_bullets(scaling_factor=1.0):
         bullet[0] += constants.basic_enemy_aoe_bullet_speed * math.cos(math.radians(bullet[2]))
         bullet[1] += constants.basic_enemy_aoe_bullet_speed * math.sin(math.radians(bullet[2]))
 
-        if check_bullet_collision(bullet, math.floor(constants.base_basic_enemy_damage * scaling_factor), constants.YELLOW):
+        if check_bullet_collision(bullet, math.floor(constants.base_basic_enemy_damage * game_state.enemy_scaling), constants.YELLOW):
             game_state.enemy_aoe_bullets.remove(bullet)
             continue
 
@@ -163,7 +163,7 @@ def update_enemy_bullets(scaling_factor=1.0):
         pellet[0] += pellet[3] * math.cos(math.radians(pellet[2]))
         pellet[1] += pellet[3] * math.sin(math.radians(pellet[2]))
 
-        if check_bullet_collision(pellet, math.floor(constants.base_tank_damage * scaling_factor), constants.YELLOW):
+        if check_bullet_collision(pellet, math.floor(constants.base_tank_damage * game_state.enemy_scaling), constants.YELLOW):
             game_state.tank_pellets.remove(pellet)
             continue
 
@@ -193,7 +193,7 @@ def is_bullet_out_of_bounds(bullet):
             bullet[1] < 0 or bullet[1] > game_state.screen_height - constants.experience_bar_height-3)
 
 
-def spawn_enemy(scaling_factor=1.0):
+def spawn_enemy():
     side = random.choice(["top", "bottom", "left", "right"])
     if side == "top":
         x = random.randint(0, game_state.screen_width)
@@ -213,7 +213,7 @@ def spawn_enemy(scaling_factor=1.0):
         game_state.enemies.append({
             "x": x,
             "y": y,
-            "health": math.floor(constants.base_tank_health * scaling_factor),
+            "health": math.floor(constants.base_tank_health * game_state.enemy_scaling),
             "last_shot_time": 0,
             "last_aoe_time": 0,
             "type": "tank",
@@ -223,7 +223,7 @@ def spawn_enemy(scaling_factor=1.0):
         game_state.enemies.append({
             "x": x,
             "y": y,
-            "health": math.floor(constants.base_basic_enemy_health * scaling_factor),
+            "health": math.floor(constants.base_basic_enemy_health * game_state.enemy_scaling),
             "last_shot_time": 0,
             "last_aoe_time": 0,
             "type": "regular"

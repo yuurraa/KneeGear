@@ -23,6 +23,7 @@ projectiles = []
 enemy_bullets = []
 enemy_aoe_bullets = []
 tank_pellets = []
+enemy_scaling = 1.0
 
 fade_alpha = 0
 game_over = False
