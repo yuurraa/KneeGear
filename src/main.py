@@ -3,8 +3,52 @@ import constants
 import game_state
 import logic
 import drawing
-import score  # Import the new score module
+import score
 from helpers import calculate_angle, reset_game
+
+def show_intro_screen(screen, screen_width, screen_height):
+    # Create a black background
+    screen.fill(constants.BLACK)
+    
+    # Render the text "GOONER INC."
+    font = pygame.font.Font(None, 74)
+    text = font.render("GOONER INC.", True, constants.WHITE)
+    text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
+    
+    # Draw the text on the screen
+    screen.blit(text, text_rect)
+    pygame.display.flip()
+    
+    # Wait for 2 seconds (2000 milliseconds)
+    pygame.time.wait(2000)
+    
+    # Fade out to the gameplay
+    fade_surface = pygame.Surface((screen_width, screen_height))
+    fade_surface.fill(constants.BLACK)
+    for alpha in range(0, 255, 5):
+        fade_surface.set_alpha(alpha)
+        screen.blit(fade_surface, (0, 0))
+        pygame.display.flip()
+        pygame.time.wait(30)
+
+def show_game_over_screen(screen, screen_width, screen_height):
+    # Create a black background
+    screen.fill(constants.BLACK)
+    
+    # Render the text "YOU DIED"
+    font_large = pygame.font.Font(None, 74)
+    text_large = font_large.render("YOU DIED", True, constants.WHITE)
+    text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
+    
+    # Render the text "Press SPACE to restart"
+    font_small = pygame.font.Font(None, 36)
+    text_small = font_small.render("Press SPACE to restart", True, constants.WHITE)
+    text_small_rect = text_small.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
+    
+    # Draw the text on the screen
+    screen.blit(text_large, text_large_rect)
+    screen.blit(text_small, text_small_rect)
+    pygame.display.flip()
 
 def main():
     pygame.init()
@@ -18,6 +62,9 @@ def main():
         pygame.FULLSCREEN
     )
     clock = pygame.time.Clock()
+
+    # Show the intro screen
+    show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
 
     # Place the player in the center of the screen
     game_state.player_x = game_state.screen_width // 2
@@ -99,15 +146,16 @@ def main():
         # Draw score
         score.draw_score(game_state.screen)
 
+        # Check if player's health is depleted
+        if game_state.player_health <= 0:
+            game_state.game_over = True
+
         # Game Over fade
         if game_state.game_over:
             game_state.fade_alpha = min(game_state.fade_alpha + 5, 255)
             drawing.draw_fade_overlay()
             score.update_high_score()
-
-        # Check if player's health is depleted
-        if game_state.player_health <= 0:
-            game_state.game_over = True
+            show_game_over_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
 
         # Update display
         pygame.display.flip()
