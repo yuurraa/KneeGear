@@ -86,7 +86,7 @@ def main():
 
     # Initialize score and start time
     score.reset_score()
-    start_time_ms = pygame.time.get_ticks()
+    game_state.start_time_ms = pygame.time.get_ticks()
 
     while game_state.running:
         # Fill background with GREY instead of WHITE
@@ -106,7 +106,7 @@ def main():
 
         # Calculate current scaling factor based on elapsed time
         current_time_ms = pygame.time.get_ticks()
-        elapsed_seconds = (current_time_ms - start_time_ms) // 1000
+        elapsed_seconds = (current_time_ms - game_state.start_time_ms) // 1000
         game_state.enemy_scaling = calculate_enemy_scaling(elapsed_seconds)
         # Spawn enemies over time
         current_time_s = current_time_ms / 1000.0
@@ -122,9 +122,22 @@ def main():
             logic.spawn_enemy()  # Pass scaling factor to spawn_enemy
             game_state.last_enemy_spawn_time = current_time_s
 
-
-
-        
+        # Draw stopwatch
+        current_time = pygame.time.get_ticks()
+        elapsed_seconds = (current_time - game_state.start_time_ms) // 1000
+        minutes = elapsed_seconds // 60
+        seconds = elapsed_seconds % 60
+        font = pygame.font.Font(None, 36)
+        time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
+        time_rect = time_text.get_rect(topright=(game_state.screen_width - 20, 20))
+        # Add a semi-transparent background for better readability
+        bg_rect = time_rect.copy()
+        bg_rect.inflate_ip(20, 10)  # Make background slightly larger than text
+        bg_surface = pygame.Surface((bg_rect.width, bg_rect.height))
+        bg_surface.fill(constants.BLACK)
+        bg_surface.set_alpha(128)
+        game_state.screen.blit(bg_surface, bg_rect)
+        game_state.screen.blit(time_text, time_rect)
 
         # Draw enemies
         for enemy in game_state.enemies:
@@ -142,22 +155,6 @@ def main():
         
         game_state.player.draw(game_state.screen)
 
-        # Draw stopwatch
-        current_time = pygame.time.get_ticks()
-        elapsed_seconds = (current_time - start_time_ms) // 1000
-        minutes = elapsed_seconds // 60
-        seconds = elapsed_seconds % 60
-        font = pygame.font.Font(None, 36)
-        time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
-        time_rect = time_text.get_rect(topright=(game_state.screen_width - 20, 20))
-        # Add a semi-transparent background for better readability
-        bg_rect = time_rect.copy()
-        bg_rect.inflate_ip(20, 10)  # Make background slightly larger than text
-        bg_surface = pygame.Surface((bg_rect.width, bg_rect.height))
-        bg_surface.fill(constants.BLACK)
-        bg_surface.set_alpha(128)
-        game_state.screen.blit(bg_surface, bg_rect)
-        game_state.screen.blit(time_text, time_rect)
         
         # Handle level up menu
         if game_state.player.state == PlayerState.LEVELING_UP:

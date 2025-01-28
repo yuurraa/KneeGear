@@ -20,19 +20,21 @@ player_basic_bullet_speed = 15
 player_basic_bullet_damage = 10
 player_basic_bullet_size = 5
 player_basic_bullet_pierce = 1
+player_basic_bullet_cooldown = 2
+
 player_special_bullet_speed = 20
 player_special_bullet_damage = 20
 player_special_bullet_size = 20
 player_special_bullet_pierce = 5
-shoot_cooldown = 0.4
-special_shot_cooldown = 5
+player_special_bullet_cooldown = 10
+
 
 initial_experience_to_next_level = 30
 experience_scaling_factor = 1.3
 
 enemy_stat_doubling_time = 20 # seconds
 
-base_tank_health = 200
+base_tank_health = 100
 base_tank_damage = 2
 base_tank_xp_reward = 30
 tank_speed = 1.5
@@ -43,7 +45,7 @@ tank_pellet_speed_range = (7, 12)
 
 
 
-base_basic_enemy_health = 50
+base_basic_enemy_health = 20
 base_basic_enemy_damage = 5
 base_basic_enemy_xp_reward = 10
 basic_enemy_speed = 3

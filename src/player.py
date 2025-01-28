@@ -36,8 +36,8 @@ class Player:
         self.state = PlayerState.ALIVE
         
         # Shooting cooldowns
-        self.shoot_cooldown = 1  # Regular shot cooldown in seconds
-        self.special_shot_cooldown = 4.0  # Special shot cooldown in seconds
+        self.shoot_cooldown = constants.player_basic_bullet_cooldown  # Regular shot cooldown in seconds
+        self.special_shot_cooldown = constants.player_special_bullet_cooldown  # Special shot cooldown in seconds
         self.last_shot_time = 0
         self.last_special_shot_time = 0
 

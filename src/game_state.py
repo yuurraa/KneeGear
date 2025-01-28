@@ -2,13 +2,11 @@ import constants
 from player import Player
 
 experience_updates = []
-
+start_time_ms = 0
 
 
 last_special_shot_time = 0
 last_shot_time = 0
-shoot_cooldown = constants.shoot_cooldown 
-special_shot_cooldown = constants.special_shot_cooldown 
 
 last_enemy_spawn_time = 0
 
