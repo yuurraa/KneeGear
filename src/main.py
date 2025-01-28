@@ -4,8 +4,9 @@ import game_state
 import logic
 import drawing
 import score
-from player import Player
+from player import Player, PlayerState
 from helpers import calculate_angle, reset_game
+from menu import draw_level_up_menu
 
 def show_intro_screen(screen, screen_width, screen_height):
     # Create a black background
@@ -100,6 +101,8 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game_state.game_over:
                 reset_game()
                 score.reset_score()
+                
+
 
         # Handle player input (shooting, movement)
         keys, left_click_cooldown_progress, right_click_cooldown_progress = logic.handle_input()
@@ -124,11 +127,7 @@ def main():
             logic.spawn_enemy()  # Pass scaling factor to spawn_enemy
             game_state.last_enemy_spawn_time = current_time
 
-        # Update all logic
-        logic.update_enemies()
-        logic.update_projectiles()
-        logic.spawn_heart()
-        logic.update_hearts()
+
 
         # Draw projectiles first so enemies/players appear atop them
 
@@ -165,6 +164,26 @@ def main():
         bg_surface.set_alpha(128)
         game_state.screen.blit(bg_surface, bg_rect)
         game_state.screen.blit(time_text, time_rect)
+        
+        # Handle level up menu
+        if game_state.player.state == PlayerState.LEVELING_UP:
+            continue_button = draw_level_up_menu(game_state.screen)
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    game_state.running = False
+                elif continue_button.handle_event(event):
+                    game_state.player.state = PlayerState.ALIVE
+            
+            pygame.display.flip()
+            clock.tick(constants.FPS)
+            continue  # Skip the rest of the game loop while in level-up menu
+        
+        # Update all logic
+        logic.update_enemies()
+        logic.update_projectiles()
+        logic.spawn_heart()
+        logic.update_hearts()
 
         # Check if player's health is depleted
         if game_state.player.health <= 0:
@@ -178,6 +197,8 @@ def main():
             drawing.draw_fade_overlay()
             score.update_high_score()
             show_game_over_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
+
+
 
         # Update display
         pygame.display.flip()

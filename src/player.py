@@ -8,6 +8,7 @@ import constants
 class PlayerState(Enum):
     ALIVE = "alive"
     DEAD = "dead"
+    LEVELING_UP = "leveling_up"
 
 class Player:
     def __init__(self, x, y, screen_width, screen_height):
@@ -24,7 +25,7 @@ class Player:
         self.speed = constants.player_speed
         self.player_experience = 0
         self.player_level = 1
-        self.experience_to_next_level = 100
+        self.experience_to_next_level = constants.initial_experience_to_next_level
 
         self.state = PlayerState.ALIVE
         
@@ -128,11 +129,12 @@ class Player:
         self.player_level += 1
         self.player_experience -= self.experience_to_next_level
         self.experience_to_next_level = int(self.experience_to_next_level * constants.experience_scaling_factor)
+        self.state = PlayerState.LEVELING_UP
         print(f"Player leveled up to level {self.player_level}")
             
     def reset(self):
         self.player_experience = 0
         self.player_level = 1
-        self.experience_to_next_level = 100
+        self.experience_to_next_level = constants.initial_experience_to_next_level
     
     # def reset
