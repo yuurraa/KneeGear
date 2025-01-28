@@ -11,6 +11,7 @@ class Enemy(ABC):
         self.scaling = scaling
         self.last_shot_time = 0
         self.last_aoe_time = 0
+        self.score_reward = 5
         
     @property
     @abstractmethod
@@ -43,6 +44,7 @@ class RegularEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
         self._health = self.max_health
+        self.score_reward = math.floor(constants.base_basic_enemy_xp_reward * self.scaling)
         
     @property
     def type(self):
@@ -80,6 +82,7 @@ class TankEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
         self._health = self.max_health
+        self.score_reward = math.floor(constants.base_tank_xp_reward * self.scaling)
         self.last_shotgun_time = 0
         
     @property

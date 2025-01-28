@@ -4,6 +4,7 @@ import game_state
 import logic
 import drawing
 import score
+from player import Player
 from helpers import calculate_angle, reset_game
 
 def show_intro_screen(screen, screen_width, screen_height):
@@ -58,7 +59,8 @@ def calculate_enemy_scaling(elapsed_seconds):
 
 def main():
     pygame.init()
-    # Determine full screen dimensions
+    
+    # After setting up the display
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
 
@@ -67,14 +69,19 @@ def main():
         (game_state.screen_width, game_state.screen_height),
         pygame.FULLSCREEN
     )
+
+    # Create the player after screen dimensions are known
+    game_state.player = Player(
+        game_state.screen_width // 2,
+        game_state.screen_height // 2,
+        game_state.screen_width,
+        game_state.screen_height
+    )
+
     clock = pygame.time.Clock()
 
     # Show the intro screen
     show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
-
-    # Place the player in the center of the screen
-    game_state.player_x = game_state.screen_width // 2
-    game_state.player_y = game_state.screen_height // 2
 
     # Initialize score and start time
     score.reset_score()
@@ -96,13 +103,11 @@ def main():
 
         # Handle player input (shooting, movement)
         keys, left_click_cooldown_progress, right_click_cooldown_progress = logic.handle_input()
-        logic.handle_player_movement(keys)
         drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
         drawing.draw_experience_bar()
 
         # Update player angle to mouse
-        mx, my = pygame.mouse.get_pos()
-        game_state.player_angle = calculate_angle(game_state.player_x, game_state.player_y, mx, my)
+        game_state.player.update_angle(pygame.mouse.get_pos())
 
         # Calculate current scaling factor based on elapsed time
         current_time = pygame.time.get_ticks()
@@ -128,7 +133,7 @@ def main():
         # Draw projectiles first so enemies/players appear atop them
 
         # Draw player
-        drawing.draw_player(game_state.player_x, game_state.player_y, game_state.player_angle)
+        game_state.player.draw(game_state.screen)
 
         # Draw enemies
         for enemy in game_state.enemies:
@@ -140,10 +145,6 @@ def main():
         # Draw hearts
         for heart in game_state.hearts:
             pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)
-
-
-        # Draw player's health bar
-        drawing.draw_health_bar(20, 20, game_state.player_health, 100, constants.TRANSLUCENT_GREEN)
 
         # Draw score
         score.draw_score(game_state.screen)
@@ -166,7 +167,7 @@ def main():
         game_state.screen.blit(time_text, time_rect)
 
         # Check if player's health is depleted
-        if game_state.player_health <= 0:
+        if game_state.player.health <= 0:
             game_state.game_over = True      # Draw damage numbers
         drawing.draw_player_state_value_updates()
         

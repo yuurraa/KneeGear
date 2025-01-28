@@ -25,6 +25,8 @@ player_special_bullet_size = 20
 shoot_cooldown = 0.4
 special_shot_cooldown = 5
 
+experience_scaling_factor = 1.3
+
 enemy_stat_doubling_time = 20 # seconds
 
 base_tank_health = 200

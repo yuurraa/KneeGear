@@ -6,26 +6,7 @@ import constants
 from helpers import calculate_angle
 from projectiles import PlayerBullet, Alignment
 from enemies import RegularEnemy, TankEnemy
-
-
-def handle_player_movement(keys):
-    x, y = game_state.player_x, game_state.player_y
-
-    if keys[pygame.K_w]:
-        y -= constants.player_speed
-    if keys[pygame.K_s]:
-        y += constants.player_speed
-    if keys[pygame.K_a]:
-        x -= constants.player_speed
-    if keys[pygame.K_d]:
-        x += constants.player_speed
-
-    # Restrict player to screen boundaries
-    x = max(15, min(x, game_state.screen_width - 15))
-    y = max(15, min(y, game_state.screen_height - 15))
-
-    game_state.player_x = x
-    game_state.player_y = y
+from player import Player   
 
 
 def move_enemy(enemy, target_x, target_y):
@@ -96,14 +77,14 @@ def spawn_heart():
 
 def update_hearts():
     for heart in game_state.hearts[:]:
-        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(pygame.Rect(heart[0] - 10, heart[1] - 10, 20, 20)):
-            heal_amount = min(20, 100 - game_state.player_health)
-            game_state.player_health = min(game_state.player_health + 20, 100)
+        if pygame.Rect(game_state.player.x - 15, game_state.player.y - 15, 30, 30).colliderect(pygame.Rect(heart[0] - 10, heart[1] - 10, 20, 20)):
+            heal_amount = min(20, 100 - game_state.player.health)
+            game_state.player.health = min(game_state.player.health + 20, 100)
             
             # Add healing number
             game_state.damage_numbers.append({
-                "x": game_state.player_x,
-                "y": game_state.player_y,
+                "x": game_state.player.x,
+                "y": game_state.player.y,
                 "value": heal_amount,
                 "timer": 60,
                 "color": constants.GREEN
@@ -117,36 +98,32 @@ def handle_input():
     mouse_pressed = pygame.mouse.get_pressed()
     current_time = pygame.time.get_ticks() / 1000.0
 
-    # Left-click for a regular shot
-    if (mouse_pressed[0] and
-        not game_state.game_over and
-        current_time - game_state.last_shot_time >= game_state.shoot_cooldown):
-        mx, my = pygame.mouse.get_pos()
-        angle = calculate_angle(game_state.player_x, game_state.player_y, mx, my)
-        game_state.projectiles.append(PlayerBullet(game_state.player_x, game_state.player_y, angle))
-        game_state.last_shot_time = current_time
+    # Handle movement
+    game_state.player.move(keys)
 
-    # Right-click for a special shot
-    if (mouse_pressed[2] and
-        not game_state.game_over and
-        current_time - game_state.last_special_shot_time >= game_state.special_shot_cooldown):
-        mx, my = pygame.mouse.get_pos()
-        angle = calculate_angle(game_state.player_x, game_state.player_y, mx, my)
-        game_state.projectiles.append(PlayerBullet(game_state.player_x, game_state.player_y, angle, True))
-        game_state.last_special_shot_time = current_time
+    # Handle shooting
+    if mouse_pressed[0] and not game_state.game_over:
+        bullet = game_state.player.shoot_regular(pygame.mouse.get_pos(), current_time)
+        if bullet:
+            game_state.projectiles.append(bullet)
 
-    # Calculate cooldown progress for skill icons
-    left_click_cooldown_progress = max(0, (current_time - game_state.last_shot_time) / game_state.shoot_cooldown)
-    right_click_cooldown_progress = max(0, (current_time - game_state.last_special_shot_time) / game_state.special_shot_cooldown)
+    if mouse_pressed[2] and not game_state.game_over:
+        bullet = game_state.player.shoot_special(pygame.mouse.get_pos(), current_time)
+        if bullet:
+            game_state.projectiles.append(bullet)
 
-    return keys, left_click_cooldown_progress, right_click_cooldown_progress
+    # Get cooldown progress for UI
+    return keys, *game_state.player.get_cooldown_progress(current_time)
 
 
 def update_enemies():
     current_time = pygame.time.get_ticks() / 1000.0
     for enemy in game_state.enemies[:]:
-        move_enemy(enemy, game_state.player_x, game_state.player_y)
-        enemy.shoot(game_state.player_x, game_state.player_y, current_time, game_state)
+        move_enemy(enemy, game_state.player.x, game_state.player.y)
+        enemy.shoot(game_state.player.x, game_state.player.y, current_time, game_state)
 
         if enemy.health <= 0:
             game_state.enemies.remove(enemy)
+
+
+

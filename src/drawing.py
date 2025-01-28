@@ -4,16 +4,6 @@ import game_state
 import constants
 import random
 from helpers import calculate_angle
-
-
-def draw_player(x, y, angle):
-    screen = game_state.screen
-    pygame.draw.rect(screen, constants.BLACK, (x - 16, y - 16, 22, 22))  # Outline
-    pygame.draw.rect(screen, constants.GREEN, (x - 15, y - 15, 20, 20))
-    arrow_length = 20
-    arrow_x = x + arrow_length * math.cos(math.radians(angle))
-    arrow_y = y + arrow_length * math.sin(math.radians(angle))
-    pygame.draw.line(screen, constants.BLUE, (x, y), (arrow_x, arrow_y), 3)
     
 def draw_experience_bar():
     screen = game_state.screen
@@ -26,7 +16,7 @@ def draw_experience_bar():
     pygame.draw.rect(screen, constants.BLACK, (bar_x, bar_y, bar_width, bar_height))
 
     # Calculate the filled width based on current experience
-    filled_width = int((game_state.player_experience / game_state.experience_to_next_level) * bar_width)
+    filled_width = int((game_state.player.player_experience / game_state.player.experience_to_next_level) * bar_width)
     pygame.draw.rect(screen, (0, 0, 255, 128), (bar_x, bar_y, filled_width, bar_height))  # Translucent blue
     
 def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):

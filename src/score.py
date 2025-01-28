@@ -26,8 +26,3 @@ def draw_score(screen):
     screen.blit(score_text, (20, 50))
     screen.blit(high_score_text, (20, 80))
 
-def handle_enemy_killed(enemy_type):
-    if enemy_type == "regular":
-        increase_score(10)
-    elif enemy_type == "tank":
-        increase_score(50)

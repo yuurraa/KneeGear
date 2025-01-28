@@ -41,65 +41,7 @@ class BaseBullet:
                 self.y < 0 or self.y > game_state.screen_height - constants.experience_bar_height - 3)
 
     def check_collision(self, target) -> bool:
-        if self.alignment == Alignment.ENEMY:
-            return self._check_player_collision()
-        else:
-            return self._check_enemy_collision(target)
-
-    def _check_player_collision(self) -> bool:
-        if pygame.Rect(game_state.player_x - 15, game_state.player_y - 15, 30, 30).colliderect(self.get_rect()):
-            actual_damage = math.floor(self.damage * self.scaling)
-            game_state.player_health -= actual_damage
-            
-            game_state.damage_numbers.append({
-                "x": game_state.player_x,
-                "y": game_state.player_y,
-                "value": actual_damage,
-                "timer": 60,
-                "color": constants.RED
-            })
-            return True
-        return False
-
-    def _check_enemy_collision(self, enemy) -> bool:
-        if (enemy.health > 0 and
-            pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
-            
-            enemy.health -= self.damage
-            
-            game_state.damage_numbers.append({
-                "x": enemy.x,
-                "y": enemy.y,
-                "value": self.damage,
-                "timer": 20,
-                "color": constants.PURPLE
-            })
-            
-            if enemy.health <= 0:
-                score.handle_enemy_killed(enemy.type)
-                experience_gained = (math.floor(constants.base_tank_xp_reward * enemy.scaling) 
-                                  if enemy.type == "tank" 
-                                  else math.floor(constants.base_basic_enemy_xp_reward * enemy.scaling))
-                
-                game_state.player_experience += experience_gained
-                game_state.experience_updates.append({
-                    "x": enemy.x,
-                    "y": enemy.y,
-                    "value": experience_gained,
-                    "timer": 60,
-                    "color": constants.BLUE
-                })
-                
-                if game_state.player_experience >= game_state.experience_to_next_level:
-                    game_state.player_level += 1
-                    game_state.player_experience -= game_state.experience_to_next_level
-                    game_state.experience_to_next_level = int(game_state.experience_to_next_level * 1.5)
-                
-                return True
-            return self.damage == constants.player_bullet_damage  # Return True for regular bullets that hit
-        return False
-
-
+        raise NotImplementedError("check_collision method must be implemented in subclasses")
 
 @dataclass
 class PlayerBullet(BaseBullet):
@@ -114,6 +56,36 @@ class PlayerBullet(BaseBullet):
             size=constants.player_special_bullet_size if is_special else constants.player_bullet_size,
             colour=constants.BLUE
         )
+
+
+    def check_collision(self, enemy) -> bool:
+        if (enemy.health > 0 and
+            pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
+            
+            enemy.health -= self.damage
+            
+            game_state.damage_numbers.append({
+                "x": enemy.x,
+                "y": enemy.y,
+                "value": self.damage,
+                "timer": 20,
+                "color": constants.PURPLE
+            })
+            
+            if enemy.health <= 0:
+                score.increase_score(enemy.score_reward)
+                game_state.player.gain_experience(enemy.score_reward)
+                game_state.experience_updates.append({
+                    "x": enemy.x,
+                    "y": enemy.y,
+                    "value": enemy.score_reward,
+                    "timer": 60,
+                    "color": constants.BLUE
+                })
+                
+                return True
+            return self.damage == constants.player_bullet_damage  # Return True for regular bullets that hit
+        return False
 
 @dataclass
 class BaseEnemyBullet(BaseBullet):
@@ -130,7 +102,21 @@ class BaseEnemyBullet(BaseBullet):
             size=size,
             colour=colour
         )
-
+    
+    def check_collision(self, target) -> bool:
+        if pygame.Rect(game_state.player.x - 15, game_state.player.y - 15, 30, 30).colliderect(self.get_rect()):
+            actual_damage = math.floor(self.damage * self.scaling)
+            game_state.player.health -= actual_damage
+            
+            game_state.damage_numbers.append({
+                "x": game_state.player.x,
+                "y": game_state.player.y,
+                "value": actual_damage,
+                "timer": 60,
+                "color": constants.RED
+            })
+            return True
+        return False
 
 @dataclass
 class TankEnemyBullet(BaseEnemyBullet):
@@ -179,7 +165,7 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
         super().update()
         if self.should_home():
             from helpers import calculate_angle
-            angle_to_player = calculate_angle(self.x, self.y, game_state.player_x, game_state.player_y)
+            angle_to_player = calculate_angle(self.x, self.y, game_state.player.x, game_state.player.y)
             angle_diff = angle_to_player - self.angle
             
             if angle_diff > 180:
