@@ -14,7 +14,7 @@ TRANSLUCENT_RED = (255, 0, 0, 128)
 LIGHT_GREY = (200, 200, 200)
 BROWN = (139, 69, 19)
 
-music_volume = 0.3
+music_volume = 0.4
 music_path = "assets/audio/music.mp3"
 
 # Speeds, angles, and cooldowns
@@ -35,7 +35,7 @@ player_special_bullet_cooldown = 10
 
 
 initial_experience_to_next_level = 20
-experience_scaling_factor = 1.4
+level_up_xp_cost_scaling_factor = 1.36
 
 enemy_stat_doubling_time = 80 # seconds
 

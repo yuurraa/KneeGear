@@ -144,7 +144,7 @@ class Player:
     def level_up(self):
         self.player_level += 1
         self.player_experience -= self.experience_to_next_level
-        self.experience_to_next_level = int(self.experience_to_next_level * constants.experience_scaling_factor)
+        self.experience_to_next_level = int(self.experience_to_next_level * constants.level_up_xp_cost_scaling_factor)
         self.state = PlayerState.LEVELING_UP
         print(f"Player leveled up to level {self.player_level}")
             

@@ -1,4 +1,7 @@
 import pygame
+from mutagen import File
+import threading
+
 import constants
 import game_state
 import logic
@@ -22,8 +25,7 @@ def show_intro_screen(screen, screen_width, screen_height):
     screen.blit(text, text_rect)
     pygame.display.flip()
     
-    # Wait for 2 seconds (2000 milliseconds)
-    pygame.time.wait(2000)
+    pygame.time.wait(4000)
     
     # Fade out to the gameplay
     fade_surface = pygame.Surface((screen_width, screen_height))
@@ -59,15 +61,43 @@ def calculate_enemy_scaling(elapsed_seconds):
     scaling_factor = 2 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
+def load_and_play_music():
+    """
+    Function to load and play music asynchronously.
+    Uses Mutagen to get the duration without loading the entire sound.
+    """
+    try:
+        # Use Mutagen to get the duration
+        audio = File(constants.music_path)
+        if audio is None or not hasattr(audio.info, 'length'):
+            raise ValueError("Unsupported audio format or corrupted file.")
+        
+        duration = audio.info.length  # Duration in seconds
+        print(f"Music duration: {duration} seconds")
+
+        # Load music with pygame mixer
+        pygame.mixer.music.load(constants.music_path)
+        pygame.mixer.music.set_volume(constants.music_volume)
+
+        # Calculate random start position, avoiding the last 10 seconds
+        max_start = max(0, duration - 10)
+        start_pos = random.uniform(0, max_start)
+        print(f"Starting music at position: {start_pos} seconds")
+
+        pygame.mixer.music.play(-1, start= start_pos)  # -1 for infinite loop
+
+    except Exception as e:
+        print(f"Error loading music: {e}")
+
 def main():
     pygame.init()
     pygame.mixer.init()  # Initialize the mixer
-    
+
     # Set up the display first
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
 
-    # Set up the fullscreen display
+    # Set up the resizable display
     game_state.screen = pygame.display.set_mode(
         (game_state.screen_width, game_state.screen_height),
         pygame.RESIZABLE
@@ -84,16 +114,9 @@ def main():
     # Show the intro screen
     show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
 
-    # Try to load and start background music after game has started
-    try:
-        music = pygame.mixer.music.load(constants.music_path)
-        duration = pygame.mixer.Sound(constants.music_path).get_length()  # Get song duration
-        pygame.mixer.music.set_volume(constants.music_volume)
-        start_pos = random.uniform(0, duration - 10)  # Random start position (avoiding last 10 seconds)
-        pygame.mixer.music.play(-1)  # -1 means loop indefinitely
-        pygame.mixer.music.set_pos(start_pos)  # Set random start position
-    except Exception as e:
-        print(f"Error loading music: {e}")
+    # Start loading and playing music in a separate thread
+    music_thread = threading.Thread(target=load_and_play_music, daemon=True)
+    music_thread.start()
 
     clock = pygame.time.Clock()
 
@@ -101,6 +124,8 @@ def main():
     score.reset_score()
     game_state.start_time_ms = pygame.time.get_ticks()
 
+    # Main game loop
+    game_state.running = True
     while game_state.running:
         # Fill background with GREY instead of WHITE
         game_state.screen.fill(constants.LIGHT_GREY)
