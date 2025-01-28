@@ -14,6 +14,9 @@ TRANSLUCENT_RED = (255, 0, 0, 128)
 LIGHT_GREY = (200, 200, 200)
 BROWN = (139, 69, 19)
 
+music_volume = 0.3
+music_path = "assets/audio/music.mp3"
+
 # Speeds, angles, and cooldowns
 base_player_health = 100
 base_player_hp_regen = 1

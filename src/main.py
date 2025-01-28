@@ -7,6 +7,7 @@ import score
 from player import Player, PlayerState
 from helpers import calculate_angle, reset_game
 from menu import draw_level_up_menu
+import random
 
 def show_intro_screen(screen, screen_width, screen_height):
     # Create a black background
@@ -60,6 +61,18 @@ def calculate_enemy_scaling(elapsed_seconds):
 
 def main():
     pygame.init()
+    pygame.mixer.init()  # Initialize the mixer
+    
+    # Load and start background music
+    try:
+        music = pygame.mixer.music.load(constants.music_path)
+        duration = pygame.mixer.Sound(constants.music_path).get_length()  # Get song duration
+        pygame.mixer.music.set_volume(constants.music_volume)
+        start_pos = random.uniform(0, duration - 10)  # Random start position (avoiding last 10 seconds)
+        pygame.mixer.music.play(-1)  # -1 means loop indefinitely
+        pygame.mixer.music.set_pos(start_pos)  # Set random start position
+    except Exception as e:
+        print(f"Error loading music: {e}")
     
     # After setting up the display
     game_state.screen_width = pygame.display.Info().current_w
@@ -211,6 +224,7 @@ def main():
         pygame.display.flip()
         clock.tick(constants.FPS)
 
+    pygame.mixer.quit()  # Clean up mixer when quitting
     pygame.quit()
 if __name__ == "__main__":
     main()
