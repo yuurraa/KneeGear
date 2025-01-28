@@ -11,6 +11,7 @@ class Upgrade:
     Rarity: str
     apply: Callable[[Player], None]
     icon: str  # Could be used for future UI improvements
+    is_unique: bool = False #if true, only one of this upgrade can be applied
 
 class UpgradePool:
     def __init__(self):
@@ -21,14 +22,14 @@ class UpgradePool:
         }
         self.upgrades = [
             Upgrade(
-                name="Rapid Fire",
+                name="Basic Attack Cooldown",
                 description="Decrease basic attack cooldown by 30%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.7),
                 icon="⚡"
             ),
             Upgrade(
-                name="Sharp Bullets",
+                name="Basic Attack Damage",
                 description="Increase basic attack damage by 40%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'basic_bullet_damage_multiplier', 
@@ -58,15 +59,17 @@ class UpgradePool:
             ),
             
             Upgrade(
-                name="Swift Shot",
-                description="Increase basic bullet speed by 40%",
-                Rarity="Common",
-                apply=lambda player: setattr(player, 'basic_bullet_speed_multiplier', 
-                                           player.basic_bullet_speed_multiplier * 1.4),
+                name="Bullet Speed",
+                description="Increase all bullet speed by 40%",
+                Rarity="Rare",
+                apply=lambda player: [
+                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 1.4),
+                    setattr(player, 'special_bullet_speed_multiplier', player.special_bullet_speed_multiplier * 1.4),
+                ][-1],
                 icon="🚀"
             ),
             Upgrade(
-                name="Piercing Shot",
+                name="Basic Attack Pierce",
                 description="Increase basic bullet piercing by 1",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'basic_bullet_piercing_bonus', 
@@ -74,7 +77,29 @@ class UpgradePool:
                 icon="💥"
             ),
             Upgrade(
-                name="Special Force",
+                name="Damage",
+                description="Increase all damage by 30%",
+                Rarity="Rare",
+                apply=lambda player: [
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.3),
+                    setattr(player, 'special_bullet_damage_multiplier', player.special_bullet_damage_multiplier * 1.3),
+                ][-1],
+                icon="💥"
+            ),
+            
+            Upgrade(
+                name="Cooldown",
+                description="Decrease all cooldowns by 25%",
+                Rarity="Rare",
+                apply=lambda player: [
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.75),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.75),
+                ][-1],
+                icon="💥"
+            ),
+            
+            Upgrade(
+                name="Special Attack Damage",
                 description="Increase special attack damage by 40%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
@@ -82,7 +107,7 @@ class UpgradePool:
                 icon="⭐"
             ),
             Upgrade(
-                name="Quick Charge",
+                name="Special Attack Cooldown",
                 description="Decrease special attack cooldown by 30%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_shot_cooldown', 
@@ -90,7 +115,22 @@ class UpgradePool:
                 icon="⚡"
             ),
             Upgrade(
-                name="Speed Demon",
+                name="Special Attack Pierce",
+                description="Increase special bullet piercing by 2",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'special_bullet_piercing_bonus', 
+                                           player.special_bullet_piercing_bonus + 2),
+                icon="⚡"
+            ),
+            Upgrade(
+                name="Repiercing Special Shot",
+                description="Special bullets can pierce the same enemy multiple times",
+                Rarity="Epic",
+                apply=lambda player: setattr(player, 'special_bullet_can_repierce', True),
+                icon="⚡"
+            ),
+            Upgrade(
+                name="Movement Speed",
                 description="Increase movement speed by 30%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'speed', player.speed * 1.3),
@@ -98,25 +138,45 @@ class UpgradePool:
             ),
             Upgrade(
                 name="HP Regen",
-                description="Increase HP regen by 70%",
-                Rarity="Rare",
-                apply=lambda player: setattr(player, 'hp_regen_multiplier', player.hp_regen_multiplier * 1.7),
+                description="Increase Hp regen by 100%",
+                Rarity="Common",
+                apply=lambda player: setattr(player, 'hp_regen_multiplier', player.hp_regen_multiplier * 2),
                 icon="❤️"
             ),
             Upgrade(
                 name="Max HP",
-                description="Increase MaxHP by 50%",
+                description="Increase Max Hp by 100%",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'max_health', player.max_health * 1.5),
+                apply=lambda player: setattr(player, 'max_health', player.max_health * 2),
                 icon="❤️"
+            ),
+            Upgrade(
+                name="Hp Pickup",
+                description="Increase HP Pickup Healing by 150%",
+                Rarity="Common",
+                apply=lambda player: setattr(player, 'hp_pickup_healing_multiplier', player.hp_pickup_healing_multiplier * 2.5),
+                icon="❤️"
+            ),
+            Upgrade(
+                name="Hp Steal",
+                description="Adds 7% Hp steal to all attacks",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.07),
+                icon="⚡"
             ),
         ]
 
-    def get_random_upgrades(self, count: int) -> List[Upgrade]:
+    def get_random_upgrades(self, count: int, player: Player) -> List[Upgrade]:
         selected_upgrades = []
         available_upgrades = self.upgrades.copy()
         
-        for _ in range(min(count, len(self.upgrades))):
+        # Filter out unique upgrades that player already has
+        available_upgrades = [
+            upgrade for upgrade in available_upgrades 
+            if not (upgrade.is_unique and upgrade.name in player.applied_upgrades)
+        ]
+        
+        for _ in range(min(count, len(available_upgrades))):
             if not available_upgrades:
                 break
                 
@@ -135,8 +195,11 @@ class UpgradePool:
             if not valid_rarities:
                 break
                 
-            # Get weights for valid rarities
-            valid_weights = [self.rarity_weights[rarity] for rarity in valid_rarities]
+            # Get weights for valid rarities and adjust them based on available upgrades
+            valid_weights = [
+                self.rarity_weights[rarity] * len(upgrades_by_rarity[rarity])
+                for rarity in valid_rarities
+            ]
             
             # Select a rarity tier first
             chosen_rarity = random.choices(valid_rarities, weights=valid_weights, k=1)[0]

@@ -107,7 +107,7 @@ def draw_level_up_menu(screen):
     # Get random upgrades
     if not hasattr(game_state, 'current_upgrade_options'):
         upgrade_pool = UpgradePool()
-        game_state.current_upgrade_options = upgrade_pool.get_random_upgrades(3)
+        game_state.current_upgrade_options = upgrade_pool.get_random_upgrades(3, game_state.player)
 
     # Create upgrade buttons
     button_width = 280

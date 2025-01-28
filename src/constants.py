@@ -21,21 +21,21 @@ music_path = "assets/audio/music.mp3"
 base_player_health = 100
 base_player_hp_regen = 1
 player_speed = 4.5
-player_basic_bullet_speed = 15
+player_basic_bullet_speed = 10
 player_basic_bullet_damage = 10
 player_basic_bullet_size = 5
 player_basic_bullet_pierce = 1
-player_basic_bullet_cooldown = 2
+player_basic_bullet_cooldown = 1
 
-player_special_bullet_speed = 20
-player_special_bullet_damage = 20
+player_special_bullet_speed = 15
+player_special_bullet_damage = 50
 player_special_bullet_size = 20
-player_special_bullet_pierce = 5
+player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
-
+base_hp_pickup_healing = 20
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.35
+level_up_xp_cost_scaling_factor = 1.3
 
 enemy_stat_doubling_time = 80 # seconds
 
@@ -61,7 +61,8 @@ basic_enemy_bullet_interval = 5
 basic_enemy_bullet_max_turn_angle = 1.6
 
 # Spawn intervals
-enemy_spawn_interval = 5
+base_enemy_spawn_interval = 6
+enemy_spawn_rate_doubling_time_seconds = 300
 
 # Add this with the other constants
 experience_bar_height = 10  # Match the height used in draw_experience_bar

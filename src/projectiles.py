@@ -21,8 +21,12 @@ class BaseBullet:
     damage: float
     colour: Tuple[int, int, int]
     pierce: int = 1
+    can_repierce: bool = False #whether the bullet can hit the same target multiple times
     size: float = 5.0
     scaling: float = 1.0
+    
+    def __post_init__(self):
+        self.hit_targets = set()  # Track which targets have been hit
     
     def update(self):
         self.x += self.speed * math.cos(math.radians(self.angle))
@@ -64,7 +68,7 @@ class BaseBullet:
 
 @dataclass
 class PlayerBaseBullet(BaseBullet):
-    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, pierce: int, size: float, colour: Tuple[int, int, int]):
+    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, pierce: int, can_repierce: bool, size: float, colour: Tuple[int, int, int]):
         super().__init__(
             x=x,
             y=y,
@@ -74,34 +78,43 @@ class PlayerBaseBullet(BaseBullet):
             damage=damage,
             size=size,
             colour=colour,
-            pierce=pierce
+            pierce=pierce,
+            can_repierce=can_repierce
         )
-
 
     def check_and_apply_collision(self, enemy) -> bool:
         if (enemy.health > 0 and
             pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
+            
+            # Check if we've already hit this enemy and can't repierce
+            if not self.can_repierce and enemy in self.hit_targets:
+                return False
+                
             self.pierce -= 1
             enemy.apply_damage(self.damage, game_state)
+            game_state.player.heal(self.damage * game_state.player.hp_steal)
+            self.hit_targets.add(enemy)  # Track that we've hit this enemy
             return True
 
         return False
 
 class PlayerBasicBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_bonus: int):
+    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_bonus: int, can_repierce: bool=False):
         super().__init__(x, y, angle, 
                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
                         constants.player_basic_bullet_damage * basic_bullet_damage_multiplier,
                         constants.player_basic_bullet_pierce + basic_bullet_piercing_bonus,
+                        can_repierce,
                         constants.player_basic_bullet_size,
                         constants.BLUE)
         
 class PlayerSpecialBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float):
+    def __init__(self, x: float, y: float, angle: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float, special_bullet_piercing_bonus: int, can_repierce: bool=False):
         super().__init__(x, y, angle,
                          constants.player_special_bullet_speed * special_bullet_speed_multiplier,
                          constants.player_special_bullet_damage * special_bullet_damage_multiplier,
-                         constants.player_special_bullet_pierce,
+                         constants.player_special_bullet_pierce + special_bullet_piercing_bonus,
+                         can_repierce,
                          constants.player_special_bullet_size,
                          constants.PURPLE)
 
@@ -121,7 +134,6 @@ class BaseEnemyBullet(BaseBullet):
             colour=colour,
             pierce=1
         )
-    
     def check_and_apply_collision(self, target) -> bool:
         if pygame.Rect(game_state.player.x - 15, game_state.player.y - 15, 30, 30).colliderect(self.get_rect()):
             actual_damage = math.floor(self.damage * self.scaling)
@@ -160,7 +172,7 @@ class BasicEnemyBullet(BaseEnemyBullet):
             speed=constants.basic_enemy_bullet_speed,
             base_damage=constants.base_basic_enemy_damage,
             size=5,
-            colour=constants.RED
+            colour=constants.RED,
         )
 
 class BasicEnemyHomingBullet(BaseEnemyBullet):

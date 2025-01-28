@@ -1,6 +1,7 @@
 from enum import Enum
 import pygame
 import math
+
 from projectiles import PlayerBasicBullet, PlayerSpecialBullet
 from helpers import calculate_angle
 import constants
@@ -19,8 +20,11 @@ class Player:
         self.screen_height = screen_height
         self.angle = 0  # Add angle property
         
+        self.reset()
+
+    def reset(self):
         # Stats
-        self.health = constants.base_player_health
+        self.health:float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen #hp regen per second
         self.speed = constants.player_speed
@@ -35,7 +39,12 @@ class Player:
         self.basic_bullet_speed_multiplier = 1
         self.special_bullet_speed_multiplier = 1
         self.hp_regen_multiplier = 1
+        self.hp_pickup_healing_multiplier = 1
         self.basic_bullet_piercing_bonus = 0
+        self.special_bullet_piercing_bonus = 0
+        self.special_bullet_can_repierce = False
+        self.hp_steal = 0
+        
         self.state = PlayerState.ALIVE
         
         # Shooting cooldowns
@@ -44,6 +53,8 @@ class Player:
         self.last_shot_time = 0
         self.last_special_shot_time = 0
 
+        self.applied_upgrades = set()  # Tracks names of applied upgrades
+    
     def draw(self, screen):
         # Draw player body
         pygame.draw.rect(screen, constants.BLACK, (self.x - 16, self.y - 16, 22, 22))  # Outline
@@ -120,7 +131,7 @@ class Player:
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_special_shot_time = current_time
-        return PlayerSpecialBullet(self.x, self.y, angle, self.special_bullet_damage_multiplier, self.special_bullet_speed_multiplier)
+        return PlayerSpecialBullet(self.x, self.y, angle, self.special_bullet_damage_multiplier, self.special_bullet_speed_multiplier, self.special_bullet_piercing_bonus, self.special_bullet_can_repierce)
 
     def take_damage(self, amount):
         self.health = max(0, self.health - amount)
@@ -129,6 +140,12 @@ class Player:
 
     def heal(self, amount):
         self.health = min(self.max_health, self.health + amount)
+        
+    def heal_from_pickup(self, amount):
+        heal_amount = amount * self.hp_pickup_healing_multiplier
+        self.heal(heal_amount)
+        return heal_amount
+        
 
     def get_cooldown_progress(self, current_time):
         """Returns the cooldown progress for both abilities (0.0 to 1.0)"""
@@ -148,21 +165,10 @@ class Player:
         self.state = PlayerState.LEVELING_UP
         print(f"Player leveled up to level {self.player_level}")
             
-    def reset(self):
-        self.player_experience = 0
-        self.player_level = 1
-        self.experience_to_next_level = constants.initial_experience_to_next_level
-        self.health = 100
-        self.max_health = 100
-        self.speed = constants.player_speed
-        self.basic_bullet_damage_multiplier = 1
-        self.special_bullet_damage_multiplier = 1
-        self.basic_bullet_speed_multiplier = 1
-        self.special_bullet_speed_multiplier = 1
-        self.shoot_cooldown = constants.player_basic_bullet_cooldown
-        self.special_shot_cooldown = constants.player_special_bullet_cooldown
-        self.last_shot_time = 0
-        self.last_special_shot_time = 0
-        self.state = PlayerState.ALIVE
+
+
+    def apply_upgrade(self, upgrade):
+        upgrade.apply(self)
+        self.applied_upgrades.add(upgrade.name)
 
     # def reset

@@ -61,6 +61,13 @@ def calculate_enemy_scaling(elapsed_seconds):
     scaling_factor = 2 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
+def calculate_enemy_spawn_interval(elapsed_seconds):
+    # Start with base_enemy_spawn_interval and halve it every enemy_spawn_rate_doubling_time_seconds
+    spawn_interval = constants.base_enemy_spawn_interval * (2 ** (-elapsed_seconds / constants.enemy_spawn_rate_doubling_time_seconds))
+    
+    # Set a minimum spawn interval to prevent enemies from spawning too quickly
+    return max(0.5, spawn_interval)
+
 def load_and_play_music():
     """
     Function to load and play music asynchronously.
@@ -142,7 +149,8 @@ def main():
                 continue
         
         # Calculate current scaling factor based on in-game ticks
-        game_state.enemy_scaling = calculate_enemy_scaling(game_state.in_game_ticks / constants.FPS)
+        game_state.enemy_scaling = calculate_enemy_scaling(game_state.in_game_ticks_elapsed / constants.FPS)
+        game_state.enemy_spawn_interval = calculate_enemy_spawn_interval(game_state.in_game_ticks_elapsed / constants.FPS)
         
         # Get current time for cooldowns
         current_time_s = pygame.time.get_ticks() / 1000.0
@@ -151,17 +159,18 @@ def main():
         drawing.draw_experience_bar()
         
         # Convert in_game_ticks to seconds for enemy spawning
-        in_game_seconds = game_state.in_game_ticks / constants.FPS
-        if not game_state.first_enemy_spawned and in_game_seconds >= 1:
+        in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
+
+        if (in_game_seconds - game_state.last_enemy_spawn_time >= game_state.enemy_spawn_interval):
             logic.spawn_enemy()
-            game_state.first_enemy_spawned = True
             game_state.last_enemy_spawn_time = in_game_seconds
-        elif game_state.first_enemy_spawned and (in_game_seconds - game_state.last_enemy_spawn_time >= constants.enemy_spawn_interval):
+        #if all enemies are dead, spawn an enemy
+        elif len(game_state.enemies) == 0:
             logic.spawn_enemy()
             game_state.last_enemy_spawn_time = in_game_seconds
 
         # Draw stopwatch using in_game_ticks
-        elapsed_seconds = game_state.in_game_ticks // constants.FPS
+        elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
         minutes = elapsed_seconds // 60
         seconds = elapsed_seconds % 60
         font = pygame.font.Font(None, 36)
@@ -246,7 +255,7 @@ def main():
 
 
         # Update display
-        game_state.in_game_ticks += 1
+        game_state.in_game_ticks_elapsed += 1
         pygame.display.flip()
         clock.tick(constants.FPS)
 
