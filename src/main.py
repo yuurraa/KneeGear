@@ -68,7 +68,8 @@ def main():
     # Set up the fullscreen display
     game_state.screen = pygame.display.set_mode(
         (game_state.screen_width, game_state.screen_height),
-        pygame.FULLSCREEN
+        # pygame.FULLSCREEN
+        pygame.RESIZABLE
     )
 
     # Create the player after screen dimensions are known

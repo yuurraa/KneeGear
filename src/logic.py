@@ -98,7 +98,7 @@ def handle_input():
     current_time = pygame.time.get_ticks() / 1000.0
 
     # Handle movement
-    game_state.player.move(keys)
+    game_state.player.update(keys)
 
     # Handle shooting
     if mouse_pressed[0] and not game_state.game_over:

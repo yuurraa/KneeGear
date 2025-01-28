@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, List
 import random
-from math import ceil
+from math import ceil, floor
 from player import Player
 
 @dataclass
@@ -16,43 +16,55 @@ class UpgradePool:
         self.upgrades = [
             Upgrade(
                 name="Rapid Fire",
-                description="Decrease basic attack cooldown by 15%",
-                apply=lambda player: setattr(player, 'shoot_cooldown', ceil(player.shoot_cooldown * 0.85)),
+                description="Decrease basic attack cooldown by 30%",
+                apply=lambda player: setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.7),
                 icon="⚡"
             ),
             Upgrade(
                 name="Heavy Bullets",
-                description="Increase basic attack damage by 20%",
+                description="Increase basic attack damage by 40%",
                 apply=lambda player: setattr(player, 'basic_bullet_damage_multiplier', 
-                                           ceil(player.basic_bullet_damage_multiplier * 1.2)),
+                                           player.basic_bullet_damage_multiplier * 1.4),
                 icon="💥"
             ),
             Upgrade(
                 name="Swift Shot",
-                description="Increase basic bullet speed by 20%",
+                description="Increase basic bullet speed by 40%",
                 apply=lambda player: setattr(player, 'basic_bullet_speed_multiplier', 
-                                           ceil(player.basic_bullet_speed_multiplier * 1.2)),
+                                           player.basic_bullet_speed_multiplier * 1.4),
                 icon="🚀"
             ),
             Upgrade(
                 name="Special Force",
-                description="Increase special attack damage by 25%",
+                description="Increase special attack damage by 40%",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
-                                           ceil(player.special_bullet_damage_multiplier * 1.25)),
+                                           player.special_bullet_damage_multiplier * 1.4),
                 icon="⭐"
             ),
             Upgrade(
                 name="Quick Charge",
-                description="Decrease special attack cooldown by 20%",
+                description="Decrease special attack cooldown by 30%",
                 apply=lambda player: setattr(player, 'special_shot_cooldown', 
-                                           ceil(player.special_shot_cooldown * 0.8)),
+                                           player.special_shot_cooldown * 0.7),
                 icon="⚡"
             ),
             Upgrade(
                 name="Speed Demon",
-                description="Increase movement speed by 15%",
-                apply=lambda player: setattr(player, 'speed', ceil(player.speed * 1.15)),
+                description="Increase movement speed by 30%",
+                apply=lambda player: setattr(player, 'speed', player.speed * 1.3),
                 icon="👟"
+            ),
+            Upgrade(
+                name="HP Regen",
+                description="Increase HP regen by 70%",
+                apply=lambda player: setattr(player, 'hp_regen_multiplier', player.hp_regen_multiplier * 1.7),
+                icon="❤️"
+            ),
+            Upgrade(
+                name="Max HP",
+                description="Increase MaxHP by 50%",
+                apply=lambda player: setattr(player, 'max_health', player.max_health * 1.5),
+                icon="❤️"
             ),
         ]
 

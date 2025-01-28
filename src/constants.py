@@ -15,6 +15,8 @@ LIGHT_GREY = (200, 200, 200)
 BROWN = (139, 69, 19)
 
 # Speeds, angles, and cooldowns
+base_player_health = 100
+base_player_hp_regen = 1
 player_speed = 4.5
 player_basic_bullet_speed = 15
 player_basic_bullet_damage = 10
@@ -29,10 +31,10 @@ player_special_bullet_pierce = 5
 player_special_bullet_cooldown = 10
 
 
-initial_experience_to_next_level = 30
+initial_experience_to_next_level = 20
 experience_scaling_factor = 1.3
 
-enemy_stat_doubling_time = 20 # seconds
+enemy_stat_doubling_time = 100 # seconds
 
 base_tank_health = 100
 base_tank_damage = 2

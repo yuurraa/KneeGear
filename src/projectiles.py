@@ -35,16 +35,12 @@ class BaseBullet:
         
         # Check for collisions based on alignment
         if self.alignment == Alignment.PLAYER:
-            # Use any() to stop checking after first valid collision
-            collision_found = False
             for enemy in game_state.enemies[:]:  # Use slice copy to avoid modification during iteration
                 if self.check_and_apply_collision(enemy):
-                    collision_found = True
-                    self.pierce -= 1
+                    if self.pierce <= 0:
+                        game_state.projectiles.remove(self)
                     break
                 
-            if collision_found and self.pierce <= 0:
-                game_state.projectiles.remove(self)
             
         elif self.alignment == Alignment.ENEMY:
             if self.check_and_apply_collision(game_state.player):
@@ -68,7 +64,7 @@ class BaseBullet:
 
 @dataclass
 class PlayerBaseBullet(BaseBullet):
-    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, size: float, colour: Tuple[int, int, int], pierce: int):
+    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, pierce: int, size: float, colour: Tuple[int, int, int]):
         super().__init__(
             x=x,
             y=y,
@@ -85,18 +81,29 @@ class PlayerBaseBullet(BaseBullet):
     def check_and_apply_collision(self, enemy) -> bool:
         if (enemy.health > 0 and
             pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
-            
-            is_dead = enemy.apply_damage(self.damage, game_state)
-            return is_dead or self.damage == constants.player_basic_bullet_damage
+            self.pierce -= 1
+            enemy.apply_damage(self.damage, game_state)
+            return True
+
         return False
 
 class PlayerBasicBullet(PlayerBaseBullet):
     def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float):
-        super().__init__(x, y, angle, constants.player_basic_bullet_speed * basic_bullet_speed_multiplier, constants.player_basic_bullet_damage * basic_bullet_damage_multiplier, constants.player_basic_bullet_size, constants.BLUE, constants.player_basic_bullet_pierce)
+        super().__init__(x, y, angle, 
+                        constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
+                        constants.player_basic_bullet_damage * basic_bullet_damage_multiplier,
+                        constants.player_basic_bullet_pierce,
+                        constants.player_basic_bullet_size,
+                        constants.BLUE)
         
 class PlayerSpecialBullet(PlayerBaseBullet):
     def __init__(self, x: float, y: float, angle: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float):
-        super().__init__(x, y, angle, constants.player_special_bullet_speed * special_bullet_speed_multiplier, constants.player_special_bullet_damage * special_bullet_damage_multiplier, constants.player_special_bullet_size, constants.PURPLE, constants.player_special_bullet_pierce)
+        super().__init__(x, y, angle,
+                         constants.player_special_bullet_speed * special_bullet_speed_multiplier,
+                         constants.player_special_bullet_damage * special_bullet_damage_multiplier,
+                         constants.player_special_bullet_pierce,
+                         constants.player_special_bullet_size,
+                         constants.PURPLE)
 
 @dataclass
 class BaseEnemyBullet(BaseBullet):
@@ -111,7 +118,8 @@ class BaseEnemyBullet(BaseBullet):
             speed=speed,
             damage=damage,
             size=size,
-            colour=colour
+            colour=colour,
+            pierce=1
         )
     
     def check_and_apply_collision(self, target) -> bool:

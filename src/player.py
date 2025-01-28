@@ -20,18 +20,21 @@ class Player:
         self.angle = 0  # Add angle property
         
         # Stats
-        self.health = 100
-        self.max_health = 100
+        self.health = constants.base_player_health
+        self.max_health = constants.base_player_health
+        self.hp_regen = constants.base_player_hp_regen #hp regen per second
         self.speed = constants.player_speed
         self.player_experience = 0
         self.player_level = 1
         self.experience_to_next_level = constants.initial_experience_to_next_level
         
+        self.ticks_since_last_hp_regen = 0
         #upgrades
         self.basic_bullet_damage_multiplier = 1
         self.special_bullet_damage_multiplier = 1
         self.basic_bullet_speed_multiplier = 1
         self.special_bullet_speed_multiplier = 1
+        self.hp_regen_multiplier = 1
 
         self.state = PlayerState.ALIVE
         
@@ -67,11 +70,8 @@ class Player:
     def update_angle(self, mouse_pos):
         mx, my = mouse_pos
         self.angle = calculate_angle(self.x, self.y, mx, my)
-
+        
     def move(self, keys):
-        if self.state == PlayerState.DEAD:
-            return
-
         # Calculate new position first
         new_x, new_y = self.x, self.y
 
@@ -87,6 +87,18 @@ class Player:
         # Restrict player to screen boundaries
         self.x = max(15, min(new_x, self.screen_width - 15))
         self.y = max(15, min(new_y, self.screen_height - 15))
+
+    def update_hp_regen(self):
+        self.ticks_since_last_hp_regen += 1
+        if self.ticks_since_last_hp_regen >= constants.FPS:
+            self.heal(self.hp_regen * self.hp_regen_multiplier)
+            self.ticks_since_last_hp_regen = 0
+    
+    def update(self, keys):
+        if self.state == PlayerState.DEAD:
+            return
+        self.update_hp_regen()
+        self.move(keys)
 
     def shoot_regular(self, mouse_pos, current_time):
         """Regular shot (left-click)"""
@@ -147,8 +159,8 @@ class Player:
         self.special_bullet_damage_multiplier = 1
         self.basic_bullet_speed_multiplier = 1
         self.special_bullet_speed_multiplier = 1
-        self.shoot_cooldown = constants.shoot_cooldown
-        self.special_shot_cooldown = constants.special_shot_cooldown
+        self.shoot_cooldown = constants.player_basic_bullet_cooldown
+        self.special_shot_cooldown = constants.player_special_bullet_cooldown
         self.last_shot_time = 0
         self.last_special_shot_time = 0
         self.state = PlayerState.ALIVE

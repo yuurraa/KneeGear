@@ -109,7 +109,7 @@ def draw_player_state_value_updates():
         if "x_offset" not in update:
             update["x_offset"] = random.randint(-60, 60)
             
-        display_value = update["value"]
+        display_value = int(update["value"])
         text = font.render(str(display_value), True, update["color"])
         text_surface = text.convert_alpha()
         screen.blit(text_surface, (update["x"] - text.get_width() // 2 + update["x_offset"], 
