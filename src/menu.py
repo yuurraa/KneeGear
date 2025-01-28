@@ -35,22 +35,52 @@ class UpgradeButton(Button):
     def __init__(self, x, y, width, height, upgrade):
         super().__init__(x, y, width, height, "", constants.GREEN)
         self.upgrade = upgrade
+        self.width = width
+        self.height = height
+            
         
     def draw(self, screen):
         super().draw(screen)
         
-        # Draw upgrade name and description
+        # Draw upgrade name, rarity, and description
         font_name = pygame.font.Font(None, 32)
         font_desc = pygame.font.Font(None, 24)
+        font_rarity = pygame.font.Font(None, 20)
         
+        # Draw name with icon
         name_surface = font_name.render(f"{self.upgrade.icon} {self.upgrade.name}", True, constants.BLACK)
-        desc_surface = font_desc.render(self.upgrade.description, True, constants.BLACK)
-        
         name_rect = name_surface.get_rect(midtop=(self.rect.centerx, self.rect.y + 10))
-        desc_rect = desc_surface.get_rect(midtop=(self.rect.centerx, name_rect.bottom + 5))
-        
         screen.blit(name_surface, name_rect)
-        screen.blit(desc_surface, desc_rect)
+        
+        # Draw rarity
+        rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
+        rarity_rect = rarity_surface.get_rect(midtop=(self.rect.centerx, name_rect.bottom))
+        screen.blit(rarity_surface, rarity_rect)
+        
+        # Text wrapping for description
+        words = self.upgrade.description.split()
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            test_surface = font_desc.render(test_line, True, constants.BLACK)
+            if test_surface.get_width() <= self.width - 20:  # 10px padding on each side
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                current_line = [word]
+        if current_line:
+            lines.append(' '.join(current_line))
+        
+        # Draw wrapped description
+        y_offset = rarity_rect.bottom + 5
+        for line in lines:
+            desc_surface = font_desc.render(line, True, constants.BLACK)
+            desc_rect = desc_surface.get_rect(midtop=(self.rect.centerx, y_offset))
+            screen.blit(desc_surface, desc_rect)
+            y_offset += desc_surface.get_height()
 
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay

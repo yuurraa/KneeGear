@@ -35,7 +35,7 @@ class Player:
         self.basic_bullet_speed_multiplier = 1
         self.special_bullet_speed_multiplier = 1
         self.hp_regen_multiplier = 1
-
+        self.basic_bullet_piercing_bonus = 0
         self.state = PlayerState.ALIVE
         
         # Shooting cooldowns
@@ -109,7 +109,7 @@ class Player:
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_shot_time = current_time
-        return PlayerBasicBullet(self.x, self.y, angle, self.basic_bullet_damage_multiplier, self.basic_bullet_speed_multiplier)
+        return PlayerBasicBullet(self.x, self.y, angle, self.basic_bullet_damage_multiplier, self.basic_bullet_speed_multiplier, self.basic_bullet_piercing_bonus)
 
     def shoot_special(self, mouse_pos, current_time):
         """Special shot (right-click)"""

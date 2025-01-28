@@ -35,7 +35,7 @@ player_special_bullet_cooldown = 10
 
 
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.36
+level_up_xp_cost_scaling_factor = 1.35
 
 enemy_stat_doubling_time = 80 # seconds
 

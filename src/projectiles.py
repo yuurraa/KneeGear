@@ -88,11 +88,11 @@ class PlayerBaseBullet(BaseBullet):
         return False
 
 class PlayerBasicBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float):
+    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_bonus: int):
         super().__init__(x, y, angle, 
                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
                         constants.player_basic_bullet_damage * basic_bullet_damage_multiplier,
-                        constants.player_basic_bullet_pierce,
+                        constants.player_basic_bullet_pierce + basic_bullet_piercing_bonus,
                         constants.player_basic_bullet_size,
                         constants.BLUE)
         
