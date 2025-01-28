@@ -32,9 +32,9 @@ player_special_bullet_cooldown = 10
 
 
 initial_experience_to_next_level = 20
-experience_scaling_factor = 1.3
+experience_scaling_factor = 1.4
 
-enemy_stat_doubling_time = 100 # seconds
+enemy_stat_doubling_time = 80 # seconds
 
 base_tank_health = 100
 base_tank_damage = 2
@@ -58,7 +58,7 @@ basic_enemy_bullet_interval = 5
 basic_enemy_bullet_max_turn_angle = 1.6
 
 # Spawn intervals
-enemy_spawn_interval = 6
+enemy_spawn_interval = 5
 
 # Add this with the other constants
 experience_bar_height = 10  # Match the height used in draw_experience_bar
