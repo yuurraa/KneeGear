@@ -63,25 +63,13 @@ def main():
     pygame.init()
     pygame.mixer.init()  # Initialize the mixer
     
-    # Load and start background music
-    try:
-        music = pygame.mixer.music.load(constants.music_path)
-        duration = pygame.mixer.Sound(constants.music_path).get_length()  # Get song duration
-        pygame.mixer.music.set_volume(constants.music_volume)
-        start_pos = random.uniform(0, duration - 10)  # Random start position (avoiding last 10 seconds)
-        pygame.mixer.music.play(-1)  # -1 means loop indefinitely
-        pygame.mixer.music.set_pos(start_pos)  # Set random start position
-    except Exception as e:
-        print(f"Error loading music: {e}")
-    
-    # After setting up the display
+    # Set up the display first
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
 
     # Set up the fullscreen display
     game_state.screen = pygame.display.set_mode(
         (game_state.screen_width, game_state.screen_height),
-        # pygame.FULLSCREEN
         pygame.RESIZABLE
     )
 
@@ -93,10 +81,21 @@ def main():
         game_state.screen_height
     )
 
-    clock = pygame.time.Clock()
-
     # Show the intro screen
     show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
+
+    # Try to load and start background music after game has started
+    try:
+        music = pygame.mixer.music.load(constants.music_path)
+        duration = pygame.mixer.Sound(constants.music_path).get_length()  # Get song duration
+        pygame.mixer.music.set_volume(constants.music_volume)
+        start_pos = random.uniform(0, duration - 10)  # Random start position (avoiding last 10 seconds)
+        pygame.mixer.music.play(-1)  # -1 means loop indefinitely
+        pygame.mixer.music.set_pos(start_pos)  # Set random start position
+    except Exception as e:
+        print(f"Error loading music: {e}")
+
+    clock = pygame.time.Clock()
 
     # Initialize score and start time
     score.reset_score()
