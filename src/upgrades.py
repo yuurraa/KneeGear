@@ -14,6 +14,11 @@ class Upgrade:
 
 class UpgradePool:
     def __init__(self):
+        self.rarity_weights = {
+            "Common": 60,
+            "Rare": 30,
+            "Epic": 10
+        }
         self.upgrades = [
             Upgrade(
                 name="Rapid Fire",
@@ -44,9 +49,11 @@ class UpgradePool:
             Upgrade(
                 name="Heavy Bullets",
                 description=r"Increase basic attack damage by 80%, but decreases bullet speed by 30%",
-                Rarity="Common",
-                apply=lambda player: setattr(player, 'basic_bullet_damage_multiplier', 
-                                           player.basic_bullet_damage_multiplier * 1.4),
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.8),
+                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.7),
+                ][-1],
                 icon="💥"
             ),
             
@@ -99,11 +106,46 @@ class UpgradePool:
             Upgrade(
                 name="Max HP",
                 description="Increase MaxHP by 50%",
-                Rarity="Rare",
+                Rarity="Common",
                 apply=lambda player: setattr(player, 'max_health', player.max_health * 1.5),
                 icon="❤️"
             ),
         ]
 
     def get_random_upgrades(self, count: int) -> List[Upgrade]:
-        return random.sample(self.upgrades, count) 
+        selected_upgrades = []
+        available_upgrades = self.upgrades.copy()
+        
+        for _ in range(min(count, len(self.upgrades))):
+            if not available_upgrades:
+                break
+                
+            # Group remaining upgrades by rarity
+            upgrades_by_rarity = {
+                "Common": [],
+                "Rare": [],
+                "Epic": []
+            }
+            
+            for upgrade in available_upgrades:
+                upgrades_by_rarity[upgrade.Rarity].append(upgrade)
+            
+            # Filter out empty rarity tiers
+            valid_rarities = [rarity for rarity, upgrades in upgrades_by_rarity.items() if upgrades]
+            if not valid_rarities:
+                break
+                
+            # Get weights for valid rarities
+            valid_weights = [self.rarity_weights[rarity] for rarity in valid_rarities]
+            
+            # Select a rarity tier first
+            chosen_rarity = random.choices(valid_rarities, weights=valid_weights, k=1)[0]
+            
+            # Then randomly select an upgrade of that rarity
+            chosen_upgrade = random.choice(upgrades_by_rarity[chosen_rarity])
+            selected_upgrades.append(chosen_upgrade)
+            
+            # Remove the chosen upgrade from available pool
+            available_upgrades.remove(chosen_upgrade)
+            
+        return selected_upgrades 

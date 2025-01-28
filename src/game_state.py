@@ -3,7 +3,7 @@ from player import Player
 
 experience_updates = []
 start_time_ms = 0
-
+in_game_ticks = 0 #doesnt include menus
 
 last_special_shot_time = 0
 last_shot_time = 0
