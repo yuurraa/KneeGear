@@ -20,12 +20,35 @@ class BaseBullet:
     speed: float
     damage: float
     colour: Tuple[int, int, int]
+    pierce: int = 1
     size: float = 5.0
     scaling: float = 1.0
     
     def update(self):
         self.x += self.speed * math.cos(math.radians(self.angle))
         self.y += self.speed * math.sin(math.radians(self.angle))
+        
+        # Check if bullet is out of bounds first
+        if self.is_out_of_bounds():
+            game_state.projectiles.remove(self)
+            return
+        
+        # Check for collisions based on alignment
+        if self.alignment == Alignment.PLAYER:
+            # Use any() to stop checking after first valid collision
+            collision_found = False
+            for enemy in game_state.enemies[:]:  # Use slice copy to avoid modification during iteration
+                if self.check_and_apply_collision(enemy):
+                    collision_found = True
+                    self.pierce -= 1
+                    break
+                
+            if collision_found and self.pierce <= 0:
+                game_state.projectiles.remove(self)
+            
+        elif self.alignment == Alignment.ENEMY:
+            if self.check_and_apply_collision(game_state.player):
+                game_state.projectiles.remove(self)
     
     def draw(self, screen):
         pygame.draw.circle(screen, self.colour, (int(self.x), int(self.y)), int(self.size))
@@ -40,52 +63,40 @@ class BaseBullet:
         return (self.x < 0 or self.x > game_state.screen_width or
                 self.y < 0 or self.y > game_state.screen_height - constants.experience_bar_height - 3)
 
-    def check_collision(self, target) -> bool:
+    def check_and_apply_collision(self, target) -> bool:
         raise NotImplementedError("check_collision method must be implemented in subclasses")
 
 @dataclass
-class PlayerBullet(BaseBullet):
-    def __init__(self, x: float, y: float, angle: float, is_special: bool = False):
+class PlayerBaseBullet(BaseBullet):
+    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, size: float, colour: Tuple[int, int, int], pierce: int):
         super().__init__(
             x=x,
             y=y,
             angle=angle,
             alignment=Alignment.PLAYER,
-            speed=constants.player_special_bullet_speed if is_special else constants.player_bullet_speed,
-            damage=constants.player_special_bullet_damage if is_special else constants.player_bullet_damage,
-            size=constants.player_special_bullet_size if is_special else constants.player_bullet_size,
-            colour=constants.BLUE
+            speed=speed,
+            damage=damage,
+            size=size,
+            colour=colour,
+            pierce=pierce
         )
 
 
-    def check_collision(self, enemy) -> bool:
+    def check_and_apply_collision(self, enemy) -> bool:
         if (enemy.health > 0 and
             pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
             
-            enemy.health -= self.damage
-            
-            game_state.damage_numbers.append({
-                "x": enemy.x,
-                "y": enemy.y,
-                "value": self.damage,
-                "timer": 20,
-                "color": constants.PURPLE
-            })
-            
-            if enemy.health <= 0:
-                score.increase_score(enemy.score_reward)
-                game_state.player.gain_experience(enemy.score_reward)
-                game_state.experience_updates.append({
-                    "x": enemy.x,
-                    "y": enemy.y,
-                    "value": enemy.score_reward,
-                    "timer": 60,
-                    "color": constants.BLUE
-                })
-                
-                return True
-            return self.damage == constants.player_bullet_damage  # Return True for regular bullets that hit
+            is_dead = enemy.apply_damage(self.damage, game_state)
+            return is_dead or self.damage == constants.player_basic_bullet_damage
         return False
+
+class PlayerBasicBullet(PlayerBaseBullet):
+    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float):
+        super().__init__(x, y, angle, constants.player_basic_bullet_speed * basic_bullet_speed_multiplier, constants.player_basic_bullet_damage * basic_bullet_damage_multiplier, constants.player_basic_bullet_size, constants.BLUE, constants.player_basic_bullet_pierce)
+        
+class PlayerSpecialBullet(PlayerBaseBullet):
+    def __init__(self, x: float, y: float, angle: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float):
+        super().__init__(x, y, angle, constants.player_special_bullet_speed * special_bullet_speed_multiplier, constants.player_special_bullet_damage * special_bullet_damage_multiplier, constants.player_special_bullet_size, constants.PURPLE, constants.player_special_bullet_pierce)
 
 @dataclass
 class BaseEnemyBullet(BaseBullet):
@@ -103,7 +114,7 @@ class BaseEnemyBullet(BaseBullet):
             colour=colour
         )
     
-    def check_collision(self, target) -> bool:
+    def check_and_apply_collision(self, target) -> bool:
         if pygame.Rect(game_state.player.x - 15, game_state.player.y - 15, 30, 30).colliderect(self.get_rect()):
             actual_damage = math.floor(self.damage * self.scaling)
             game_state.player.health -= actual_damage

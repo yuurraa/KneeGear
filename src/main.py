@@ -86,7 +86,7 @@ def main():
 
     # Initialize score and start time
     score.reset_score()
-    start_time = pygame.time.get_ticks()
+    start_time_ms = pygame.time.get_ticks()
 
     while game_state.running:
         # Fill background with GREY instead of WHITE
@@ -101,38 +101,30 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game_state.game_over:
                 reset_game()
                 score.reset_score()
-                
+                continue
 
-
-        # Handle player input (shooting, movement)
-        keys, left_click_cooldown_progress, right_click_cooldown_progress = logic.handle_input()
-        drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
-        drawing.draw_experience_bar()
-
-        # Update player angle to mouse
-        game_state.player.update_angle(pygame.mouse.get_pos())
 
         # Calculate current scaling factor based on elapsed time
-        current_time = pygame.time.get_ticks()
-        elapsed_seconds = (current_time - start_time) // 1000
+        current_time_ms = pygame.time.get_ticks()
+        elapsed_seconds = (current_time_ms - start_time_ms) // 1000
         game_state.enemy_scaling = calculate_enemy_scaling(elapsed_seconds)
-
         # Spawn enemies over time
-        current_time = pygame.time.get_ticks() / 1000.0
-        if not game_state.first_enemy_spawned and current_time >= 1:
+        current_time_s = current_time_ms / 1000.0
+        left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress(current_time_s)
+        drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
+        drawing.draw_experience_bar()
+        
+        if not game_state.first_enemy_spawned and current_time_s >= 1:
             logic.spawn_enemy()  # Pass scaling factor to spawn_enemy
             game_state.first_enemy_spawned = True
-            game_state.last_enemy_spawn_time = current_time
-        elif game_state.first_enemy_spawned and (current_time - game_state.last_enemy_spawn_time >= constants.enemy_spawn_interval):
+            game_state.last_enemy_spawn_time = current_time_s
+        elif game_state.first_enemy_spawned and (current_time_s - game_state.last_enemy_spawn_time >= constants.enemy_spawn_interval):
             logic.spawn_enemy()  # Pass scaling factor to spawn_enemy
-            game_state.last_enemy_spawn_time = current_time
+            game_state.last_enemy_spawn_time = current_time_s
 
 
 
-        # Draw projectiles first so enemies/players appear atop them
-
-        # Draw player
-        game_state.player.draw(game_state.screen)
+        
 
         # Draw enemies
         for enemy in game_state.enemies:
@@ -147,10 +139,12 @@ def main():
 
         # Draw score
         score.draw_score(game_state.screen)
+        
+        game_state.player.draw(game_state.screen)
 
         # Draw stopwatch
         current_time = pygame.time.get_ticks()
-        elapsed_seconds = (current_time - start_time) // 1000
+        elapsed_seconds = (current_time - start_time_ms) // 1000
         minutes = elapsed_seconds // 60
         seconds = elapsed_seconds % 60
         font = pygame.font.Font(None, 36)
@@ -167,17 +161,32 @@ def main():
         
         # Handle level up menu
         if game_state.player.state == PlayerState.LEVELING_UP:
-            continue_button = draw_level_up_menu(game_state.screen)
+            upgrade_buttons = draw_level_up_menu(game_state.screen)
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     game_state.running = False
-                elif continue_button.handle_event(event):
-                    game_state.player.state = PlayerState.ALIVE
+                
+                for button in upgrade_buttons:
+                    if button.handle_event(event):
+                        # Apply the selected upgrade
+                        button.upgrade.apply(game_state.player)
+                        # Reset the state and clear upgrade options
+                        game_state.player.state = PlayerState.ALIVE
+                        if hasattr(game_state, 'current_upgrade_options'):
+                            delattr(game_state, 'current_upgrade_options')
+                        break
             
             pygame.display.flip()
             clock.tick(constants.FPS)
-            continue  # Skip the rest of the game loop while in level-up menu
+            continue
+        
+        # Handle player input (shooting, movement)
+        logic.handle_input()
+        
+        # Update player angle to mouse
+        game_state.player.update_angle(pygame.mouse.get_pos())
+        
         
         # Update all logic
         logic.update_enemies()

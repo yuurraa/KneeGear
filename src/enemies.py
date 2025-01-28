@@ -40,6 +40,34 @@ class Enemy(ABC):
         """Handle shooting logic for the enemy"""
         pass
         
+    def apply_damage(self, damage, game_state):
+        """Apply damage to the enemy and handle related effects"""
+        self._health -= damage
+        
+        # Add damage number
+        game_state.damage_numbers.append({
+            "x": self.x,
+            "y": self.y,
+            "value": damage,
+            "timer": 20,
+            "color": constants.PURPLE
+        })
+        
+        # Handle death and rewards
+        if self._health <= 0:
+            from score import increase_score
+            increase_score(self.score_reward)
+            game_state.player.gain_experience(self.score_reward)
+            game_state.experience_updates.append({
+                "x": self.x,
+                "y": self.y,
+                "value": self.score_reward,
+                "timer": 60,
+                "color": constants.BLUE
+            })
+            return True
+        return False
+
 class RegularEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)

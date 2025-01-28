@@ -16,16 +16,18 @@ BROWN = (139, 69, 19)
 
 # Speeds, angles, and cooldowns
 player_speed = 4.5
-player_bullet_speed = 15
-player_bullet_damage = 10
-player_bullet_size = 5
+player_basic_bullet_speed = 15
+player_basic_bullet_damage = 10
+player_basic_bullet_size = 5
+player_basic_bullet_pierce = 1
 player_special_bullet_speed = 20
 player_special_bullet_damage = 20
 player_special_bullet_size = 20
+player_special_bullet_pierce = 5
 shoot_cooldown = 0.4
 special_shot_cooldown = 5
 
-initial_experience_to_next_level = 10
+initial_experience_to_next_level = 30
 experience_scaling_factor = 1.3
 
 enemy_stat_doubling_time = 20 # seconds

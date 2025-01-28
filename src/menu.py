@@ -2,6 +2,7 @@ import pygame
 import constants
 import game_state
 from player import PlayerState
+from upgrades import UpgradePool
 
 class Button:
     def __init__(self, x, y, width, height, text, color):
@@ -30,6 +31,27 @@ class Button:
                 return True
         return False
 
+class UpgradeButton(Button):
+    def __init__(self, x, y, width, height, upgrade):
+        super().__init__(x, y, width, height, "", constants.GREEN)
+        self.upgrade = upgrade
+        
+    def draw(self, screen):
+        super().draw(screen)
+        
+        # Draw upgrade name and description
+        font_name = pygame.font.Font(None, 32)
+        font_desc = pygame.font.Font(None, 24)
+        
+        name_surface = font_name.render(f"{self.upgrade.icon} {self.upgrade.name}", True, constants.BLACK)
+        desc_surface = font_desc.render(self.upgrade.description, True, constants.BLACK)
+        
+        name_rect = name_surface.get_rect(midtop=(self.rect.centerx, self.rect.y + 10))
+        desc_rect = desc_surface.get_rect(midtop=(self.rect.centerx, name_rect.bottom + 5))
+        
+        screen.blit(name_surface, name_rect)
+        screen.blit(desc_surface, desc_rect)
+
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay
     overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
@@ -48,18 +70,28 @@ def draw_level_up_menu(screen):
 
     # Level up text
     font = pygame.font.Font(None, 48)
-    text = font.render(f"Level {game_state.player.player_level}", True, constants.BLACK)
+    text = font.render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
     screen.blit(text, text_rect)
 
-    # Continue button
-    continue_button = Button(
-        game_state.screen_width // 2 - 60,
-        panel_y + panel_height - 80,
-        120, 40,
-        "Continue",
-        constants.GREEN
-    )
-    continue_button.draw(screen)
-    
-    return continue_button 
+    # Get random upgrades
+    if not hasattr(game_state, 'current_upgrade_options'):
+        upgrade_pool = UpgradePool()
+        game_state.current_upgrade_options = upgrade_pool.get_random_upgrades(3)
+
+    # Create upgrade buttons
+    button_width = 280
+    button_height = 120
+    button_spacing = 40
+    total_width = (button_width * 3) + (button_spacing * 2)
+    start_x = (game_state.screen_width - total_width) // 2
+
+    upgrade_buttons = []
+    for i, upgrade in enumerate(game_state.current_upgrade_options):
+        x = start_x + (button_width + button_spacing) * i
+        y = panel_y + 200
+        button = UpgradeButton(x, y, button_width, button_height, upgrade)
+        button.draw(screen)
+        upgrade_buttons.append(button)
+
+    return upgrade_buttons 

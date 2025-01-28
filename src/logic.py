@@ -4,9 +4,8 @@ import random
 import game_state
 import constants
 from helpers import calculate_angle
-from projectiles import PlayerBullet, Alignment
+from projectiles import Alignment
 from enemies import RegularEnemy, TankEnemy
-from player import Player   
 
 
 def move_enemy(enemy, target_x, target_y):
@@ -27,20 +26,20 @@ def update_projectiles():
         # Update special bullet behaviors
         bullet.update()
         
-        if bullet.alignment == Alignment.PLAYER:
-            hit_enemy = False
-            for enemy in game_state.enemies[:]:
-                if bullet.check_collision(enemy):
-                    if enemy.health <= 0:
-                        game_state.enemies.remove(enemy)
-                    elif bullet.damage == constants.player_bullet_damage:  # Regular bullet
-                        hit_enemy = True
+        # if bullet.alignment == Alignment.PLAYER:
+        #     hit_enemy = False
+        #     for enemy in game_state.enemies[:]:
+        #         if bullet.check_collision(enemy):
+        #             if enemy.apply_damage(bullet.damage, game_state):
+        #                 game_state.enemies.remove(enemy)
+        #             elif bullet.damage == constants.player_basic_bullet_damage:  # Regular bullet
+        #                 hit_enemy = True
             
-            if hit_enemy or bullet.is_out_of_bounds():
-                game_state.projectiles.remove(bullet)
-        else:  # Enemy bullet
-            if bullet.check_collision(None) or bullet.is_out_of_bounds():
-                game_state.projectiles.remove(bullet)
+        #     if hit_enemy or bullet.is_out_of_bounds():
+        #         game_state.projectiles.remove(bullet)
+        # else:  # Enemy bullet
+        #     if bullet.check_collision(None) or bullet.is_out_of_bounds():
+        #         game_state.projectiles.remove(bullet)
 
 
 def spawn_enemy():
@@ -113,7 +112,7 @@ def handle_input():
             game_state.projectiles.append(bullet)
 
     # Get cooldown progress for UI
-    return keys, *game_state.player.get_cooldown_progress(current_time)
+    return keys
 
 
 def update_enemies():

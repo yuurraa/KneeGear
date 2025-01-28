@@ -1,7 +1,7 @@
 from enum import Enum
 import pygame
 import math
-from projectiles import PlayerBullet
+from projectiles import PlayerBasicBullet, PlayerSpecialBullet
 from helpers import calculate_angle
 import constants
 
@@ -26,14 +26,18 @@ class Player:
         self.player_experience = 0
         self.player_level = 1
         self.experience_to_next_level = constants.initial_experience_to_next_level
+        
+        #upgrades
+        self.basic_bullet_damage_multiplier = 1
+        self.special_bullet_damage_multiplier = 1
+        self.basic_bullet_speed_multiplier = 1
+        self.special_bullet_speed_multiplier = 1
 
         self.state = PlayerState.ALIVE
         
-
-            
         # Shooting cooldowns
-        self.shoot_cooldown = 0.25  # Regular shot cooldown in seconds
-        self.special_shot_cooldown = 1.0  # Special shot cooldown in seconds
+        self.shoot_cooldown = 1  # Regular shot cooldown in seconds
+        self.special_shot_cooldown = 4.0  # Special shot cooldown in seconds
         self.last_shot_time = 0
         self.last_special_shot_time = 0
 
@@ -93,7 +97,7 @@ class Player:
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_shot_time = current_time
-        return PlayerBullet(self.x, self.y, angle)
+        return PlayerBasicBullet(self.x, self.y, angle, self.basic_bullet_damage_multiplier, self.basic_bullet_speed_multiplier)
 
     def shoot_special(self, mouse_pos, current_time):
         """Special shot (right-click)"""
@@ -104,7 +108,7 @@ class Player:
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_special_shot_time = current_time
-        return PlayerBullet(self.x, self.y, angle, True)
+        return PlayerSpecialBullet(self.x, self.y, angle, self.special_bullet_damage_multiplier, self.special_bullet_speed_multiplier)
 
     def take_damage(self, amount):
         self.health = max(0, self.health - amount)
@@ -136,5 +140,17 @@ class Player:
         self.player_experience = 0
         self.player_level = 1
         self.experience_to_next_level = constants.initial_experience_to_next_level
-    
+        self.health = 100
+        self.max_health = 100
+        self.speed = constants.player_speed
+        self.basic_bullet_damage_multiplier = 1
+        self.special_bullet_damage_multiplier = 1
+        self.basic_bullet_speed_multiplier = 1
+        self.special_bullet_speed_multiplier = 1
+        self.shoot_cooldown = constants.shoot_cooldown
+        self.special_shot_cooldown = constants.special_shot_cooldown
+        self.last_shot_time = 0
+        self.last_special_shot_time = 0
+        self.state = PlayerState.ALIVE
+
     # def reset
