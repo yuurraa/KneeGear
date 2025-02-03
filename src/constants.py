@@ -14,12 +14,12 @@ TRANSLUCENT_RED = (255, 0, 0, 128)
 LIGHT_GREY = (200, 200, 200)
 BROWN = (139, 69, 19)
 
-music_volume = 0.4
+music_volume = 0.2
 music_path = "assets/audio/music.mp3"
 
 # Speeds, angles, and cooldowns
 base_player_health = 100
-base_player_hp_regen = 1
+base_player_hp_regen_percent = 1
 player_speed = 4.5
 player_basic_bullet_speed = 10
 player_basic_bullet_damage = 10
@@ -33,7 +33,7 @@ player_special_bullet_size = 20
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
-base_hp_pickup_healing = 20
+base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
 level_up_xp_cost_scaling_factor = 1.3
 

@@ -77,7 +77,7 @@ def spawn_heart():
 def update_hearts():
     for heart in game_state.hearts[:]:
         if pygame.Rect(game_state.player.x - 15, game_state.player.y - 15, 30, 30).colliderect(pygame.Rect(heart[0] - 10, heart[1] - 10, 20, 20)):
-            heal_amount = game_state.player.heal_from_pickup(constants.base_hp_pickup_healing)
+            heal_amount = game_state.player.heal_from_pickup()
             
             # Add healing number
             game_state.damage_numbers.append({

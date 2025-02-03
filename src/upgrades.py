@@ -127,6 +127,7 @@ class UpgradePool:
                 description="Special bullets can pierce the same enemy multiple times",
                 Rarity="Epic",
                 apply=lambda player: setattr(player, 'special_bullet_can_repierce', True),
+                is_unique=True,
                 icon="⚡"
             ),
             Upgrade(
@@ -138,9 +139,9 @@ class UpgradePool:
             ),
             Upgrade(
                 name="HP Regen",
-                description="Increase Hp regen by 100%",
+                description="Adds 0.5% to hp regen (proportion of max hp) ",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'hp_regen_multiplier', player.hp_regen_multiplier * 2),
+                apply=lambda player: setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 0.5),
                 icon="❤️"
             ),
             Upgrade(
@@ -152,16 +153,16 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Hp Pickup",
-                description="Increase HP Pickup Healing by 150%",
+                description="Adds 10% to healing from hp pickups (proportion of max hp)",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'hp_pickup_healing_multiplier', player.hp_pickup_healing_multiplier * 2.5),
+                apply=lambda player: setattr(player, 'hp_pickup_healing_percent_bonus', player.hp_pickup_healing_percent_bonus + 10),
                 icon="❤️"
             ),
             Upgrade(
                 name="Hp Steal",
-                description="Adds 7% Hp steal to all attacks",
+                description="Adds 6% Hp steal to all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.07),
+                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.06),
                 icon="⚡"
             ),
         ]

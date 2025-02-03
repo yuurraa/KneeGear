@@ -26,7 +26,7 @@ class Player:
         # Stats
         self.health:float = constants.base_player_health
         self.max_health = constants.base_player_health
-        self.hp_regen = constants.base_player_hp_regen #hp regen per second
+        self.hp_regen = constants.base_player_hp_regen_percent #hp regen percent per second
         self.speed = constants.player_speed
         self.player_experience = 0
         self.player_level = 1
@@ -38,8 +38,8 @@ class Player:
         self.special_bullet_damage_multiplier = 1
         self.basic_bullet_speed_multiplier = 1
         self.special_bullet_speed_multiplier = 1
-        self.hp_regen_multiplier = 1
-        self.hp_pickup_healing_multiplier = 1
+        self.hp_regen_percent_bonus = 0
+        self.hp_pickup_healing_percent_bonus = 0
         self.basic_bullet_piercing_bonus = 0
         self.special_bullet_piercing_bonus = 0
         self.special_bullet_can_repierce = False
@@ -102,7 +102,8 @@ class Player:
     def update_hp_regen(self):
         self.ticks_since_last_hp_regen += 1
         if self.ticks_since_last_hp_regen >= constants.FPS:
-            self.heal(self.hp_regen * self.hp_regen_multiplier)
+            regen_amount = (self.max_health * (self.hp_regen + self.hp_regen_percent_bonus) / 100)
+            self.heal(regen_amount)
             self.ticks_since_last_hp_regen = 0
     
     def update(self, keys):
@@ -141,8 +142,9 @@ class Player:
     def heal(self, amount):
         self.health = min(self.max_health, self.health + amount)
         
-    def heal_from_pickup(self, amount):
-        heal_amount = amount * self.hp_pickup_healing_multiplier
+    def heal_from_pickup(self):
+        # Change from fixed amount to percentage of max health
+        heal_amount = self.max_health * ((self.hp_pickup_healing_percent_bonus+constants.base_hp_pickup_healing_percent) / 100)
         self.heal(heal_amount)
         return heal_amount
         
