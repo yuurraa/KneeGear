@@ -90,10 +90,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Basic Attack Pierce",
-                description="Increase basic bullet piercing by 1",
+                description="Increase basic bullet piercing by 50%",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'basic_bullet_piercing_bonus', 
-                                           player.basic_bullet_piercing_bonus + 1),
+                apply=lambda player: setattr(player, 'basic_bullet_piercing_multiplier', 
+                                           player.basic_bullet_piercing_multiplier*1.5),
                 icon="💥"
             ),
             Upgrade(
@@ -127,6 +127,18 @@ class UpgradePool:
                 icon="⭐"
             ),
             Upgrade(
+                name="Special Attack Damage EX",
+                description="Increase special attack damage by 80% but decreases basic attack damage by 30%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'special_bullet_damage_multiplier', 
+                                           player.special_bullet_damage_multiplier * 2),
+                    setattr(player, 'basic_bullet_damage_multiplier', 
+                                           player.basic_bullet_damage_multiplier * 0.7),
+                ][-1],
+                icon="⭐"
+            ),
+            Upgrade(
                 name="Special Attack Cooldown",
                 description="Decrease special attack cooldown by 30%",
                 Rarity="Rare",
@@ -135,11 +147,23 @@ class UpgradePool:
                 icon="⚡"
             ),
             Upgrade(
+                name="Special Attack Cooldown EX",
+                description="Decrease special attack cooldown by 40% but increases basic attack cooldown by 20%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'special_shot_cooldown', 
+                                           player.special_shot_cooldown * 0.5),
+                    setattr(player, 'shoot_cooldown', 
+                                           player.shoot_cooldown * 1.2),
+                ][-1],
+                icon="⚡"
+            ),
+            Upgrade(
                 name="Special Attack Pierce",
-                description="Increase special bullet piercing by 3",
+                description="Increase special bullet piercing by 50%",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'special_bullet_piercing_bonus', 
-                                           player.special_bullet_piercing_bonus + 3),
+                apply=lambda player: setattr(player, 'special_bullet_piercing_multiplier', 
+                                           player.special_bullet_piercing_multiplier * 1.5),
                 icon="⚡"
             ),
             Upgrade(
@@ -187,10 +211,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Damage Reduction",
-                description=r"Adds 10% damage reduction to all attacks",
+                description=r"Adds 15% damage reduction from all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
-                max_level=5,
+                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 15),
+                max_level=4,
                 icon="⚡"
             ),
         ]

@@ -24,9 +24,9 @@ class Player:
 
     def reset(self):
         # Stats
-        self.health:float = constants.base_player_health
+        self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
-        self.hp_regen = constants.base_player_hp_regen_percent #hp regen percent per second
+        self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
         self.speed = constants.player_speed
         self.player_experience = 0
         self.player_level = 1
@@ -40,8 +40,8 @@ class Player:
         self.special_bullet_speed_multiplier = 1
         self.hp_regen_percent_bonus = 0
         self.hp_pickup_healing_percent_bonus = 0
-        self.basic_bullet_piercing_bonus = 0
-        self.special_bullet_piercing_bonus = 0
+        self.basic_bullet_piercing_multiplier = 1.0  # default multiplier, i.e. no extra piercing
+        self.special_bullet_piercing_multiplier = 1.0
         self.special_bullet_can_repierce = False
         self.basic_bullet_extra_projectiles_per_shot_bonus = 0
         self.damage_reduction_percent_bonus = 0
@@ -130,10 +130,12 @@ class Player:
         
         # If there's only one projectile, shoot it straight
         if total_projectiles == 1:
-            bullets.append(PlayerBasicBullet(self.x, self.y, angle, 
-                                           self.basic_bullet_damage_multiplier, 
-                                           self.basic_bullet_speed_multiplier, 
-                                           self.basic_bullet_piercing_bonus))
+            bullets.append(PlayerBasicBullet(
+                self.x, self.y, angle, 
+                self.basic_bullet_damage_multiplier, 
+                self.basic_bullet_speed_multiplier, 
+                math.ceil(self.basic_bullet_piercing_multiplier)
+            ))
             return bullets
 
         # For multiple projectiles, space them out perpendicular to the shooting direction
@@ -150,10 +152,12 @@ class Player:
             offset_x = start_x + (spread_distance * i) * math.cos(math.radians(perpendicular_angle))
             offset_y = start_y + (spread_distance * i) * math.sin(math.radians(perpendicular_angle))
             
-            bullets.append(PlayerBasicBullet(offset_x, offset_y, angle,
-                                           self.basic_bullet_damage_multiplier,
-                                           self.basic_bullet_speed_multiplier,
-                                           self.basic_bullet_piercing_bonus))
+            bullets.append(PlayerBasicBullet(
+                offset_x, offset_y, angle,
+                self.basic_bullet_damage_multiplier,
+                self.basic_bullet_speed_multiplier,
+                self.basic_bullet_piercing_multiplier
+            ))
         
         return bullets
 
@@ -167,11 +171,13 @@ class Player:
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_special_shot_time = current_time
         
-        return [PlayerSpecialBullet(self.x, self.y, angle,
-                                  self.special_bullet_damage_multiplier,
-                                  self.special_bullet_speed_multiplier,
-                                  self.special_bullet_piercing_bonus,
-                                  self.special_bullet_can_repierce)]
+        return [PlayerSpecialBullet(
+            self.x, self.y, angle,
+            self.special_bullet_damage_multiplier,
+            self.special_bullet_speed_multiplier,
+            self.special_bullet_piercing_multiplier,
+            self.special_bullet_can_repierce
+        )]
 
     def take_damage(self, amount):
         # Apply damage reduction (as a percentage)
