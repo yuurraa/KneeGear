@@ -39,7 +39,7 @@ level_up_xp_cost_scaling_factor = 1.35
 
 enemy_stat_doubling_time = 80 # seconds
 
-base_tank_health = 100
+base_tank_health = 120
 base_tank_damage = 2
 base_tank_xp_reward = 30
 tank_speed = 1.5
@@ -50,7 +50,7 @@ tank_pellet_speed_range = (7, 12)
 
 
 
-base_basic_enemy_health = 20
+base_basic_enemy_health = 25
 base_basic_enemy_damage = 5
 base_basic_enemy_xp_reward = 10
 basic_enemy_speed = 3
