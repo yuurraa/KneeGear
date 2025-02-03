@@ -235,7 +235,7 @@ def main():
             
             # Process events only for the level-up menu
             for event in pygame.event.get():
-                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                if event.type == pygame.QUIT:
                     game_state.running = False
                     break  # Exit the event loop if quitting
                 
