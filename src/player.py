@@ -63,12 +63,27 @@ class Player:
         pygame.draw.rect(screen, constants.BLACK, (self.x - 16, self.y - 16, 22, 22))  # Outline
         pygame.draw.rect(screen, constants.GREEN, (self.x - 15, self.y - 15, 20, 20))
         
-        # Draw direction arrow
-        arrow_length = 20
-        arrow_x = self.x + arrow_length * math.cos(math.radians(self.angle))
-        arrow_y = self.y + arrow_length * math.sin(math.radians(self.angle))
-        pygame.draw.line(screen, constants.BLUE, (self.x, self.y), (arrow_x, arrow_y), 3)
-
+        # Calculate the player's visual center
+        center_x = self.x - 5
+        center_y = self.y - 5
+        
+        # Direction arrow
+        arc_radius = 20      # Distance from the center where the line starts
+        arrow_length = 10    # Length of the line beyond that point
+        angle_rad = math.radians(self.angle)
+        
+        # Starting point: on the circle (arc) boundary relative to the player's center
+        start_line_x = center_x + arc_radius * math.cos(angle_rad)
+        start_line_y = center_y + arc_radius * math.sin(angle_rad)
+        
+        # End point: further out by arrow_length pixels
+        end_line_x = center_x + (arc_radius + arrow_length) * math.cos(angle_rad)
+        end_line_y = center_y + (arc_radius + arrow_length) * math.sin(angle_rad)
+        
+        pygame.draw.line(screen, constants.BLUE,
+                        (start_line_x, start_line_y),
+                        (end_line_x, end_line_y), 3)
+        
         # Draw health bar
         self.draw_health_bar(screen)
 

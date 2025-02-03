@@ -13,73 +13,73 @@ from menu import draw_level_up_menu, draw_pause_menu
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
-    # Create a black background
-    screen.fill(constants.BLACK)
-    
-    # Render the text "GOONER INC."
+    # Create text surface
     font = pygame.font.Font(None, 74)
     text = font.render("GOONER INC.", True, constants.WHITE)
     text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
     
-    # Draw the text on the screen
-    screen.blit(text, text_rect)
-    pygame.display.flip()
+    # Fade-in text
+    for alpha in range(0, 256, 5):
+        screen.fill(constants.BLACK)
+        text.set_alpha(alpha)
+        screen.blit(text, text_rect)
+        pygame.display.flip()
+        pygame.time.wait(10)
     
-    pygame.time.wait(4000)
+    # Display text for 2 seconds
+    pygame.time.wait(2000)
     
-    # Fade out to the gameplay
+    # Fade-out to black
     fade_surface = pygame.Surface((screen_width, screen_height))
     fade_surface.fill(constants.BLACK)
-    for alpha in range(0, 255, 5):
+    for alpha in range(0, 256, 5):
         fade_surface.set_alpha(alpha)
         screen.blit(fade_surface, (0, 0))
         pygame.display.flip()
-        pygame.time.wait(30)
+        pygame.time.wait(10)
 
-def show_game_over_screen(screen, screen_width, screen_height):
-    # Record final time if not already stored
-    if not hasattr(game_state, 'final_time'):
-        game_state.final_time = game_state.in_game_ticks_elapsed // constants.FPS
-
-    final_time = game_state.final_time
-    minutes = final_time // 60
-    seconds = final_time % 60
-
-    # Create a black background
-    screen.fill(constants.BLACK)
+def show_game_over_screen(screen, screen_width, screen_height, alpha):
+    # Create a surface with per-pixel alpha for fading
+    game_over_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+    # Fill with black background using the provided alpha for transparency
+    game_over_surface.fill((0, 0, 0, alpha))
     
-    # Use a large font for the "YOU DIED" message
+    # Render "YOU DIED" text
     large_font = pygame.font.Font(None, 74)
     text_large = large_font.render("YOU DIED", True, constants.WHITE)
     text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 120))
+    game_over_surface.blit(text_large, text_large_rect)
     
-    # Use a smaller, uniform font for timer, score, high score, and restart prompt
+    # Render time, score, high score, and restart prompt
     small_font = pygame.font.Font(None, 36)
     
-    # Render the elapsed time using the final_time
+    # Final time (ensure it's available)
+    final_time = getattr(game_state, 'final_time', 0)
+    minutes = final_time // 60
+    seconds = final_time % 60
+    
+    # Time survived
     timer_text = small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
     timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - 40))
+    game_over_surface.blit(timer_text, timer_text_rect)
     
-    # Render the player's score (using score.score from your score module)
+    # Score
     score_text = small_font.render(f"Score: {score.score}", True, constants.WHITE)
     score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 20))
+    game_over_surface.blit(score_text, score_text_rect)
     
-    # Render the high score using the same small font
+    # High score
     high_score_text = small_font.render(f"High Score: {score.high_score}", True, constants.WHITE)
     high_score_text_rect = high_score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 60))
+    game_over_surface.blit(high_score_text, high_score_text_rect)
     
-    # Render the restart prompt
+    # Restart prompt
     restart_text = small_font.render("Press SPACE to restart", True, constants.WHITE)
     restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
+    game_over_surface.blit(restart_text, restart_text_rect)
     
-    # Blit all text elements onto the screen
-    screen.blit(text_large, text_large_rect)
-    screen.blit(timer_text, timer_text_rect)
-    screen.blit(score_text, score_text_rect)
-    screen.blit(high_score_text, high_score_text_rect)
-    screen.blit(restart_text, restart_text_rect)
-    
-    pygame.display.flip()
+    # Draw the entire game over surface onto the main screen
+    screen.blit(game_over_surface, (0, 0))
 
 def calculate_enemy_scaling(elapsed_seconds):
     # Double stats every 200 seconds
@@ -156,12 +156,25 @@ def main():
     # Initialize score and start time
     score.reset_score()
     game_state.start_time_ms = pygame.time.get_ticks()
+    game_state.fade_alpha = 255 
 
     # Main game loop
     game_state.running = True
     while game_state.running:
         # Fill background with GREY instead of WHITE
         game_state.screen.fill(constants.LIGHT_GREY)
+        
+        # Draw fade overlay if active
+        if game_state.fade_alpha > 0:
+            fade_overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
+            fade_overlay.fill(constants.BLACK)
+            fade_overlay.set_alpha(game_state.fade_alpha)
+            game_state.screen.blit(fade_overlay, (0, 0))
+
+        # Fade-in (when no active fade-out)
+        if not game_state.game_over and not game_state.restart_fade_out:
+            if game_state.fade_alpha > 0:
+                game_state.fade_alpha = max(game_state.fade_alpha - 10, 0)
 
         # Process events
         for event in pygame.event.get():
@@ -178,6 +191,9 @@ def main():
                     delattr(game_state, 'final_time')
                 reset_game()
                 score.reset_score()
+                game_state.fade_alpha = 255
+                game_state.player.x = game_state.screen_width // 2
+                game_state.player.y = game_state.screen_height // 2
                 continue
         
         # Calculate current scaling factor based on in-game ticks
@@ -294,7 +310,6 @@ def main():
         # Update player angle to mouse
         game_state.player.update_angle(pygame.mouse.get_pos())
         
-        
         # Update all logic
         logic.update_enemies()
         logic.update_projectiles()
@@ -308,14 +323,22 @@ def main():
                 game_state.final_time = game_state.in_game_ticks_elapsed // constants.FPS
         drawing.draw_player_state_value_updates()
         
-
-        # Game Over fade
         if game_state.game_over:
-            game_state.fade_alpha = min(game_state.fade_alpha + 5, 255)
-            drawing.draw_fade_overlay()
-            score.update_high_score()
-            show_game_over_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
+            # Increase fade effect for game over screen
+            game_state.fade_alpha = min(game_state.fade_alpha + 10, 255)
+            
+            # Prevent player from moving
+            game_state.player.x = game_state.screen_width // 2
+            game_state.player.y = game_state.screen_height // 2
+            
+            # Remove all enemies
+            game_state.enemies.clear()  # Clears the list, instantly removing all enemies
+            
+            # Display game over screen
+            show_game_over_screen(game_state.screen, game_state.screen_width, 
+                                game_state.screen_height, game_state.fade_alpha)
 
+            
 
         # Update display
         game_state.in_game_ticks_elapsed += 1

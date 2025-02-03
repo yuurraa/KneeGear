@@ -30,47 +30,66 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
-    
+
 class Slider:
-    def __init__(self, x, y, width, height, initial_value=0.0):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.knob_width = 20
-        self.knob_height = height + 10
-        self.value = initial_value
+    def __init__(self, x, y, width, height, value):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.value = value  # a float between 0 and 1
+        # Define knob dimensions
+        self.knob_width = 10
+        self.knob_height = height + 4  # a little taller than the track
+        # Colors (you can adjust these or pull them from constants)
+        self.track_color = constants.LIGHT_GREY
+        self.fill_color = constants.DARK_GREY  # Color for the filled portion
+        self.knob_color = constants.WHITE
         self.dragging = False
 
     def draw(self, screen):
-        # Draw track with upgrade menu colors
-        pygame.draw.rect(screen, constants.WHITE, self.rect)
-        # Draw knob with accent color
-        knob_x = self.rect.x + (self.value * (self.rect.width - self.knob_width))
-        knob_rect = pygame.Rect(
-            knob_x,
-            self.rect.centery - self.knob_height // 2,
-            self.knob_width,
-            self.knob_height
-        )
-        pygame.draw.rect(screen, constants.GREEN, knob_rect)
+        # Define the track rectangle
+        track_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        
+        # Draw the slider track (background) with a black border
+        pygame.draw.rect(screen, self.track_color, track_rect)
+        pygame.draw.rect(screen, constants.BLACK, track_rect, 2)  # 2-pixel black border
+
+        # Calculate filled width based on current value
+        filled_width = int(self.value * self.width)
+        filled_rect = pygame.Rect(self.x, self.y, filled_width, self.height)
+        pygame.draw.rect(screen, self.fill_color, filled_rect)
+        
+        # Calculate knob position (no border for the knob)
+        knob_x = self.x + filled_width - self.knob_width // 2
+        knob_y = self.y + (self.height - self.knob_height) // 2
+        pygame.draw.rect(screen, self.knob_color, (knob_x, knob_y, self.knob_width, self.knob_height))
+        pygame.draw.rect(screen, constants.BLACK, (knob_x, knob_y, self.knob_width, self.knob_height), 2)
+
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = event.pos
-            knob_x = self.rect.x + (self.value * (self.rect.width - self.knob_width))
+            # Calculate knob's x position based on current value
+            knob_x = self.x + (self.value * (self.width - self.knob_width))
+            # Create knob rect using self.x, self.y, self.width, and self.height
             knob_rect = pygame.Rect(
                 knob_x,
-                self.rect.centery - self.knob_height // 2,
+                self.y + self.height // 2 - self.knob_height // 2,
                 self.knob_width,
                 self.knob_height
             )
-            if knob_rect.collidepoint(mouse_pos) or self.rect.collidepoint(mouse_pos):
+            # Also create a rect for the slider track
+            track_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+            if knob_rect.collidepoint(mouse_pos) or track_rect.collidepoint(mouse_pos):
                 self.dragging = True
                 # Update position if clicked on track
                 mouse_x = mouse_pos[0]
                 new_knob_x = max(
-                    self.rect.x,
-                    min(mouse_x - self.knob_width / 2, self.rect.x + self.rect.width - self.knob_width)
+                    self.x,
+                    min(mouse_x - self.knob_width / 2, self.x + self.width - self.knob_width)
                 )
-                self.value = (new_knob_x - self.rect.x) / (self.rect.width - self.knob_width)
+                self.value = (new_knob_x - self.x) / (self.width - self.knob_width)
                 constants.music_volume = self.value
                 pygame.mixer.music.set_volume(self.value)
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
@@ -78,10 +97,10 @@ class Slider:
         elif event.type == pygame.MOUSEMOTION and self.dragging:
             mouse_x = event.pos[0]
             new_knob_x = max(
-                self.rect.x,
-                min(mouse_x - self.knob_width / 2, self.rect.x + self.rect.width - self.knob_width)
+                self.x,
+                min(mouse_x - self.knob_width / 2, self.x + self.width - self.knob_width)
             )
-            self.value = (new_knob_x - self.rect.x) / (self.rect.width - self.knob_width)
+            self.value = (new_knob_x - self.x) / (self.width - self.knob_width)
             constants.music_volume = self.value
             pygame.mixer.music.set_volume(self.value)
 
@@ -114,12 +133,12 @@ class UpgradeButton(Button):
         # Draw the icon in a circle overlapping the top-left corner
         if self.icon_image:
             # Fixed icon size
-            icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 32, self.icon_size - 32))
+            icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 34, self.icon_size - 34))
 
             # Calculate circle properties
             circle_radius = self.icon_size // 2 - 5
-            circle_center = (self.rect.x + circle_radius - self.circle_margin - 8, 
-                             self.rect.y + circle_radius - self.circle_margin - 8)
+            circle_center = (self.rect.x + circle_radius - self.circle_margin - 15, 
+                             self.rect.y + circle_radius - self.circle_margin - 15)
 
             # Draw circular background with button color and border
             pygame.draw.circle(screen, self.color, circle_center, circle_radius)  # Match button background
@@ -137,7 +156,7 @@ class UpgradeButton(Button):
         for word in words:
             test_line = ' '.join(current_line + [word])
             test_surface = font_name.render(test_line, True, constants.BLACK)
-            if test_surface.get_width() <= self.width - 20:  # 10px padding on each side
+            if test_surface.get_width() <= self.width - 20:  # 20px padding on each side
                 current_line.append(word)
             else:
                 if current_line:
@@ -147,7 +166,7 @@ class UpgradeButton(Button):
             title_lines.append(' '.join(current_line))
 
         # Render wrapped title text
-        title_y = self.rect.y + 20 + (self.icon_size - 45)  # Space below the circle
+        title_y = self.rect.y + 20 + (self.icon_size - 47)  # Space below the circle
         for line in title_lines:
             title_surface = font_name.render(line, True, constants.BLACK)
             title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
@@ -156,7 +175,7 @@ class UpgradeButton(Button):
 
         # Render rarity below the title
         rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
-        rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - 5))
+        rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - 2))
         screen.blit(rarity_surface, rarity_rect)
 
         # Centralized description text (with wrapping)
@@ -167,7 +186,7 @@ class UpgradeButton(Button):
         for word in desc_words:
             test_line = ' '.join(current_desc_line + [word])
             test_surface = font_desc.render(test_line, True, constants.BLACK)
-            if test_surface.get_width() <= self.width - 20:  # 10px padding on each side
+            if test_surface.get_width() <= self.width - 20:  # 20px padding on each side
                 current_desc_line.append(word)
             else:
                 if current_desc_line:
@@ -177,7 +196,7 @@ class UpgradeButton(Button):
             desc_lines.append(' '.join(current_desc_line))
 
         # Render wrapped description text below rarity
-        y_offset = rarity_rect.bottom + 15
+        y_offset = rarity_rect.bottom + 18
         for line in desc_lines:
             desc_surface = font_desc.render(line, True, constants.BLACK)
             desc_rect = desc_surface.get_rect(center=(self.rect.centerx, y_offset))
@@ -214,8 +233,8 @@ def draw_level_up_menu(screen):
         upgrades = upgrade_pool.get_random_upgrades(3, game_state.player)
         
         # Create buttons
-        button_width = 300
-        button_height = 145
+        button_width = 310
+        button_height = 160
         button_spacing = 50
         total_width = (button_width * 3) + (button_spacing * 2)
         start_x = (game_state.screen_width - total_width) // 2
@@ -247,8 +266,8 @@ def draw_pause_menu(screen):
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
-    # Use upgrade menu colors (light grey background)
-    pygame.draw.rect(screen, constants.LIGHT_GREY, (panel_x, panel_y, panel_width, panel_height))
+    # Use upgrade menu colors (white background)
+    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Pause menu text
@@ -264,8 +283,8 @@ def draw_pause_menu(screen):
         button_height = 60
         button_x = (game_state.screen_width - button_width) // 2
         button_y = panel_y + 200
-        quit_button = Button(button_x, button_y, button_width, button_height, "Quit", constants.GREEN)  # Changed to green
-        
+        quit_button = Button(button_x, button_y, button_width, button_height, "Quit", constants.RED)  # Changed to red
+
         # Volume Slider
         slider_width = 300
         slider_height = 20
@@ -281,5 +300,11 @@ def draw_pause_menu(screen):
     # Draw persistent elements
     game_state.pause_ui['quit_button'].draw(screen)
     game_state.pause_ui['volume_slider'].draw(screen)
+
+    # Draw "Volume" label above the slider
+    small_font = pygame.font.Font(None, 30)
+    volume_text = small_font.render("Volume", True, constants.BLACK)
+    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 130))
+    screen.blit(volume_text, volume_text_rect)
 
     return game_state.pause_ui['quit_button'], game_state.pause_ui['volume_slider']

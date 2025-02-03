@@ -17,6 +17,11 @@ projectiles = []  # Will contain all bullets regardless of alignment
 enemy_scaling = 1.0
 
 fade_alpha = 0
+is_restarting = False
+restart_fade_out = False
+is_fading_out = False 
+
+paused = False
 game_over = False
 running = True
 first_enemy_spawned = False
