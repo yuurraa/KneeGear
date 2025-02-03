@@ -1,2 +1,10 @@
 pygame
 mutagen
+hashlib
+random
+abc
+typing
+enum
+dataclasses
+threading
+math
