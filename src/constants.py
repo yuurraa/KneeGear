@@ -14,7 +14,7 @@ TRANSLUCENT_RED = (255, 0, 0, 128)
 LIGHT_GREY = (200, 200, 200)
 BROWN = (139, 69, 19)
 
-music_volume = 0.2
+music_volume = 0.1
 music_path = "assets/audio/music.mp3"
 
 # Speeds, angles, and cooldowns

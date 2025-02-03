@@ -86,55 +86,104 @@ class Slider:
             pygame.mixer.music.set_volume(self.value)
 
 class UpgradeButton(Button):
-    def __init__(self, x, y, width, height, upgrade):
-        super().__init__(x, y, width, height, "", constants.GREEN)
+    RARITY_COLORS = {
+        "Common": (144, 238, 144),  # Light green
+        "Rare": (135, 206, 250),    # Light blue
+        "Epic": (186, 85, 211),     # Light purple
+        "Legendary": (255, 165, 0)  # Orange
+    }
+
+    def __init__(self, x, y, width, height, upgrade, icon_image=None):
+        rarity_color = self.RARITY_COLORS.get(upgrade.Rarity, constants.GREEN)
+        super().__init__(x, y, width, height, "", rarity_color)
         self.upgrade = upgrade
-        self.width = width
-        self.height = height
-            
-        
+        self.icon_image = icon_image  # Store the icon image
+        self.width = width  # Explicitly set width
+        self.height = height  # Explicitly set height
+        self.icon_size = 64  # Fixed icon size
+        self.circle_margin = 10  # Margin around the circle
+
+
     def draw(self, screen):
         super().draw(screen)
-        
-        # Draw upgrade name, rarity, and description
+
         font_name = pygame.font.Font(None, 32)
         font_desc = pygame.font.Font(None, 24)
         font_rarity = pygame.font.Font(None, 20)
-        
-        # Draw name with icon
-        name_surface = font_name.render(f"{self.upgrade.icon} {self.upgrade.name}", True, constants.BLACK)
-        name_rect = name_surface.get_rect(midtop=(self.rect.centerx, self.rect.y + 10))
-        screen.blit(name_surface, name_rect)
-        
-        # Draw rarity
-        rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
-        rarity_rect = rarity_surface.get_rect(midtop=(self.rect.centerx, name_rect.bottom))
-        screen.blit(rarity_surface, rarity_rect)
-        
-        # Text wrapping for description
-        words = self.upgrade.description.split()
-        lines = []
+
+        # Draw the icon in a circle overlapping the top-left corner
+        if self.icon_image:
+            # Fixed icon size
+            icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 32, self.icon_size - 32))
+
+            # Calculate circle properties
+            circle_radius = self.icon_size // 2 - 5
+            circle_center = (self.rect.x + circle_radius - self.circle_margin - 8, 
+                             self.rect.y + circle_radius - self.circle_margin - 8)
+
+            # Draw circular background with button color and border
+            pygame.draw.circle(screen, self.color, circle_center, circle_radius)  # Match button background
+            pygame.draw.circle(screen, constants.BLACK, circle_center, circle_radius, 2)  # Black border
+
+            # Blit the icon image centered in the circle
+            icon_rect = icon_scaled.get_rect(center=circle_center)
+            screen.blit(icon_scaled, icon_rect)
+
+        # Centralized title text (with wrapping)
+        words = self.upgrade.name.split()
+        title_lines = []
         current_line = []
-        
+
         for word in words:
             test_line = ' '.join(current_line + [word])
-            test_surface = font_desc.render(test_line, True, constants.BLACK)
+            test_surface = font_name.render(test_line, True, constants.BLACK)
             if test_surface.get_width() <= self.width - 20:  # 10px padding on each side
                 current_line.append(word)
             else:
                 if current_line:
-                    lines.append(' '.join(current_line))
+                    title_lines.append(' '.join(current_line))
                 current_line = [word]
         if current_line:
-            lines.append(' '.join(current_line))
-        
-        # Draw wrapped description
-        y_offset = rarity_rect.bottom + 5
-        for line in lines:
+            title_lines.append(' '.join(current_line))
+
+        # Render wrapped title text
+        title_y = self.rect.y + 20 + (self.icon_size - 45)  # Space below the circle
+        for line in title_lines:
+            title_surface = font_name.render(line, True, constants.BLACK)
+            title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
+            screen.blit(title_surface, title_rect)
+            title_y += title_surface.get_height()
+
+        # Render rarity below the title
+        rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
+        rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - 5))
+        screen.blit(rarity_surface, rarity_rect)
+
+        # Centralized description text (with wrapping)
+        desc_words = self.upgrade.description.split()
+        desc_lines = []
+        current_desc_line = []
+
+        for word in desc_words:
+            test_line = ' '.join(current_desc_line + [word])
+            test_surface = font_desc.render(test_line, True, constants.BLACK)
+            if test_surface.get_width() <= self.width - 20:  # 10px padding on each side
+                current_desc_line.append(word)
+            else:
+                if current_desc_line:
+                    desc_lines.append(' '.join(current_desc_line))
+                current_desc_line = [word]
+        if current_desc_line:
+            desc_lines.append(' '.join(current_desc_line))
+
+        # Render wrapped description text below rarity
+        y_offset = rarity_rect.bottom + 15
+        for line in desc_lines:
             desc_surface = font_desc.render(line, True, constants.BLACK)
-            desc_rect = desc_surface.get_rect(midtop=(self.rect.centerx, y_offset))
+            desc_rect = desc_surface.get_rect(center=(self.rect.centerx, y_offset))
             screen.blit(desc_surface, desc_rect)
             y_offset += desc_surface.get_height()
+
 
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay
@@ -144,8 +193,8 @@ def draw_level_up_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Create menu panel
-    panel_width = 1000
-    panel_height = 600
+    panel_width = 1100
+    panel_height = 400
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
@@ -165,17 +214,18 @@ def draw_level_up_menu(screen):
         upgrades = upgrade_pool.get_random_upgrades(3, game_state.player)
         
         # Create buttons
-        button_width = 280
-        button_height = 120
-        button_spacing = 40
+        button_width = 300
+        button_height = 145
+        button_spacing = 50
         total_width = (button_width * 3) + (button_spacing * 2)
         start_x = (game_state.screen_width - total_width) // 2
 
         game_state.current_upgrade_buttons = []
         for i, upgrade in enumerate(upgrades):
             x = start_x + (button_width + button_spacing) * i
-            y = panel_y + 200
-            button = UpgradeButton(x, y, button_width, button_height, upgrade)
+            y = panel_y + 150
+            icon_image = upgrade_pool.icon_images.get(upgrade.icon, None)
+            button = UpgradeButton(x, y, button_width, button_height, upgrade, icon_image)
             game_state.current_upgrade_buttons.append(button)
 
     # Draw existing buttons
@@ -192,8 +242,8 @@ def draw_pause_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Create menu panel
-    panel_width = 600
-    panel_height = 400
+    panel_width = 500
+    panel_height = 300
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
