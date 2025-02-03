@@ -228,10 +228,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Damage Reduction",
-                description=r"Adds 10% damage reduction to all attacks",
+                description=r"Adds 15% damage reduction to all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
-                max_level=5,
+                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 15),
+                max_level=6,
                 icon="defence"
             ),
         ]
