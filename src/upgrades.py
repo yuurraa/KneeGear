@@ -209,32 +209,11 @@ class UpgradePool:
             if not available_upgrades:
                 break
                 
-            # Group remaining upgrades by rarity
-            upgrades_by_rarity = {
-                "Common": [],
-                "Rare": [],
-                "Epic": []
-            }
-            
-            for upgrade in available_upgrades:
-                upgrades_by_rarity[upgrade.Rarity].append(upgrade)
-            
-            # Filter out empty rarity tiers
-            valid_rarities = [rarity for rarity, upgrades in upgrades_by_rarity.items() if upgrades]
-            if not valid_rarities:
-                break
-                
-            # Get weights for valid rarities and adjust them based on available upgrades
-            valid_weights = [
-                self.rarity_weights[rarity] * len(upgrades_by_rarity[rarity])
-                for rarity in valid_rarities
-            ]
-            
-            # Select a rarity tier first
-            chosen_rarity = random.choices(valid_rarities, weights=valid_weights, k=1)[0]
+            # Instead of grouping by rarity:
+            weights = [self.rarity_weights[upgrade.Rarity] for upgrade in available_upgrades]
             
             # Then randomly select an upgrade of that rarity
-            chosen_upgrade = random.choice(upgrades_by_rarity[chosen_rarity])
+            chosen_upgrade = random.choices(available_upgrades, weights=weights, k=1)[0]
             selected_upgrades.append(chosen_upgrade)
             
             # Remove the chosen upgrade from available pool
