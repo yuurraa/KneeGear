@@ -11,7 +11,7 @@ class Upgrade:
     Rarity: str
     apply: Callable[[Player], None]
     icon: str  # Could be used for future UI improvements
-    is_unique: bool = False #if true, only one of this upgrade can be applied
+    max_level: int = 99999  # Default to infinite unless specified otherwise
 
 class UpgradePool:
     def __init__(self):
@@ -37,6 +37,15 @@ class UpgradePool:
                 icon="💥"
             ),
             Upgrade(
+                name="Basic Attack Additional Projectile",
+                description="Adds 1 additional projectile per basic shot",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'basic_bullet_extra_projectiles_per_shot_bonus', 
+                                           player.basic_bullet_extra_projectiles_per_shot_bonus + 1),
+                max_level=3,
+                icon="💥"
+            ),
+            Upgrade(
                 name="Sniper Bullets",
                 description=r"Increase basic attack damage by 80% and bullet speed by 20%, but increases cooldown by 20%",
                 Rarity="Epic",
@@ -54,6 +63,17 @@ class UpgradePool:
                 apply=lambda player: [
                     setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.8),
                     setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.7),
+                ][-1],
+                icon="💥"
+            ),
+            Upgrade(
+                name="Unhealthy Shot",
+                description=r"Increase basic attack damage by 50%, and decreases cooldown by 25%, but decreases Max HP by 20%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.5),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.75),
+                    setattr(player, 'max_health', player.max_health * 0.8),
                 ][-1],
                 icon="💥"
             ),
@@ -100,10 +120,10 @@ class UpgradePool:
             
             Upgrade(
                 name="Special Attack Damage",
-                description="Increase special attack damage by 40%",
+                description="Increase special attack damage by 50%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
-                                           player.special_bullet_damage_multiplier * 1.4),
+                                           player.special_bullet_damage_multiplier * 1.5),
                 icon="⭐"
             ),
             Upgrade(
@@ -116,10 +136,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Pierce",
-                description="Increase special bullet piercing by 2",
+                description="Increase special bullet piercing by 3",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_piercing_bonus', 
-                                           player.special_bullet_piercing_bonus + 2),
+                                           player.special_bullet_piercing_bonus + 3),
                 icon="⚡"
             ),
             Upgrade(
@@ -127,7 +147,7 @@ class UpgradePool:
                 description="Special bullets can pierce the same enemy multiple times",
                 Rarity="Epic",
                 apply=lambda player: setattr(player, 'special_bullet_can_repierce', True),
-                is_unique=True,
+                max_level=1,
                 icon="⚡"
             ),
             Upgrade(
@@ -171,10 +191,10 @@ class UpgradePool:
         selected_upgrades = []
         available_upgrades = self.upgrades.copy()
         
-        # Filter out unique upgrades that player already has
+        # Filter out upgrades that have reached their max level
         available_upgrades = [
             upgrade for upgrade in available_upgrades 
-            if not (upgrade.is_unique and upgrade.name in player.applied_upgrades)
+            if player.upgrade_levels.get(upgrade.name, 0) < upgrade.max_level
         ]
         
         for _ in range(min(count, len(available_upgrades))):

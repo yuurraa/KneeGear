@@ -43,6 +43,7 @@ class Player:
         self.basic_bullet_piercing_bonus = 0
         self.special_bullet_piercing_bonus = 0
         self.special_bullet_can_repierce = False
+        self.basic_bullet_extra_projectiles_per_shot_bonus = 0
         self.hp_steal = 0
         
         self.state = PlayerState.ALIVE
@@ -54,6 +55,7 @@ class Player:
         self.last_special_shot_time = 0
 
         self.applied_upgrades = set()  # Tracks names of applied upgrades
+        self.upgrade_levels = {}  # Tracks number of times each upgrade has been applied
     
     def draw(self, screen):
         # Draw player body
@@ -121,7 +123,38 @@ class Player:
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_shot_time = current_time
-        return PlayerBasicBullet(self.x, self.y, angle, self.basic_bullet_damage_multiplier, self.basic_bullet_speed_multiplier, self.basic_bullet_piercing_bonus)
+        
+        bullets = []
+        total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
+        
+        # If there's only one projectile, shoot it straight
+        if total_projectiles == 1:
+            bullets.append(PlayerBasicBullet(self.x, self.y, angle, 
+                                           self.basic_bullet_damage_multiplier, 
+                                           self.basic_bullet_speed_multiplier, 
+                                           self.basic_bullet_piercing_bonus))
+            return bullets
+
+        # For multiple projectiles, space them out perpendicular to the shooting direction
+        spread_distance = 15  # pixels between each projectile
+        perpendicular_angle = angle + 90  # perpendicular to shooting direction
+        
+        # Calculate starting position for the spread
+        total_spread = spread_distance * (total_projectiles - 1)
+        start_x = self.x - (total_spread/2) * math.cos(math.radians(perpendicular_angle))
+        start_y = self.y - (total_spread/2) * math.sin(math.radians(perpendicular_angle))
+        
+        for i in range(total_projectiles):
+            # Calculate offset position for each bullet
+            offset_x = start_x + (spread_distance * i) * math.cos(math.radians(perpendicular_angle))
+            offset_y = start_y + (spread_distance * i) * math.sin(math.radians(perpendicular_angle))
+            
+            bullets.append(PlayerBasicBullet(offset_x, offset_y, angle,
+                                           self.basic_bullet_damage_multiplier,
+                                           self.basic_bullet_speed_multiplier,
+                                           self.basic_bullet_piercing_bonus))
+        
+        return bullets
 
     def shoot_special(self, mouse_pos, current_time):
         """Special shot (right-click)"""
@@ -132,7 +165,12 @@ class Player:
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_special_shot_time = current_time
-        return PlayerSpecialBullet(self.x, self.y, angle, self.special_bullet_damage_multiplier, self.special_bullet_speed_multiplier, self.special_bullet_piercing_bonus, self.special_bullet_can_repierce)
+        
+        return [PlayerSpecialBullet(self.x, self.y, angle,
+                                  self.special_bullet_damage_multiplier,
+                                  self.special_bullet_speed_multiplier,
+                                  self.special_bullet_piercing_bonus,
+                                  self.special_bullet_can_repierce)]
 
     def take_damage(self, amount):
         self.health = max(0, self.health - amount)
@@ -171,6 +209,6 @@ class Player:
 
     def apply_upgrade(self, upgrade):
         upgrade.apply(self)
-        self.applied_upgrades.add(upgrade.name)
+        self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
 
     # def reset

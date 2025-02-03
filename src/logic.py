@@ -25,22 +25,6 @@ def update_projectiles():
     for bullet in game_state.projectiles[:]:
         # Update special bullet behaviors
         bullet.update()
-        
-        # if bullet.alignment == Alignment.PLAYER:
-        #     hit_enemy = False
-        #     for enemy in game_state.enemies[:]:
-        #         if bullet.check_collision(enemy):
-        #             if enemy.apply_damage(bullet.damage, game_state):
-        #                 game_state.enemies.remove(enemy)
-        #             elif bullet.damage == constants.player_basic_bullet_damage:  # Regular bullet
-        #                 hit_enemy = True
-            
-        #     if hit_enemy or bullet.is_out_of_bounds():
-        #         game_state.projectiles.remove(bullet)
-        # else:  # Enemy bullet
-        #     if bullet.check_collision(None) or bullet.is_out_of_bounds():
-        #         game_state.projectiles.remove(bullet)
-
 
 def spawn_enemy():
     side = random.choice(["top", "bottom", "left", "right"])
@@ -101,14 +85,14 @@ def handle_input():
 
     # Handle shooting
     if mouse_pressed[0] and not game_state.game_over:
-        bullet = game_state.player.shoot_regular(pygame.mouse.get_pos(), current_time)
-        if bullet:
-            game_state.projectiles.append(bullet)
+        bullets = game_state.player.shoot_regular(pygame.mouse.get_pos(), current_time)
+        if bullets:
+            game_state.projectiles.extend(bullets)
 
     if mouse_pressed[2] and not game_state.game_over:
-        bullet = game_state.player.shoot_special(pygame.mouse.get_pos(), current_time)
-        if bullet:
-            game_state.projectiles.append(bullet)
+        bullets = game_state.player.shoot_special(pygame.mouse.get_pos(), current_time)
+        if bullets:
+            game_state.projectiles.extend(bullets)
 
     # Get cooldown progress for UI
     return keys
