@@ -185,6 +185,14 @@ class UpgradePool:
                 apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.06),
                 icon="⚡"
             ),
+            Upgrade(
+                name="Damage Reduction",
+                description=r"Adds 10% damage reduction to all attacks",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
+                max_level=5,
+                icon="⚡"
+            ),
         ]
 
     def get_random_upgrades(self, count: int, player: Player) -> List[Upgrade]:

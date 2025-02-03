@@ -44,6 +44,7 @@ class Player:
         self.special_bullet_piercing_bonus = 0
         self.special_bullet_can_repierce = False
         self.basic_bullet_extra_projectiles_per_shot_bonus = 0
+        self.damage_reduction_percent_bonus = 0
         self.hp_steal = 0
         
         self.state = PlayerState.ALIVE
@@ -173,7 +174,9 @@ class Player:
                                   self.special_bullet_can_repierce)]
 
     def take_damage(self, amount):
-        self.health = max(0, self.health - amount)
+        # Apply damage reduction (as a percentage)
+        reduced_damage = amount * (1 - (self.damage_reduction_percent_bonus / 100))
+        self.health = max(0, self.health - reduced_damage)
         if self.health <= 0:
             self.state = PlayerState.DEAD
 
