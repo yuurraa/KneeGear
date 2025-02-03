@@ -30,6 +30,60 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+    
+class Slider:
+    def __init__(self, x, y, width, height, initial_value=0.0):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.knob_width = 20
+        self.knob_height = height + 10
+        self.value = initial_value
+        self.dragging = False
+
+    def draw(self, screen):
+        # Draw track with upgrade menu colors
+        pygame.draw.rect(screen, constants.WHITE, self.rect)
+        # Draw knob with accent color
+        knob_x = self.rect.x + (self.value * (self.rect.width - self.knob_width))
+        knob_rect = pygame.Rect(
+            knob_x,
+            self.rect.centery - self.knob_height // 2,
+            self.knob_width,
+            self.knob_height
+        )
+        pygame.draw.rect(screen, constants.GREEN, knob_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_pos = event.pos
+            knob_x = self.rect.x + (self.value * (self.rect.width - self.knob_width))
+            knob_rect = pygame.Rect(
+                knob_x,
+                self.rect.centery - self.knob_height // 2,
+                self.knob_width,
+                self.knob_height
+            )
+            if knob_rect.collidepoint(mouse_pos) or self.rect.collidepoint(mouse_pos):
+                self.dragging = True
+                # Update position if clicked on track
+                mouse_x = mouse_pos[0]
+                new_knob_x = max(
+                    self.rect.x,
+                    min(mouse_x - self.knob_width / 2, self.rect.x + self.rect.width - self.knob_width)
+                )
+                self.value = (new_knob_x - self.rect.x) / (self.rect.width - self.knob_width)
+                constants.music_volume = self.value
+                pygame.mixer.music.set_volume(self.value)
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            mouse_x = event.pos[0]
+            new_knob_x = max(
+                self.rect.x,
+                min(mouse_x - self.knob_width / 2, self.rect.x + self.rect.width - self.knob_width)
+            )
+            self.value = (new_knob_x - self.rect.x) / (self.rect.width - self.knob_width)
+            constants.music_volume = self.value
+            pygame.mixer.music.set_volume(self.value)
 
 class UpgradeButton(Button):
     def __init__(self, x, y, width, height, upgrade):
@@ -104,24 +158,78 @@ def draw_level_up_menu(screen):
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
     screen.blit(text, text_rect)
 
-    # Get random upgrades
-    if not hasattr(game_state, 'current_upgrade_options'):
+    # Create buttons if they don't exist
+    if not hasattr(game_state, 'current_upgrade_buttons'):
+        # Get random upgrades
         upgrade_pool = UpgradePool()
-        game_state.current_upgrade_options = upgrade_pool.get_random_upgrades(3, game_state.player)
+        upgrades = upgrade_pool.get_random_upgrades(3, game_state.player)
+        
+        # Create buttons
+        button_width = 280
+        button_height = 120
+        button_spacing = 40
+        total_width = (button_width * 3) + (button_spacing * 2)
+        start_x = (game_state.screen_width - total_width) // 2
 
-    # Create upgrade buttons
-    button_width = 280
-    button_height = 120
-    button_spacing = 40
-    total_width = (button_width * 3) + (button_spacing * 2)
-    start_x = (game_state.screen_width - total_width) // 2
+        game_state.current_upgrade_buttons = []
+        for i, upgrade in enumerate(upgrades):
+            x = start_x + (button_width + button_spacing) * i
+            y = panel_y + 200
+            button = UpgradeButton(x, y, button_width, button_height, upgrade)
+            game_state.current_upgrade_buttons.append(button)
 
-    upgrade_buttons = []
-    for i, upgrade in enumerate(game_state.current_upgrade_options):
-        x = start_x + (button_width + button_spacing) * i
-        y = panel_y + 200
-        button = UpgradeButton(x, y, button_width, button_height, upgrade)
+    # Draw existing buttons
+    for button in game_state.current_upgrade_buttons:
         button.draw(screen)
-        upgrade_buttons.append(button)
 
-    return upgrade_buttons 
+    return game_state.current_upgrade_buttons
+
+def draw_pause_menu(screen):
+    # Create semi-transparent overlay
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
+    overlay.fill(constants.BLACK)
+    overlay.set_alpha(128)
+    screen.blit(overlay, (0, 0))
+
+    # Create menu panel
+    panel_width = 600
+    panel_height = 400
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
+    
+    # Use upgrade menu colors (light grey background)
+    pygame.draw.rect(screen, constants.LIGHT_GREY, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
+
+    # Pause menu text
+    font = pygame.font.Font(None, 48)
+    text = font.render("Paused", True, constants.BLACK)
+    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
+    screen.blit(text, text_rect)
+
+    # Initialize UI elements once
+    if not hasattr(game_state, 'pause_ui'):
+        # Quit button
+        button_width = 200
+        button_height = 60
+        button_x = (game_state.screen_width - button_width) // 2
+        button_y = panel_y + 200
+        quit_button = Button(button_x, button_y, button_width, button_height, "Quit", constants.GREEN)  # Changed to green
+        
+        # Volume Slider
+        slider_width = 300
+        slider_height = 20
+        slider_x = (game_state.screen_width - slider_width) // 2
+        slider_y = panel_y + 150
+        volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
+        
+        game_state.pause_ui = {
+            'quit_button': quit_button,
+            'volume_slider': volume_slider
+        }
+
+    # Draw persistent elements
+    game_state.pause_ui['quit_button'].draw(screen)
+    game_state.pause_ui['volume_slider'].draw(screen)
+
+    return game_state.pause_ui['quit_button'], game_state.pause_ui['volume_slider']

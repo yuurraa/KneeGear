@@ -9,7 +9,7 @@ import drawing
 import score
 from player import Player, PlayerState
 from helpers import calculate_angle, reset_game
-from menu import draw_level_up_menu
+from menu import draw_level_up_menu, draw_pause_menu
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
@@ -139,8 +139,10 @@ def main():
 
         # Process events
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            if event.type == pygame.QUIT:
                 game_state.running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                game_state.paused = True
 
             # Press SPACE to reset if game over
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game_state.game_over:
@@ -201,30 +203,56 @@ def main():
         
         game_state.player.draw(game_state.screen)
 
+        # Handle pause menu
+        if getattr(game_state, 'paused', False):
+            quit_button, volume_slider = draw_pause_menu(game_state.screen)
+            
+            for event in pygame.event.get():
+                # First handle universal events
+                if event.type == pygame.QUIT:
+                    game_state.running = False
+                
+                # Then handle pause-specific events
+                volume_slider.handle_event(event)  # Handle ALL events first for smooth dragging
+                quit_button.handle_event(event)  # Update button hover state
+                
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    game_state.paused = False  # Unpause
+                
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    # Check quit button after slider to prevent conflict
+                    if quit_button.rect.collidepoint(event.pos):
+                        game_state.running = False
+                    
+            # Draw updates and continue loop
+            pygame.display.flip()
+            continue
         
         # Handle level up menu
         if game_state.player.state == PlayerState.LEVELING_UP:
+            # Draw the level-up menu and get the persisted buttons
             upgrade_buttons = draw_level_up_menu(game_state.screen)
             
+            # Process events only for the level-up menu
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     game_state.running = False
+                    break  # Exit the event loop if quitting
                 
+                # Handle button events
                 for button in upgrade_buttons:
                     if button.handle_event(event):
                         # Apply the selected upgrade
                         button.upgrade.apply(game_state.player)
-                        # Reset the state and clear upgrade options
+                        # Reset the state and clear upgrade buttons
                         game_state.player.state = PlayerState.ALIVE
-                        if hasattr(game_state, 'current_upgrade_options'):
-                            delattr(game_state, 'current_upgrade_options')
-                        break
+                        if hasattr(game_state, 'current_upgrade_buttons'):
+                            delattr(game_state, 'current_upgrade_buttons')
+                        break  # Exit the event loop after handling the upgrade
             
             pygame.display.flip()
             clock.tick(constants.FPS)
             continue
-        
-
         
         # Handle player input (shooting, movement)
         logic.handle_input()
@@ -251,7 +279,6 @@ def main():
             drawing.draw_fade_overlay()
             score.update_high_score()
             show_game_over_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
-
 
 
         # Update display
