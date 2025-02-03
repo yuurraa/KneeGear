@@ -25,4 +25,6 @@ def draw_score(screen):
     high_score_text = font.render(f"High Score: {high_score}", True, constants.BLACK)
     screen.blit(score_text, (20, 50))
     screen.blit(high_score_text, (20, 80))
-
+    
+def get_score():
+    return score
