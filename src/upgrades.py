@@ -19,7 +19,9 @@ class UpgradePool:
         self.rarity_weights = {
             "Common": 60,
             "Rare": 30,
-            "Epic": 10
+            "Epic": 10,
+            "Mythic": 3,
+            "Legendary": 1
         }
         self.icon_images = {
             "additional_projectiles": pygame.image.load("assets/icons/additional_projectiles.png"),
@@ -41,14 +43,14 @@ class UpgradePool:
         self.upgrades = [
             Upgrade(
                 name="Basic Attack Cooldown",
-                description="Decrease basic attack cooldown by 30%",
+                description="Decrease basic attack cooldown by 40%",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.7),
+                apply=lambda player: setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.6),
                 icon="attack_cooldown"
             ),
             Upgrade(
-                name="Basic Attack Damage",
-                description="Increase basic attack damage by 40%",
+                name="Attack Damage",
+                description="Increase attack damage by 40%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'basic_bullet_damage_multiplier', 
                                            player.basic_bullet_damage_multiplier * 1.4),
@@ -65,7 +67,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Sniper Bullets",
-                description=r"Increase basic attack damage by 80% and bullet speed by 20%, but increases cooldown by 20%",
+                description=r"Increase damage by 80% and basic attack bullet speed by 20%, but increases basic attack cooldown by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.8),
@@ -76,20 +78,20 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Heavy Bullets",
-                description=r"Increase basic attack damage by 80%, but decreases bullet speed by 30%",
+                description=r"Increase damage by 60%, but decreases basic attack bullet speed by 30%",
                 Rarity="Epic",
                 apply=lambda player: [
-                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.8),
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.6),
                     setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.7),
                 ][-1],
                 icon="heavy"
             ),
             Upgrade(
                 name="Unhealthy Shot",
-                description=r"Increase basic attack damage by 50%, and decreases cooldown by 25%, but decreases Max HP by 20%",
+                description=r"Increase damage by 40%, and decreases basic attack cooldown by 25%, but decreases Max HP by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
-                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.5),
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.4),
                     setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.75),
                     setattr(player, 'max_health', player.max_health * 0.8),
                 ][-1],
@@ -97,90 +99,80 @@ class UpgradePool:
             ),          
             Upgrade(
                 name="Bullet Speed",
-                description="Increase all bullet speed by 40%",
+                description="Increase all bullet speed by 50%",
                 Rarity="Rare",
                 apply=lambda player: [
-                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 1.4),
-                    setattr(player, 'special_bullet_speed_multiplier', player.special_bullet_speed_multiplier * 1.4),
+                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 1.5),
+                    setattr(player, 'special_bullet_speed_multiplier', player.special_bullet_speed_multiplier * 1.5),
                 ][-1],
                 icon="bullet_speed"
             ),
             Upgrade(
                 name="Basic Attack Pierce",
-                description="Increase basic bullet piercing by 50%",
+                description="Increase basic bullet piercing by 100%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'basic_bullet_piercing_multiplier', 
-                                           player.basic_bullet_piercing_multiplier*1.5),
+                                           player.basic_bullet_piercing_multiplier*2),
                 icon="pierce"
-            ),
-            Upgrade(
-                name="Damage",
-                description="Increase all damage by 30%",
-                Rarity="Rare",
-                apply=lambda player: [
-                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.3),
-                    setattr(player, 'special_bullet_damage_multiplier', player.special_bullet_damage_multiplier * 1.3),
-                ][-1],
-                icon="attack_damage"
             ),
             
             Upgrade(
                 name="Cooldown",
-                description="Decrease all cooldowns by 25%",
+                description="Decrease all cooldowns by 30%",
                 Rarity="Rare",
                 apply=lambda player: [
-                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.75),
-                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.75),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.7),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.7),
                 ][-1],
                 icon="attack_cooldown"
             ),
             
             Upgrade(
                 name="Special Attack Damage",
-                description="Increase special attack damage by 50%",
+                description="Increase special attack damage by 70%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
-                                           player.special_bullet_damage_multiplier * 1.5),
+                                           player.special_bullet_damage_multiplier * 1.7),
                 icon="attack_damage"
             ),
             Upgrade(
                 name="Special Attack Damage EX",
-                description="Increase special attack damage by 100% but decreases basic attack damage by 30%",
+                description="Increase special attack damage by 120% but decreases attack damage by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_bullet_damage_multiplier', 
-                                           player.special_bullet_damage_multiplier * 2),
+                                           player.special_bullet_damage_multiplier * 2.2),
                     setattr(player, 'basic_bullet_damage_multiplier', 
-                                           player.basic_bullet_damage_multiplier * 0.7),
+                                           player.basic_bullet_damage_multiplier * 0.8),
                 ][-1],
                 icon="attack_damage"
             ),
             Upgrade(
                 name="Special Attack Cooldown",
-                description="Decrease special attack cooldown by 30%",
+                description="Decrease special attack cooldown by 40%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_shot_cooldown', 
-                                           player.special_shot_cooldown * 0.7),
+                                           player.special_shot_cooldown * 0.6),
                 icon="attack_cooldown"
             ),
             Upgrade(
                 name="Special Attack Cooldown EX",
-                description="Decrease special attack cooldown by 50% but increases basic attack cooldown by 20%",
+                description="Decrease special attack cooldown by 50% but increases basic attack cooldown by 10%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_shot_cooldown', 
                                            player.special_shot_cooldown * 0.5),
                     setattr(player, 'shoot_cooldown', 
-                                           player.shoot_cooldown * 1.2),
+                                           player.shoot_cooldown * 1.1),
                 ][-1],
                 icon="attack_cooldown"
             ),
             Upgrade(
                 name="Special Attack Pierce",
-                description="Increase special bullet piercing by 60%",
+                description="Increase special bullet piercing by 100%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_piercing_multiplier', 
-                                           player.special_bullet_piercing_multiplier * 1.6),
+                                           player.special_bullet_piercing_multiplier * 2),
                 icon="pierce"
             ),
             Upgrade(
@@ -213,17 +205,29 @@ class UpgradePool:
                 icon="hp"
             ),
             Upgrade(
+                name="Max HP + Damage Reduction",
+                description="Increase Max Hp by 100% and adds 5% damage reduction",
+                Rarity="Rare",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 2),
+                    setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 5),
+                ][-1],
+                max_level=4,
+                icon="hp",
+                
+            ),
+            Upgrade(
                 name="Hp Pickup",
-                description="Adds 10% to healing from hp pickups (proportion of max hp)",
+                description="Adds 15% to healing from hp pickups (proportion of max hp)",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'hp_pickup_healing_percent_bonus', player.hp_pickup_healing_percent_bonus + 10),
+                apply=lambda player: setattr(player, 'hp_pickup_healing_percent_bonus', player.hp_pickup_healing_percent_bonus + 15),
                 icon="hp_pickup"
             ),
             Upgrade(
                 name="Hp Steal",
-                description="Adds 6% Hp steal to all attacks",
+                description="Adds 5% Hp steal to all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.06),
+                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.05),
                 icon="lifesteal"
             ),
             Upgrade(
@@ -231,8 +235,45 @@ class UpgradePool:
                 description=r"Adds 15% damage reduction from all attacks",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 15),
-                max_level=6,
+                max_level=5,
                 icon="defence"
+            ),
+            Upgrade(
+                name="All Rounder",
+                description=r"Adds 30% max hp, increases damage by 20%, decreases all cooldowns by 10%",
+                Rarity="Rare",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 1.3),
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.2),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.9),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.9),
+                ][-1],
+                icon="attack_damage"
+            ),
+            Upgrade(
+                name="All Rounder Plus",
+                description=r"Adds 40% max hp, increases damage by 25%, decreases all cooldowns by 10%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 1.4),
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.25),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.9),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.9),
+                ][-1],
+                icon="attack_damage"
+            ),
+            Upgrade(
+                name="You lucky bastard",
+                description=r"Adds 100% max hp, increases damage by 50%, decreases all cooldowns by 20%, decreases aura by 100%",
+                Rarity="Legendary",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 2),
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.5),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.8),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.8),
+                ][-1],
+                max_level=1,
+                icon="attack_damage"
             ),
         ]
 

@@ -109,7 +109,8 @@ class UpgradeButton(Button):
         "Common": (144, 238, 144),  # Light green
         "Rare": (135, 206, 250),    # Light blue
         "Epic": (186, 85, 211),     # Light purple
-        "Legendary": (255, 165, 0)  # Orange
+        "Mythic": (255, 71, 76),      # Red
+        "Legendary": (255, 215, 0),    # Gold
     }
 
     def __init__(self, x, y, width, height, upgrade, icon_image=None):

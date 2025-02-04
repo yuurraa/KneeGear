@@ -188,6 +188,7 @@ class Player:
         
         return [PlayerSpecialBullet(
             self.x, self.y, angle,
+            self.basic_bullet_damage_multiplier,
             self.special_bullet_damage_multiplier,
             self.special_bullet_speed_multiplier,
             self.special_bullet_piercing_multiplier,
