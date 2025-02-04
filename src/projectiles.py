@@ -214,3 +214,16 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
                             else -constants.basic_enemy_bullet_max_turn_angle)
             
             self.angle += angle_diff
+
+@dataclass
+class SniperEnemyBullet(BaseEnemyBullet):
+    def __init__(self, x: float, y: float, speed: float, angle: float):
+        super().__init__(
+            x=x,
+            y=y,
+            angle=angle,
+            speed=speed,
+            base_damage=constants.sniper_bullet_damage,
+            size=5,
+            colour=constants.RED
+        )

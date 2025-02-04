@@ -5,7 +5,7 @@ import game_state
 import constants
 from helpers import calculate_angle
 from projectiles import Alignment
-from enemies import RegularEnemy, TankEnemy
+from enemies import RegularEnemy, TankEnemy, SniperEnemy
 
 
 def move_enemy(enemy, target_x, target_y):
@@ -41,12 +41,20 @@ def spawn_enemy():
         x = game_state.screen_width + 20
         y = random.randint(0, game_state.screen_height)
 
-    # The comment says 20% chance, but original code used 50% probability:
-    if random.random() < 0.3:
-        enemy = TankEnemy(x, y, game_state.enemy_scaling)
-    else:
-        enemy = RegularEnemy(x, y, game_state.enemy_scaling)
+    # Use weighted random selection for enemy type
+    enemy_types = [
+        (RegularEnemy, 0.6),  
+        (TankEnemy, 0.3),     
+        (SniperEnemy, 0.1)    
+    ]
     
+    EnemyClass = random.choices(
+        population=[enemy_type for enemy_type, _ in enemy_types],
+        weights=[weight for _, weight in enemy_types],
+        k=1
+    )[0]
+    
+    enemy = EnemyClass(x, y, game_state.enemy_scaling)
     game_state.enemies.append(enemy)
 
 
@@ -101,7 +109,7 @@ def handle_input():
 def update_enemies():
     current_time = pygame.time.get_ticks() / 1000.0
     for enemy in game_state.enemies[:]:
-        move_enemy(enemy, game_state.player.x, game_state.player.y)
+        enemy.move(game_state.player.x, game_state.player.y, game_state)
         enemy.shoot(game_state.player.x, game_state.player.y, current_time, game_state)
 
         if enemy.health <= 0:

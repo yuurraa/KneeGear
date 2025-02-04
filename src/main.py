@@ -93,9 +93,9 @@ def calculate_enemy_scaling(elapsed_seconds):
     scaling_factor = 2 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
-def calculate_enemy_spawn_interval(elapsed_seconds):
+def calculate_wave_spawn_interval(elapsed_seconds):
     # Start with base_enemy_spawn_interval and halve it every enemy_spawn_rate_doubling_time_seconds
-    spawn_interval = constants.base_enemy_spawn_interval * (2 ** (-elapsed_seconds / constants.enemy_spawn_rate_doubling_time_seconds))
+    spawn_interval = constants.base_wave_interval * (2 ** (-elapsed_seconds / constants.wave_spawn_rate_doubling_time_seconds))
     
     # Set a minimum spawn interval to prevent enemies from spawning too quickly
     return max(0.5, spawn_interval)
@@ -204,9 +204,12 @@ def main():
                 game_state.player.y = game_state.screen_height // 2
                 continue
         
+        # Convert in_game_ticks to seconds for enemy spawning
+        in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
+        
         # Calculate current scaling factor based on in-game ticks
-        game_state.enemy_scaling = calculate_enemy_scaling(game_state.in_game_ticks_elapsed / constants.FPS)
-        game_state.enemy_spawn_interval = calculate_enemy_spawn_interval(game_state.in_game_ticks_elapsed / constants.FPS)
+        game_state.enemy_scaling = calculate_enemy_scaling(in_game_seconds)
+        game_state.wave_interval = calculate_wave_spawn_interval(in_game_seconds)
         
         # Get current time for cooldowns
         current_time_s = pygame.time.get_ticks() / 1000.0
@@ -214,16 +217,28 @@ def main():
         drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
         drawing.draw_experience_bar()
         
-        # Convert in_game_ticks to seconds for enemy spawning
-        in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
 
-        if (in_game_seconds - game_state.last_enemy_spawn_time >= game_state.enemy_spawn_interval):
-            logic.spawn_enemy()
-            game_state.last_enemy_spawn_time = in_game_seconds
-        #if all enemies are dead, spawn an enemy
-        elif len(game_state.enemies) == 0:
-            logic.spawn_enemy()
-            game_state.last_enemy_spawn_time = in_game_seconds
+        if not game_state.wave_active:
+            # Start a new wave if enough time has passed OR if there are no enemies
+            if (in_game_seconds - game_state.last_wave_time >= game_state.wave_interval or 
+                len(game_state.enemies) == 0):
+                # Start a new wave
+                game_state.wave_active = True
+                game_state.wave_enemies_spawned = 0
+                game_state.next_enemy_spawn_time = in_game_seconds
+        else:
+            # If a wave is active, spawn enemies at 0.5 second intervals until 5 enemies have been spawned.
+            if in_game_seconds >= game_state.next_enemy_spawn_time and game_state.wave_enemies_spawned < 5:
+                logic.spawn_enemy()
+                game_state.wave_enemies_spawned += 1
+                game_state.next_enemy_spawn_time = in_game_seconds + 0.5
+
+            # Once 5 enemies have been spawned, finish the wave and reset the wave timer.
+            if game_state.wave_enemies_spawned >= 5:
+                game_state.wave_active = False
+                game_state.last_wave_time = in_game_seconds
+            
+            
 
         # Draw stopwatch using in_game_ticks
         elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
@@ -243,7 +258,7 @@ def main():
         
         # Draw enemies
         for enemy in game_state.enemies:
-            drawing.draw_enemy(enemy)
+            enemy.draw()
 
         for projectile in game_state.projectiles:
             projectile.draw(game_state.screen)

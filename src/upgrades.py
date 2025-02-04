@@ -324,6 +324,17 @@ class UpgradePool:
                 icon="pacifist",
             ),
             Upgrade(
+                name="Turtle up",
+                description="Increase Max Hp by 100% and adds 20% to damage reduction, but decreases movement speed by 30%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 2),
+                    setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
+                    setattr(player, 'speed', player.speed * 0.7),
+                ][-1],
+                icon="pacifist",
+            ),
+            Upgrade(
                 name="Pickup Healing",
                 description="Adds 15% to healing from pickups (proportion of max hp)",
                 Rarity="Common",
@@ -424,16 +435,16 @@ class UpgradePool:
                 icon="attack_damage",
                 max_level=1,
             ),
-            Upgrade(
-                name="Greed",
-                description=r"+15% xp gain",
-                Rarity="Mythic",
-                apply=lambda player: [
-                    setattr(player, 'xp_gain_percent_bonus', player.xp_gain_percent_bonus + 15),
-                ][-1],
-                icon="attack_damage",
-                max_level=1,
-            )
+            # Upgrade(
+            #     name="Greed",
+            #     description=r"+15% xp gain",
+            #     Rarity="Mythic",
+            #     apply=lambda player: [
+            #         setattr(player, 'xp_gain_percent_bonus', player.xp_gain_percent_bonus + 15),
+            #     ][-1],
+            #     icon="attack_damage",
+            #     max_level=1,
+            # )
             
         ]
 

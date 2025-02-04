@@ -64,34 +64,6 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=1
     pygame.draw.rect(surface, color, (0, 0, filled_width, bar_height))
     screen.blit(surface, (x, y))
 
-def draw_enemy(enemy):
-    screen = game_state.screen
-    if enemy.type == "tank":
-        # Draw tank enemy
-        pygame.draw.rect(screen, constants.BLACK, (enemy.x - 26, enemy.y - 26, 52, 52))
-        pygame.draw.rect(screen, (139, 69, 19), (enemy.x - 25, enemy.y - 25, 50, 50))
-        bar_width = 50
-    else:
-        # Draw regular enemy
-        pygame.draw.rect(screen, constants.BLACK, (enemy.x - 21, enemy.y - 21, 42, 42))
-        pygame.draw.rect(screen, constants.RED, (enemy.x - 20, enemy.y - 20, 40, 40))
-        bar_width = 40
-
-    # Calculate health bar position
-    health_bar_x = enemy.x - bar_width // 2
-    health_bar_y = enemy.y - 35
-
-    # Draw health bar
-    draw_health_bar(
-        health_bar_x,
-        health_bar_y,
-        enemy.health,
-        enemy.max_health,
-        constants.TRANSLUCENT_RED,
-        bar_width=bar_width,
-        bar_height=5
-    )
-
 def draw_fade_overlay():
     screen = game_state.screen
     fade_surface = pygame.Surface((game_state.screen_width, game_state.screen_height))

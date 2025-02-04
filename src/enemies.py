@@ -1,7 +1,7 @@
 import math
 import constants
 from abc import ABC, abstractmethod
-from projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet
+from projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
 import random
 
 class Enemy(ABC):
@@ -12,6 +12,12 @@ class Enemy(ABC):
         self.last_shot_time = 0
         self.last_aoe_time = 0
         self.score_reward = 5
+        self.speed = 0
+        
+        self.outline_size = 0
+        self.inner_size = 0
+        self.outline_color = 0
+        self.inner_color = 0
         
     @property
     @abstractmethod
@@ -62,12 +68,68 @@ class Enemy(ABC):
             return True
         return False
 
+    def move(self, target_x, target_y, game_state):
+        """Default movement behavior for enemies"""
+        from helpers import calculate_angle
+        angle = math.radians(calculate_angle(self.x, self.y, target_x, target_y))
+        self.x += self.speed * math.cos(angle)
+        self.y += self.speed * math.sin(angle)
+        # Restrict to screen boundaries, accounting for the experience bar
+        self._restrict_to_boundaries(game_state)
+        
+    def _restrict_to_boundaries(self, game_state):
+        """Helper method to keep enemies within screen boundaries"""
+        self.x = max(20, min(self.x, game_state.screen_width - 20))
+        self.y = max(20, min(self.y, game_state.screen_height - 20 - constants.experience_bar_height))
+    
+    def draw(self):
+        import pygame
+        import game_state
+        import constants
+        from drawing import draw_health_bar  # re-use the helper from drawing.py
+
+        screen = game_state.screen
+
+        # Draw the outer (outline) rectangle
+        pygame.draw.rect(
+            screen,
+            self.outline_color,
+            (self.x - self.outline_size // 2, self.y - self.outline_size // 2, self.outline_size, self.outline_size)
+        )
+
+        # Draw the inner (main) rectangle
+        pygame.draw.rect(
+            screen,
+            self.inner_color,
+            (self.x - self.inner_size // 2, self.y - self.inner_size // 2, self.inner_size, self.inner_size)
+        )
+
+        # Draw health bar above the enemy
+        health_bar_x = self.x - self.inner_size // 2
+        health_bar_y = self.y - 35
+        draw_health_bar(
+            health_bar_x,
+            health_bar_y,
+            self.health,
+            self.max_health,
+            constants.TRANSLUCENT_RED,
+            bar_width=self.inner_size,
+            bar_height=5
+        )
+
+
 class RegularEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_basic_enemy_xp_reward * self.scaling)
+        self.speed = constants.basic_enemy_speed
+        self.outline_size = constants.REGULAR_ENEMY_OUTLINE_SIZE
+        self.inner_size = constants.REGULAR_ENEMY_INNER_SIZE
+        self.outline_color = constants.REGULAR_ENEMY_OUTLINE_COLOR
+        self.inner_color = constants.REGULAR_ENEMY_INNER_COLOR
         
+
     @property
     def type(self):
         return "regular"
@@ -100,12 +162,19 @@ class RegularEnemy(Enemy):
                 game_state.projectiles.append(bullet)
             self.last_aoe_time = current_time
 
+
+
 class TankEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_tank_xp_reward * self.scaling)
-        self.last_shotgun_time = 0
+        self.speed = constants.tank_speed
+        self.outline_size = constants.TANK_ENEMY_OUTLINE_SIZE
+        self.inner_size = constants.TANK_ENEMY_INNER_SIZE
+        self.outline_color = constants.TANK_ENEMY_OUTLINE_COLOR
+        self.inner_color = constants.TANK_ENEMY_INNER_COLOR
+        self.last_shotgun_time = 0  
         
     @property
     def type(self):
@@ -131,4 +200,75 @@ class TankEnemy(Enemy):
                 )
                 game_state.projectiles.append(pellet)
             self.last_shotgun_time = current_time
+        
+class SniperEnemy(Enemy):
+    def __init__(self, x, y, scaling):
+        super().__init__(x, y, scaling)
+        self._health = self.max_health
+        self.score_reward = math.floor(constants.base_sniper_xp_reward * self.scaling)
+        self.last_volley_shot_time = 0  # Track timing of individual shots within volley
+        self.shots_fired_in_volley = 0  # Track number of shots in current volley
+        self.speed = constants.sniper_move_speed
+        self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE
+        self.inner_size = constants.SNIPER_ENEMY_INNER_SIZE
+        self.outline_color = constants.SNIPER_ENEMY_OUTLINE_COLOR
+        self.inner_color = constants.SNIPER_ENEMY_INNER_COLOR
+        
+
+    @property
+    def type(self):
+        return "sniper"
+    
+    @property
+    def base_health(self):
+        return constants.base_sniper_health
+
+    def move(self, target_x, target_y, game_state):
+        # Sniper keeps its custom movement behavior
+        # Retreated movement if too close to the player
+        dx = self.x - target_x
+        dy = self.y - target_y
+        distance = math.hypot(dx, dy)
+        
+        if distance < constants.sniper_keep_distance:
+            # Move away from player
+            angle = math.atan2(dy, dx)
+            self.x += math.cos(angle) * self.speed
+            self.y += math.sin(angle) * self.speed
+        else:
+            # Use default movement behavior to approach player
+            super().move(target_x, target_y, game_state)
+            
+        # Restrict to screen boundaries
+        self._restrict_to_boundaries(game_state)
+
+    def shoot(self, target_x, target_y, current_time, game_state):
+        """
+        Sniper enemy behavior:
+        - If the enemy is too close to the player, it now retreats in the move() method.
+        - If the volley cooldown has passed, fire a volley of three fast, high-damage bullets
+          with brief delays between shots.
+        """
+        if current_time - self.last_shot_time >= constants.sniper_volley_interval:
+            # Reset volley counter when starting new volley
+            self.shots_fired_in_volley = 0
+            self.last_volley_shot_time = current_time
+            self.last_shot_time = current_time
+
+        # Fire individual shots within volley with 0.05s spacing
+        if (self.shots_fired_in_volley < 3 and 
+            current_time - self.last_volley_shot_time >= 0.05):
+            from helpers import calculate_angle
+            aim_angle = calculate_angle(self.x, self.y, target_x, target_y)
+            
+            bullet = SniperEnemyBullet(
+                x=self.x,
+                y=self.y,
+                angle=aim_angle,
+                speed=constants.sniper_bullet_speed,
+            )
+            game_state.projectiles.append(bullet)
+            
+            self.shots_fired_in_volley += 1
+            self.last_volley_shot_time = current_time
         

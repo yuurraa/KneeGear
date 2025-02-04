@@ -8,13 +8,16 @@ in_game_ticks_elapsed = 0 #doesnt include menus
 last_special_shot_time = 0
 last_shot_time = 0
 
-enemy_spawn_interval = constants.base_enemy_spawn_interval
-last_enemy_spawn_time = 0
-
 enemies = []
 hearts = []
 projectiles = []  # Will contain all bullets regardless of alignment
 enemy_scaling = 1.0
+
+wave_interval = constants.base_wave_interval
+wave_active = False
+wave_enemies_spawned = 0
+next_enemy_spawn_time = 0.0
+last_wave_time = -999
 
 fade_alpha = 0
 is_restarting = False
@@ -37,3 +40,5 @@ damage_numbers = []
 player:Player = None  # Will be initialized in main.py after screen dimensions are known
 
 scroll_offset = 0  # Initialize scroll offset for upgrades tab
+
+

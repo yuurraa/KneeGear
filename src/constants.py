@@ -34,7 +34,7 @@ player_special_bullet_size = 20
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
-player_damage_reduction_percent_cap = 95 # if damage reduction is greater than this, it will max out at 95%
+player_damage_reduction_percent_cap = 97 # if damage reduction is greater than this, it will max out at 97%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
 level_up_xp_cost_scaling_factor = 1.4
@@ -43,7 +43,7 @@ enemy_stat_doubling_time = 80 # seconds
 
 base_tank_health = 120
 base_tank_damage = 2
-base_tank_xp_reward = 30
+base_tank_xp_reward = 25
 tank_speed = 1.5
 tank_shotgun_interval = 4
 tank_shotgun_spread = 20
@@ -54,7 +54,7 @@ tank_pellet_speed_range = (7, 12)
 
 base_basic_enemy_health = 25
 base_basic_enemy_damage = 5
-base_basic_enemy_xp_reward = 10
+base_basic_enemy_xp_reward = 12
 basic_enemy_speed = 3
 basic_enemy_homing_bullet_speed = 7
 basic_enemy_bullet_speed = 9
@@ -63,10 +63,35 @@ basic_enemy_bullet_interval = 5
 basic_enemy_bullet_max_turn_angle = 1.6
 
 # Spawn intervals
-base_enemy_spawn_interval = 6
-enemy_spawn_rate_doubling_time_seconds = 300
+base_wave_interval = 30
+wave_spawn_rate_doubling_time_seconds = 300
 
 # Add this with the other constants
 experience_bar_height = 10  # Match the height used in draw_experience_bar
+
+# Sniper Enemy Constants
+base_sniper_health = 20         # Base health for a sniper enemy (scaled by enemy scaling)
+base_sniper_xp_reward = 12      # XP reward when a sniper enemy is defeated
+sniper_volley_interval = 4      # Seconds between sniper volleys
+sniper_bullet_speed = 17        # Speed of sniper bullet (very fast)
+sniper_bullet_damage = 16       # High damage per sniper bullet
+sniper_keep_distance = 800      # Desired minimum distance from the player (in game units)
+sniper_move_speed = 1         
+
+# Enemy drawing constants
+REGULAR_ENEMY_OUTLINE_SIZE = 42
+REGULAR_ENEMY_INNER_SIZE = 40
+REGULAR_ENEMY_OUTLINE_COLOR = BLACK
+REGULAR_ENEMY_INNER_COLOR = RED
+
+TANK_ENEMY_OUTLINE_SIZE = 52
+TANK_ENEMY_INNER_SIZE = 50
+TANK_ENEMY_OUTLINE_COLOR = BLACK
+TANK_ENEMY_INNER_COLOR = BROWN
+
+SNIPER_ENEMY_OUTLINE_SIZE = 42  # Adjust as needed
+SNIPER_ENEMY_INNER_SIZE = 40
+SNIPER_ENEMY_OUTLINE_COLOR = BLACK
+SNIPER_ENEMY_INNER_COLOR = PURPLE
 
 
