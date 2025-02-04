@@ -9,7 +9,7 @@ import drawing
 import score
 from player import Player, PlayerState
 from helpers import calculate_angle, reset_game
-from menu import draw_level_up_menu, draw_pause_menu
+from menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
@@ -160,6 +160,8 @@ def main():
 
     # Main game loop
     game_state.running = True
+    scroll_offset = 0
+
     while game_state.running:
         # Fill background with GREY instead of WHITE
         game_state.screen.fill(constants.LIGHT_GREY)
@@ -250,7 +252,7 @@ def main():
 
         # Handle pause menu
         if getattr(game_state, 'paused', False):
-            quit_button, volume_slider = draw_pause_menu(game_state.screen)
+            quit_button, resume_button, volume_slider, upgrades_button = draw_pause_menu(game_state.screen)
             
             for event in pygame.event.get():
                 # First handle universal events
@@ -258,18 +260,50 @@ def main():
                     game_state.running = False
                 
                 # Then handle pause-specific events
-                volume_slider.handle_event(event)  # Handle ALL events first for smooth dragging
-                quit_button.handle_event(event)  # Update button hover state
+                volume_slider.handle_event(event)
+                quit_button.handle_event(event)
+                resume_button.handle_event(event)
                 
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    game_state.paused = False  # Unpause
+                    game_state.paused = False
                 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    # Check quit button after slider to prevent conflict
                     if quit_button.rect.collidepoint(event.pos):
                         game_state.running = False
-                    
+                    elif resume_button.rect.collidepoint(event.pos):
+                        game_state.paused = False
+                    elif upgrades_button.rect.collidepoint(event.pos):
+                        game_state.showing_upgrades = True
+                        game_state.paused = False  # Close pause menu when opening upgrades tab
+            
             # Draw updates and continue loop
+            pygame.display.flip()
+            continue
+        
+        # Handle upgrades tab
+        if getattr(game_state, 'showing_upgrades', False):
+            close_button = draw_upgrades_tab(game_state.screen)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_state.running = False
+
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    game_state.showing_upgrades = False
+                    game_state.paused = True  # Return to pause menu
+
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if close_button.rect.collidepoint(event.pos):
+                        game_state.showing_upgrades = False
+                        game_state.paused = True  # Return to pause menu
+
+                # Handle scrolling
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 4:  # Scroll up
+                        game_state.scroll_offset = max(game_state.scroll_offset - 20, 0)
+                    elif event.button == 5:  # Scroll down
+                        game_state.scroll_offset += 20
+
             pygame.display.flip()
             continue
         
@@ -292,10 +326,9 @@ def main():
                 # Handle button events for upgrades
                 for button in upgrade_buttons:
                     if button.handle_event(event):
-                        # Use player's method to apply the upgrade,
-                        # which also updates the upgrade count.
-                        game_state.player.apply_upgrade(button.upgrade)
-                        # Reset state and clear upgrade buttons
+                        # Apply the selected upgrade using apply_upgrade method
+                        game_state.player.apply_upgrade(button.upgrade)  # Use apply_upgrade method
+                        # Reset the state and clear upgrade buttons
                         game_state.player.state = PlayerState.ALIVE
                         if hasattr(game_state, 'current_upgrade_buttons'):
                             delattr(game_state, 'current_upgrade_buttons')
@@ -340,12 +373,11 @@ def main():
             show_game_over_screen(game_state.screen, game_state.screen_width, 
                                 game_state.screen_height, game_state.fade_alpha)
 
-            
-
         # Update display
         game_state.in_game_ticks_elapsed += 1
         pygame.display.flip()
         clock.tick(constants.FPS)
+
 
     pygame.mixer.quit()  # Clean up mixer when quitting
     pygame.quit()

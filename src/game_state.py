@@ -35,3 +35,5 @@ damage_numbers = []
 
 #type def to not get type warnings
 player:Player = None  # Will be initialized in main.py after screen dimensions are known
+
+scroll_offset = 0  # Initialize scroll offset for upgrades tab

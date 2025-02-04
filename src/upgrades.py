@@ -14,6 +14,16 @@ class Upgrade:
     icon: str  # Could be used for future UI improvements
     max_level: int = 99999  # Default to infinite unless specified otherwise
 
+    def __hash__(self):
+        # Use the name as the unique identifier for hashing
+        return hash(self.name)
+
+    def __eq__(self, other):
+        # Ensure equality is based on the name
+        if isinstance(other, Upgrade):
+            return self.name == other.name
+        return False
+
 class UpgradePool:
     def __init__(self):
         self.rarity_weights = {

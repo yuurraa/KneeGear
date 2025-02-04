@@ -263,11 +263,10 @@ def draw_pause_menu(screen):
 
     # Create menu panel
     panel_width = 500
-    panel_height = 300
+    panel_height = 350  # Increased height
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
-    # Use upgrade menu colors (white background)
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
@@ -279,33 +278,129 @@ def draw_pause_menu(screen):
 
     # Initialize UI elements once
     if not hasattr(game_state, 'pause_ui'):
-        # Quit button
+        # Button dimensions
         button_width = 200
         button_height = 60
-        button_x = (game_state.screen_width - button_width) // 2
-        button_y = panel_y + 200
-        quit_button = Button(button_x, button_y, button_width, button_height, "Quit", constants.RED)  # Changed to red
+
+        # Calculate positions for buttons
+        button_x = (game_state.screen_width - (button_width * 2 + 20)) // 2
+        button_y = panel_y + 260  # Moved up slightly
+
+        # Quit button
+        quit_button = Button(button_x + button_width + 20, button_y, button_width, button_height, "Quit", constants.RED)
+
+        # Resume button
+        resume_button = Button(button_x, button_y, button_width, button_height, "Resume", constants.GREEN)
 
         # Volume Slider
         slider_width = 300
         slider_height = 20
         slider_x = (game_state.screen_width - slider_width) // 2
-        slider_y = panel_y + 150
+        slider_y = panel_y + 120  # Adjusted to give more space
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
-        
+
+        # Centralize Upgrades Button
+        upgrades_button_x = (game_state.screen_width - button_width) // 2
+        upgrades_button = Button(upgrades_button_x, slider_y + 50, button_width, button_height, "Upgrades", constants.BLUE)
+
         game_state.pause_ui = {
             'quit_button': quit_button,
-            'volume_slider': volume_slider
+            'resume_button': resume_button,
+            'volume_slider': volume_slider,
+            'upgrades_button': upgrades_button
         }
 
     # Draw persistent elements
     game_state.pause_ui['quit_button'].draw(screen)
+    game_state.pause_ui['resume_button'].draw(screen)
     game_state.pause_ui['volume_slider'].draw(screen)
+    game_state.pause_ui['upgrades_button'].draw(screen)
 
     # Draw "Volume" label above the slider
     small_font = pygame.font.Font(None, 30)
     volume_text = small_font.render("Volume", True, constants.BLACK)
-    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 130))
+    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 100))
     screen.blit(volume_text, volume_text_rect)
 
-    return game_state.pause_ui['quit_button'], game_state.pause_ui['volume_slider']
+    return game_state.pause_ui['quit_button'], game_state.pause_ui['resume_button'], game_state.pause_ui['volume_slider'], game_state.pause_ui['upgrades_button']
+
+def draw_upgrades_tab(screen):
+    # Create semi-transparent overlay
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
+    overlay.fill(constants.BLACK)
+    overlay.set_alpha(128)
+    screen.blit(overlay, (0, 0))
+
+    # Constants for button dimensions
+    button_width = 370  # Updated button width
+    button_height = 50
+    button_spacing = 20
+    max_column_height = 1000  # For testing purposes
+    title_height = 40  # Height for the title text
+    close_button_height = 50  # Height for the close button
+
+    # Calculate the number of upgrades
+    num_upgrades = len(game_state.player.applied_upgrades)
+
+    # Calculate panel dimensions
+    panel_width = 570  # Base width
+    panel_height = 200 + min((button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)), max_column_height)  # Dynamic height capped
+
+    # Calculate the number of columns needed
+    num_columns = (50 + (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1))) // max_column_height + 1
+
+    # Increase the panel width by 350 pixels for each new column
+    panel_width += (num_columns - 1) * 370
+
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
+
+    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
+
+    # Draw title text
+    title_font = pygame.font.Font(None, 36)  # Reduced font size for title
+    desc_font = pygame.font.Font(None, 28)    # Reduced font size for description
+
+    title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
+    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 10))  # Moved down by 10px
+    screen.blit(title_surface, title_rect)
+
+    # Display upgrades
+    y_offset = panel_y + title_height + 30  # Updated starting y position
+    column_index = 0  # Track the current column
+
+    for i, upgrade in enumerate(game_state.player.applied_upgrades):
+        # Determine the rarity color
+        rarity_color = UpgradeButton.RARITY_COLORS.get(upgrade.Rarity, constants.LIGHT_GREY)
+
+        # Calculate the x position for the current column
+        x_offset = panel_x + (panel_width / num_columns) * column_index + (panel_width / num_columns - button_width) / 2
+
+        # Append the count of the upgrade to its name
+        upgrade_count = game_state.player.upgrade_levels.get(upgrade.name, 0)
+        display_name = f"{upgrade.name} ({upgrade_count}x)"  # Append count
+
+        # Create a button for each upgrade with the rarity color, but set the text to an empty string
+        button = Button(x_offset, y_offset, button_width, button_height, "", rarity_color)
+        button.draw(screen)  # Draw the button
+
+        # Use desc_font to render the upgrade name inside the button
+        name_surface = desc_font.render(display_name, True, constants.BLACK)
+        name_rect = name_surface.get_rect(center=(x_offset + button_width // 2, y_offset + button_height // 2))
+        screen.blit(name_surface, name_rect)
+
+        # Update y_offset for the next button
+        y_offset += button_height + button_spacing
+
+        # Check if we need to move to the next column
+        if y_offset + button_height > panel_y + title_height + 30 + max_column_height:
+            y_offset = panel_y + title_height + 30  # Reset y_offset for the new column
+            column_index += 1  # Move to the next column
+
+    # Add a close button with a dead zone
+    close_button_x = panel_x + (panel_width - 100) // 2  # Centralize the close button
+    close_button = Button(close_button_x, panel_y + panel_height - close_button_height - 20, 90, close_button_height, "Close", constants.RED)
+    close_button.draw(screen)
+    return close_button
+

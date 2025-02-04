@@ -238,9 +238,8 @@ class Player:
         print(f"Player leveled up to level {self.player_level}")
             
 
-
     def apply_upgrade(self, upgrade):
         upgrade.apply(self)
         self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
-
-    # def reset
+        self.applied_upgrades.add(upgrade)
+        print(f"Applied upgrade: {upgrade.name}")  # Debugging output
