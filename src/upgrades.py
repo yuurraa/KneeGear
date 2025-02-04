@@ -145,7 +145,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Damage EX",
-                description="Increase special attack damage by 80% but decreases basic attack damage by 30%",
+                description="Increase special attack damage by 100% but decreases basic attack damage by 30%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_bullet_damage_multiplier', 
@@ -165,7 +165,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Cooldown EX",
-                description="Decrease special attack cooldown by 40% but increases basic attack cooldown by 20%",
+                description="Decrease special attack cooldown by 50% but increases basic attack cooldown by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_shot_cooldown', 
@@ -177,10 +177,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Pierce",
-                description="Increase special bullet piercing by 50%",
+                description="Increase special bullet piercing by 60%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_piercing_multiplier', 
-                                           player.special_bullet_piercing_multiplier * 1.5),
+                                           player.special_bullet_piercing_multiplier * 1.6),
                 icon="pierce"
             ),
             Upgrade(
@@ -228,7 +228,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Damage Reduction",
-                description=r"Adds 15% damage reduction to all attacks",
+                description=r"Adds 15% damage reduction from all attacks",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 15),
                 max_level=6,
