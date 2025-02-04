@@ -19,12 +19,13 @@ class Player:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.angle = 0  # Add angle property
-        self.size = 25  # Base size of the player square
+
         
         self.reset()
 
     def reset(self):
         # Stats
+        self.size = 25  # Base size of the player square
         self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
@@ -53,7 +54,13 @@ class Player:
         self.basic_bullet_extra_projectiles_per_shot_bonus = 0
         self.damage_reduction_percent_bonus = 0
         self.hp_steal = 0
+
+        self.xp_gain_percent_bonus = 0
+        self.rage_percent_bonus = 0 # percent damage gain per enemy on screen
+        self.frenzy_percent_bonus = 0 # percent damage gain per projectile on screen
+        self.fear_percent_bonus = 0 # max percent damage gain based on how low your hp is
         
+
         self.state = PlayerState.ALIVE
         
         # Shooting cooldowns
@@ -147,6 +154,16 @@ class Player:
         self.update_hp_regen()
         self.move(keys)
 
+    @property
+    def effective_damage_multiplier(self):
+        # Import game_state locally to avoid potential circular dependencies.
+        import game_state
+        # For each enemy on screen, add 20% extra damage.
+        enemy_bonus = 1 + self.rage_percent_bonus/100 * len(game_state.enemies)
+        projectile_bonus = 1 + self.frenzy_percent_bonus/100 * len(game_state.projectiles)
+        fear_bonus = 1 + self.fear_percent_bonus/100 * (self.max_health - self.health) / self.max_health
+        return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus
+
     def shoot_regular(self, mouse_pos, current_time):
         """Regular shot (left-click)"""
         if (self.state == PlayerState.DEAD or 
@@ -160,34 +177,34 @@ class Player:
         bullets = []
         total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
         
-        # If there's only one projectile, shoot it straight
+        # Use the effective damage multiplier (which includes the per-enemy bonus)
+        effective_multiplier = self.effective_damage_multiplier
+        
+        # If only one projectile is fired:
         if total_projectiles == 1:
             bullets.append(PlayerBasicBullet(
                 self.x, self.y, angle, 
-                self.base_damage_multiplier,
+                effective_multiplier,
                 self.basic_bullet_damage_multiplier, 
                 self.basic_bullet_speed_multiplier, 
                 math.ceil(self.basic_bullet_piercing_multiplier)
             ))
             return bullets
 
-        # For multiple projectiles, space them out perpendicular to the shooting direction
-        spread_distance = 15  # pixels between each projectile
-        perpendicular_angle = angle + 90  # perpendicular to shooting direction
+        # For multiple projectiles: space them out perpendicular to the shooting direction
+        spread_distance = 15  # pixels between projectiles
+        perpendicular_angle = angle + 90  # perpendicular direction
         
-        # Calculate starting position for the spread
         total_spread = spread_distance * (total_projectiles - 1)
-        start_x = self.x - (total_spread/2) * math.cos(math.radians(perpendicular_angle))
-        start_y = self.y - (total_spread/2) * math.sin(math.radians(perpendicular_angle))
+        start_x = self.x - (total_spread / 2) * math.cos(math.radians(perpendicular_angle))
+        start_y = self.y - (total_spread / 2) * math.sin(math.radians(perpendicular_angle))
         
         for i in range(total_projectiles):
-            # Calculate offset position for each bullet
             offset_x = start_x + (spread_distance * i) * math.cos(math.radians(perpendicular_angle))
             offset_y = start_y + (spread_distance * i) * math.sin(math.radians(perpendicular_angle))
-            
             bullets.append(PlayerBasicBullet(
                 offset_x, offset_y, angle,
-                self.base_damage_multiplier,
+                effective_multiplier,
                 self.basic_bullet_damage_multiplier,
                 self.basic_bullet_speed_multiplier,
                 self.basic_bullet_piercing_multiplier
@@ -205,9 +222,11 @@ class Player:
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_special_shot_time = current_time
         
+        effective_multiplier = self.effective_damage_multiplier
+        
         return [PlayerSpecialBullet(
             self.x, self.y, angle,
-            self.base_damage_multiplier,
+            effective_multiplier,
             self.special_bullet_damage_multiplier,
             self.special_bullet_speed_multiplier,
             self.special_bullet_piercing_multiplier,
@@ -239,9 +258,20 @@ class Player:
         return regular_progress, special_progress 
     
     def gain_experience(self, amount):
-        self.player_experience += amount
+        # Apply XP gain bonus as a percentage increase
+        import game_state
+        bonus_multiplier = 1 + (self.xp_gain_percent_bonus / 100)
+        modified_amount = amount * bonus_multiplier
+        self.player_experience += modified_amount
         if self.player_experience >= self.experience_to_next_level:
             self.level_up()
+        game_state.experience_updates.append({
+            "x": self.x,
+            "y": self.y,
+            "value": int(modified_amount),
+            "timer": 60,
+            "color": constants.BLUE
+        })
             
     def level_up(self):
         self.player_level += 1

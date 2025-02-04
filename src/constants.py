@@ -29,7 +29,7 @@ player_basic_bullet_pierce = 1
 player_basic_bullet_cooldown = 1
 
 player_special_bullet_speed = 15
-player_special_bullet_damage = 30
+player_special_bullet_damage = 40
 player_special_bullet_size = 20
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
@@ -37,7 +37,7 @@ player_special_bullet_cooldown = 10
 player_damage_reduction_percent_cap = 95 # if damage reduction is greater than this, it will max out at 95%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.42
+level_up_xp_cost_scaling_factor = 1.4
 
 enemy_stat_doubling_time = 80 # seconds
 

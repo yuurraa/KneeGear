@@ -58,13 +58,7 @@ class Enemy(ABC):
             from score import increase_score
             increase_score(self.score_reward)
             game_state.player.gain_experience(self.score_reward)
-            game_state.experience_updates.append({
-                "x": self.x,
-                "y": self.y,
-                "value": self.score_reward,
-                "timer": 60,
-                "color": constants.BLUE
-            })
+
             return True
         return False
 

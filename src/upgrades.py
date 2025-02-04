@@ -303,11 +303,11 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Max HP + Damage Reduction",
-                description="Increase Max Hp by 100% and adds 5% damage reduction",
+                description="Increase Max Hp by 100% and adds 10% damage reduction",
                 Rarity="Rare",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 2),
-                    setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 5),
+                    setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
                 ][-1],
                 max_level=4,
                 icon="hybrid",
@@ -340,9 +340,9 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Damage Reduction",
-                description=r"Adds 20% damage reduction from all attacks",
+                description=r"Adds 25% damage reduction from all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 20),
+                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 25),
                 icon="defence"
             ),
             Upgrade(
@@ -393,7 +393,48 @@ class UpgradePool:
                 ][-1],
                 icon="size_matters",
                 max_level=1,
+            ),
+            Upgrade(
+                name="Rage",
+                description=r"+20% damage per enemy on screen",
+                Rarity="Mythic",
+                apply=lambda player: [
+                    setattr(player, 'rage_percent_bonus', player.rage_percent_bonus + 20),
+                ][-1],
+                icon="attack_damage",
+                max_level=1,
+            ),
+            Upgrade(
+                name="Fear",
+                description=r"+Up to +300% damage based on how low your hp is",
+                Rarity="Mythic",
+                apply=lambda player: [
+                    setattr(player, 'fear_percent_bonus', player.fear_percent_bonus + 300),
+                ][-1],
+                icon="attack_damage",
+                max_level=1,
+            ),
+            Upgrade(
+                name="Frenzy",
+                description=r"+0.5% damage per projectile on screen",
+                Rarity="Mythic",
+                apply=lambda player: [
+                    setattr(player, 'frenzy_percent_bonus', player.frenzy_percent_bonus + 0.5),
+                ][-1],
+                icon="attack_damage",
+                max_level=1,
+            ),
+            Upgrade(
+                name="Greed",
+                description=r"+15% xp gain",
+                Rarity="Mythic",
+                apply=lambda player: [
+                    setattr(player, 'xp_gain_percent_bonus', player.xp_gain_percent_bonus + 15),
+                ][-1],
+                icon="attack_damage",
+                max_level=1,
             )
+            
         ]
 
     def get_random_upgrades(self, count: int, player: Player) -> List[Upgrade]:
