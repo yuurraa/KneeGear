@@ -34,14 +34,19 @@ class Player:
         
         self.ticks_since_last_hp_regen = 0
         #upgrades
+        self.base_damage_multiplier = 1
         self.basic_bullet_damage_multiplier = 1
         self.special_bullet_damage_multiplier = 1
+        
         self.basic_bullet_speed_multiplier = 1
         self.special_bullet_speed_multiplier = 1
-        self.hp_regen_percent_bonus = 0
-        self.hp_pickup_healing_percent_bonus = 0
+        
         self.basic_bullet_piercing_multiplier = 1.0  # default multiplier, i.e. no extra piercing
         self.special_bullet_piercing_multiplier = 1.0
+        
+        self.hp_regen_percent_bonus = 0
+        self.hp_pickup_healing_percent_bonus = 0
+
         self.special_bullet_can_repierce = False
         self.basic_bullet_extra_projectiles_per_shot_bonus = 0
         self.damage_reduction_percent_bonus = 0
@@ -147,6 +152,7 @@ class Player:
         if total_projectiles == 1:
             bullets.append(PlayerBasicBullet(
                 self.x, self.y, angle, 
+                self.base_damage_multiplier,
                 self.basic_bullet_damage_multiplier, 
                 self.basic_bullet_speed_multiplier, 
                 math.ceil(self.basic_bullet_piercing_multiplier)
@@ -169,6 +175,7 @@ class Player:
             
             bullets.append(PlayerBasicBullet(
                 offset_x, offset_y, angle,
+                self.base_damage_multiplier,
                 self.basic_bullet_damage_multiplier,
                 self.basic_bullet_speed_multiplier,
                 self.basic_bullet_piercing_multiplier
@@ -188,7 +195,7 @@ class Player:
         
         return [PlayerSpecialBullet(
             self.x, self.y, angle,
-            self.basic_bullet_damage_multiplier,
+            self.base_damage_multiplier,
             self.special_bullet_damage_multiplier,
             self.special_bullet_speed_multiplier,
             self.special_bullet_piercing_multiplier,

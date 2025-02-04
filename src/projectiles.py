@@ -99,20 +99,20 @@ class PlayerBaseBullet(BaseBullet):
         return False
 
 class PlayerBasicBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, can_repierce: bool=False):
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, can_repierce: bool=False):
         super().__init__(x, y, angle, 
                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
-                        constants.player_basic_bullet_damage * basic_bullet_damage_multiplier,
+                        constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
                         math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
                         can_repierce,
                         constants.player_basic_bullet_size,
                         constants.BLUE)
         
 class PlayerSpecialBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, basic_bullet_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, can_repierce: bool=False):
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, can_repierce: bool=False):
         super().__init__(x, y, angle,
                          constants.player_special_bullet_speed * special_bullet_speed_multiplier,
-                         constants.player_special_bullet_damage * basic_bullet_damage_multiplier * special_bullet_damage_multiplier,
+                         constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier,
                          math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
                          can_repierce,
                          constants.player_special_bullet_size,

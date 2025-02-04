@@ -292,13 +292,14 @@ def main():
                 # Handle button events for upgrades
                 for button in upgrade_buttons:
                     if button.handle_event(event):
-                        # Apply the selected upgrade
-                        button.upgrade.apply(game_state.player)
-                        # Reset the state and clear upgrade buttons
+                        # Use player's method to apply the upgrade,
+                        # which also updates the upgrade count.
+                        game_state.player.apply_upgrade(button.upgrade)
+                        # Reset state and clear upgrade buttons
                         game_state.player.state = PlayerState.ALIVE
                         if hasattr(game_state, 'current_upgrade_buttons'):
                             delattr(game_state, 'current_upgrade_buttons')
-                        break  # Exit the event loop after handling the upgrade
+                        break
 
             pygame.display.flip()
             clock.tick(constants.FPS)
