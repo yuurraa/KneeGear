@@ -41,17 +41,26 @@ class UpgradePool:
             "attack_damage": pygame.image.load("assets/icons/attack_damage.png"),
             "attack_cooldown": pygame.image.load("assets/icons/attack_cooldown.png"),
             "bullet_speed": pygame.image.load("assets/icons/bullet_speed.png"),
+            "cooldown_ex": pygame.image.load("assets/icons/cooldown_ex.png"),
+            "damage_ex": pygame.image.load("assets/icons/damage_ex.png"),
             "defence": pygame.image.load("assets/icons/defence.png"),
+            "fat_special": pygame.image.load("assets/icons/fat_special.png"),
             "heavy": pygame.image.load("assets/icons/heavy.png"),
             "hp_pickup": pygame.image.load("assets/icons/hp_pickup.png"),
             "hp_regen": pygame.image.load("assets/icons/hp_regen.png"),
             "hp": pygame.image.load("assets/icons/hp.png"),
+            "hybrid_plus": pygame.image.load("assets/icons/hybrid_plus.png"),
+            "hybrid": pygame.image.load("assets/icons/hybrid.png"),
             "lifesteal": pygame.image.load("assets/icons/lifesteal.png"),
             "movement_speed": pygame.image.load("assets/icons/movement_speed.png"),
+            "pacifist": pygame.image.load("assets/icons/pacifist.png"),
             "pierce": pygame.image.load("assets/icons/pierce.png"),
             "repierce": pygame.image.load("assets/icons/repierce.png"),
+            "size_matters": pygame.image.load("assets/icons/size_matters.png"),
             "sniper": pygame.image.load("assets/icons/sniper.png"),
+            "super_regen": pygame.image.load("assets/icons/super_regen.png"),
             "unhealthy": pygame.image.load("assets/icons/unhealthy.png"),
+            "you_lucky_bastard": pygame.image.load("assets/icons/you_lucky_bastard.png"),
         }
         # general rules:
         # 1. general damage scaling should be 1.4x per level as the benchmark, increase or decrease based on rarity or other factors
@@ -78,7 +87,7 @@ class UpgradePool:
                     setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.9),
                     setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.9),
                 ][-1],
-                icon="attack_damage"
+                icon="hybrid"
             ),
             Upgrade(
                 name="Attack Damage Plus",
@@ -200,13 +209,14 @@ class UpgradePool:
                     setattr(player, 'base_damage_multiplier', 
                                            player.base_damage_multiplier * 0.8),
                 ][-1],
-                icon="attack_damage"
+                icon="damage_ex"
             ),
             Upgrade(
                 name="Special Attack Cooldown",
                 description="Decrease special attack cooldown by 40%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'special_shot_cooldown', 
+
                                            player.special_shot_cooldown * 0.6),
                 icon="attack_cooldown"
             ),
@@ -228,7 +238,7 @@ class UpgradePool:
                     setattr(player, 'shoot_cooldown', 
                                            player.shoot_cooldown * 1.1),
                 ][-1],
-                icon="attack_cooldown"
+                icon="cooldown_ex"
             ),
             Upgrade(
                 name="Special Attack Pierce",
@@ -248,7 +258,7 @@ class UpgradePool:
                     setattr(player, 'special_bullet_radius_multiplier', player.special_bullet_radius_multiplier * 1.25),
                 ][-1],
                 max_level=4,
-                icon="attack_damage"
+                icon="fat_special"
             ),
             Upgrade(
                 name="Repiercing Special Shot",
@@ -268,24 +278,24 @@ class UpgradePool:
             ),
             Upgrade(
                 name="HP Regen",
-                description="Adds 1% to hp regen (proportion of max hp) ",
+                description="Adds 1% to HP regen (proportion of max hp) ",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 1),
                 icon="hp_regen"
             ),
             Upgrade(
                 name="Super HP Regen",
-                description="Adds 3% to hp regen (proportion of max hp) but decreases max hp by 50%",
+                description="Adds 3% to HP regen (proportion of max HP) but decreases max HP by 50%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 3),
                     setattr(player, 'max_health', player.max_health * 0.5),
                 ][-1],
-                icon="hp_regen"
+                icon="super_regen"
             ),
             Upgrade(
                 name="Max HP",
-                description="Increase Max Hp by 100%",
+                description="Increase Max HP by 100%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'max_health', player.max_health * 2),
                 icon="hp"
@@ -299,7 +309,7 @@ class UpgradePool:
                     setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 5),
                 ][-1],
                 max_level=4,
-                icon="hp",
+                icon="hybrid",
             ),
             Upgrade(
                 name="Pacifist",
@@ -310,18 +320,18 @@ class UpgradePool:
                     setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 0.5),
                     setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 0.8),
                 ][-1],
-                icon="hp",
+                icon="pacifist",
             ),
             Upgrade(
-                name="Hp Pickup",
-                description="Adds 15% to healing from hp pickups (proportion of max hp)",
+                name="HP Pickup",
+                description="Adds 15% to healing from HP pickups (proportion of max hp)",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'hp_pickup_healing_percent_bonus', player.hp_pickup_healing_percent_bonus + 15),
                 icon="hp_pickup"
             ),
             Upgrade(
-                name="Hp Steal",
-                description="Adds 4% Hp steal to all attacks",
+                name="Lifesteal",
+                description="Adds 4% lifesteal to all attacks",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.04),
                 icon="lifesteal"
@@ -343,7 +353,7 @@ class UpgradePool:
                     setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.9),
                     setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.9),
                 ][-1],
-                icon="attack_damage"
+                icon="hybrid"
             ),
             Upgrade(
                 name="All Rounder Plus",
@@ -355,10 +365,10 @@ class UpgradePool:
                     setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.9),
                     setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.9),
                 ][-1],
-                icon="attack_damage"
+                icon="hybrid_plus"
             ),
             Upgrade(
-                name="You lucky bastard",
+                name="You Lucky Bastard",
                 description=r"Increases max hp by 100%, increases damage by 50%, decreases all cooldowns by 20%",
                 Rarity="Legendary",
                 apply=lambda player: [
@@ -368,14 +378,14 @@ class UpgradePool:
                     setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.8),
                 ][-1],
                 max_level=1,
-                icon="attack_damage"
+                icon="you_lucky_bastard"
             ),
             Upgrade(
-                name="Size matters",
+                name="Size Matters",
                 description="Reduces player size by 30%",
                 Rarity="Mythic",
                 apply=lambda player: setattr(player, 'size', floor(player.size * 0.7)),
-                icon="hp",
+                icon="size_matters",
                 max_level=1,
             )
         ]
