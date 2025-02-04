@@ -278,18 +278,18 @@ class UpgradePool:
             ),
             Upgrade(
                 name="HP Regen",
-                description="Adds 1% to HP regen (proportion of max hp) ",
+                description="Adds 1.5% to HP regen (proportion of max hp) ",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 1),
+                apply=lambda player: setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 1.5),
                 icon="hp_regen"
             ),
             Upgrade(
                 name="Super HP Regen",
-                description="Adds 3% to HP regen (proportion of max HP) but decreases max HP by 50%",
+                description="Adds 4% to HP regen (proportion of max HP) but decreases max HP by 30%",
                 Rarity="Epic",
                 apply=lambda player: [
-                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 3),
-                    setattr(player, 'max_health', player.max_health * 0.5),
+                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 4),
+                    setattr(player, 'max_health', player.max_health * 0.7),
                 ][-1],
                 icon="super_regen"
             ),
@@ -323,11 +323,12 @@ class UpgradePool:
                 icon="pacifist",
             ),
             Upgrade(
-                name="HP Pickup",
-                description="Adds 15% to healing from HP pickups (proportion of max hp)",
+                name="Pickup Healing",
+                description="Adds 15% to healing from pickups (proportion of max hp)",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'hp_pickup_healing_percent_bonus', player.hp_pickup_healing_percent_bonus + 15),
-                icon="hp_pickup"
+                icon="hp_pickup",
+                max_level=4,
             ),
             Upgrade(
                 name="Lifesteal",
