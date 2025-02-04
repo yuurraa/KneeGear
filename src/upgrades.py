@@ -285,10 +285,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Super HP Regen",
-                description="Adds 4% to HP regen (proportion of max HP) but decreases max HP by 30%",
+                description="Adds 4.5% to HP regen (proportion of max HP) but decreases max HP by 30%",
                 Rarity="Epic",
                 apply=lambda player: [
-                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 4),
+                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 4.5),
                     setattr(player, 'max_health', player.max_health * 0.7),
                 ][-1],
                 icon="super_regen"
@@ -313,11 +313,11 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Pacifist",
-                description="Increase Max Hp by 200% and adds 0.5% to hp regen, but decreases damage by 20%",
+                description="Increase Max Hp by 200% and adds 1.5% to hp regen, but decreases damage by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 2),
-                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 0.5),
+                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 1.5),
                     setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 0.8),
                 ][-1],
                 icon="pacifist",
@@ -370,22 +370,26 @@ class UpgradePool:
             ),
             Upgrade(
                 name="You Lucky Bastard",
-                description=r"Increases max hp by 100%, increases damage by 50%, decreases all cooldowns by 20%",
+                description=r"Increases max hp by 100%, Adds 10% damage reduction, increases damage by 50%, decreases all cooldowns by 20%",
                 Rarity="Legendary",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 2),
                     setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 1.5),
                     setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.8),
                     setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.8),
+                    setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
                 ][-1],
                 max_level=1,
                 icon="you_lucky_bastard"
             ),
             Upgrade(
                 name="Size Matters",
-                description="Reduces player size by 30%",
+                description="Reduces player size by 30%, increases movement speed by 30%",
                 Rarity="Mythic",
-                apply=lambda player: setattr(player, 'size', floor(player.size * 0.7)),
+                apply=lambda player: [
+                    setattr(player, 'size', floor(player.size * 0.7)),
+                    setattr(player, 'speed', player.speed * 1.3),
+                ][-1],
                 icon="size_matters",
                 max_level=1,
             )
