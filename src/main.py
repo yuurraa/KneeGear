@@ -333,6 +333,7 @@ def main():
             
             # Remove all enemies
             game_state.enemies.clear()  # Clears the list, instantly removing all enemies
+            score.update_high_score()
             
             # Display game over screen
             show_game_over_screen(game_state.screen, game_state.screen_width, 
