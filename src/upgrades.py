@@ -65,27 +65,27 @@ class UpgradePool:
                 max_level=3,
                 icon="additional_projectiles"
             ),
-            Upgrade(
-                name="Sniper Bullets",
-                description=r"Increase damage by 80% and basic attack bullet speed by 20%, but increases basic attack cooldown by 20%",
-                Rarity="Epic",
-                apply=lambda player: [
-                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.8),
-                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 1.2),
-                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 1.2)
-                ][-1],
-                icon="sniper"
-            ),
-            Upgrade(
-                name="Heavy Bullets",
-                description=r"Increase damage by 60%, but decreases basic attack bullet speed by 30%",
-                Rarity="Epic",
-                apply=lambda player: [
-                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.6),
-                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.7),
-                ][-1],
-                icon="heavy"
-            ),
+            # Upgrade(
+            #     name="Sniper Bullets",
+            #     description=r"Increase damage by 80% and basic attack bullet speed by 20%, but increases basic attack cooldown by 20%",
+            #     Rarity="Epic",
+            #     apply=lambda player: [
+            #         setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.8),
+            #         setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 1.2),
+            #         setattr(player, 'shoot_cooldown', player.shoot_cooldown * 1.2)
+            #     ][-1],
+            #     icon="sniper"
+            # ),
+            # Upgrade(
+            #     name="Heavy Bullets",
+            #     description=r"Increase damage by 60%, but decreases basic attack bullet speed by 30%",
+            #     Rarity="Epic",
+            #     apply=lambda player: [
+            #         setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 1.6),
+            #         setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.7),
+            #     ][-1],
+            #     icon="heavy"
+            # ),
             Upgrade(
                 name="Unhealthy Shot",
                 description=r"Increase damage by 40%, and decreases basic attack cooldown by 25%, but decreases Max HP by 20%",
@@ -240,7 +240,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="All Rounder",
-                description=r"Adds 30% max hp, increases damage by 20%, decreases all cooldowns by 10%",
+                description=r"Increase max hp by 30%, increases damage by 20%, decreases all cooldowns by 10%",
                 Rarity="Rare",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 1.3),
@@ -252,7 +252,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="All Rounder Plus",
-                description=r"Adds 40% max hp, increases damage by 25%, decreases all cooldowns by 10%",
+                description=r"Increase max hp by 40%, increases damage by 25%, decreases all cooldowns by 10%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 1.4),
