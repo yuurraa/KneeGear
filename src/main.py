@@ -78,6 +78,12 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
     game_over_surface.blit(restart_text, restart_text_rect)
     
+    # Add the version text at the bottom
+    version_font = pygame.font.Font(None, 24)  # Smaller font size
+    version_text = version_font.render("Gooner Game v0.1", True, constants.WHITE)
+    version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))  # Position at the bottom
+    game_over_surface.blit(version_text, version_text_rect)
+    
     # Draw the entire game over surface onto the main screen
     screen.blit(game_over_surface, (0, 0))
 
