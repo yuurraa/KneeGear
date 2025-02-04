@@ -37,7 +37,7 @@ player_special_bullet_cooldown = 10
 player_damage_reduction_percent_cap = 95 # if damage reduction is greater than this, it will max out at 95%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.45
+level_up_xp_cost_scaling_factor = 1.42
 
 enemy_stat_doubling_time = 80 # seconds
 
