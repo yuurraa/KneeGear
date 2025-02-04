@@ -19,6 +19,7 @@ class Player:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.angle = 0  # Add angle property
+        self.size = 25  # Base size of the player square
         
         self.reset()
 
@@ -47,6 +48,7 @@ class Player:
         self.hp_regen_percent_bonus = 0
         self.hp_pickup_healing_percent_bonus = 0
 
+        self.special_bullet_radius_multiplier = 1.0
         self.special_bullet_can_repierce = False
         self.basic_bullet_extra_projectiles_per_shot_bonus = 0
         self.damage_reduction_percent_bonus = 0
@@ -65,16 +67,25 @@ class Player:
     
     def draw(self, screen):
         # Draw player body
-        pygame.draw.rect(screen, constants.BLACK, (self.x - 16, self.y - 16, 22, 22))  # Outline
-        pygame.draw.rect(screen, constants.GREEN, (self.x - 15, self.y - 15, 20, 20))
+        outline_offset = 1
+        pygame.draw.rect(screen, constants.BLACK, 
+                        (self.x - self.size/2 - outline_offset, 
+                         self.y - self.size/2 - outline_offset, 
+                         self.size + 2*outline_offset, 
+                         self.size + 2*outline_offset))  # Outline
+        pygame.draw.rect(screen, constants.GREEN, 
+                        (self.x - self.size/2, 
+                         self.y - self.size/2, 
+                         self.size, 
+                         self.size))
         
         # Calculate the player's visual center
-        center_x = self.x - 5
-        center_y = self.y - 5
+        center_x = self.x
+        center_y = self.y
         
         # Direction arrow
-        arc_radius = 20      # Distance from the center where the line starts
-        arrow_length = 10    # Length of the line beyond that point
+        arc_radius = self.size      # Distance from the center where the line starts
+        arrow_length = self.size/2    # Length of the line beyond that point
         angle_rad = math.radians(self.angle)
         
         # Starting point: on the circle (arc) boundary relative to the player's center
@@ -118,9 +129,10 @@ class Player:
         if keys[pygame.K_d]:
             new_x += self.speed
 
-        # Restrict player to screen boundaries
-        self.x = max(15, min(new_x, self.screen_width - 15))
-        self.y = max(15, min(new_y, self.screen_height - 15))
+        # Restrict player to screen boundaries with size consideration
+        half_size = self.size/2
+        self.x = max(half_size, min(new_x, self.screen_width - half_size))
+        self.y = max(half_size, min(new_y, self.screen_height - half_size))
 
     def update_hp_regen(self):
         self.ticks_since_last_hp_regen += 1
@@ -199,6 +211,7 @@ class Player:
             self.special_bullet_damage_multiplier,
             self.special_bullet_speed_multiplier,
             self.special_bullet_piercing_multiplier,
+            self.special_bullet_radius_multiplier,
             self.special_bullet_can_repierce
         )]
 

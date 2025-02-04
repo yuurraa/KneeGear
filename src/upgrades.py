@@ -2,8 +2,10 @@ from dataclasses import dataclass
 from typing import Callable, List
 import random
 from math import ceil, floor
-from player import Player
 import pygame
+
+import constants
+from player import Player
 
 @dataclass
 class Upgrade:
@@ -17,6 +19,7 @@ class Upgrade:
 class UpgradePool:
     def __init__(self):
         self.rarity_weights = {
+            "test": 1000000,
             "Common": 60,
             "Rare": 30,
             "Epic": 10,
@@ -53,6 +56,34 @@ class UpgradePool:
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'base_damage_multiplier', 
                                            player.base_damage_multiplier * 1.4),
+                icon="attack_damage"
+            ),
+            Upgrade(
+                name="Attack Damage and cooldown",
+                description="Increase attack damage by 25% and decrease all cooldowns by 10%",
+                Rarity="Common",
+                apply=lambda player: [
+                    setattr(player, 'base_damage_multiplier', 
+                                           player.base_damage_multiplier * 1.25),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.9),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.9),
+                ][-1],
+                icon="attack_damage"
+            ),
+            Upgrade(
+                name="Attack Damage Plus",
+                description="Increase attack damage by 45%",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'base_damage_multiplier', 
+                                           player.base_damage_multiplier * 1.45),
+                icon="attack_damage"
+            ),
+            Upgrade(
+                name="Basic Attack Damage",
+                description="Increase basic attack damage by 70%",
+                Rarity="Common",
+                apply=lambda player: setattr(player, 'basic_bullet_damage_multiplier', 
+                                           player.basic_bullet_damage_multiplier * 1.7),
                 icon="attack_damage"
             ),
             Upgrade(
@@ -136,9 +167,17 @@ class UpgradePool:
             Upgrade(
                 name="Special Attack Damage",
                 description="Increase special attack damage by 70%",
-                Rarity="Rare",
+                Rarity="Common",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
                                            player.special_bullet_damage_multiplier * 1.7),
+                icon="attack_damage"
+            ),
+            Upgrade(
+                name="Special Attack Damage Plus",
+                description="Increase special attack damage by 90%",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
+                                           player.special_bullet_damage_multiplier * 1.9),
                 icon="attack_damage"
             ),
             Upgrade(
@@ -156,9 +195,17 @@ class UpgradePool:
             Upgrade(
                 name="Special Attack Cooldown",
                 description="Decrease special attack cooldown by 40%",
-                Rarity="Rare",
+                Rarity="Common",
                 apply=lambda player: setattr(player, 'special_shot_cooldown', 
                                            player.special_shot_cooldown * 0.6),
+                icon="attack_cooldown"
+            ),
+            Upgrade(
+                name="Special Attack Cooldown Plus",
+                description="Decrease special attack cooldown by 45%",
+                Rarity="Rare",
+                apply=lambda player: setattr(player, 'special_shot_cooldown', 
+                                           player.special_shot_cooldown * 0.55),
                 icon="attack_cooldown"
             ),
             Upgrade(
@@ -182,6 +229,18 @@ class UpgradePool:
                 icon="pierce"
             ),
             Upgrade(
+                name="Fat Special Attack",
+                description=r"Increase special attack bullet damage by 200% and radius by 25%, but increases special attack cooldown by 30%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'special_bullet_damage_multiplier', player.special_bullet_damage_multiplier * 3),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 1.3),
+                    setattr(player, 'special_bullet_radius_multiplier', player.special_bullet_radius_multiplier * 1.25),
+                ][-1],
+                max_level=4,
+                icon="attack_damage"
+            ),
+            Upgrade(
                 name="Repiercing Special Shot",
                 description="Special bullets can pierce the same enemy multiple times",
                 Rarity="Epic",
@@ -192,15 +251,26 @@ class UpgradePool:
             Upgrade(
                 name="Movement Speed",
                 description="Increase movement speed by 30%",
-                Rarity="Common",
+                Rarity="Rare",
                 apply=lambda player: setattr(player, 'speed', player.speed * 1.3),
+                max_level=20,
                 icon="movement_speed"
             ),
             Upgrade(
                 name="HP Regen",
-                description="Adds 0.5% to hp regen (proportion of max hp) ",
+                description="Adds 1% to hp regen (proportion of max hp) ",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 0.5),
+                apply=lambda player: setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 1),
+                icon="hp_regen"
+            ),
+            Upgrade(
+                name="Super HP Regen",
+                description="Adds 3% to hp regen (proportion of max hp) but decreases max hp by 50%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 3),
+                    setattr(player, 'max_health', player.max_health * 0.5),
+                ][-1],
                 icon="hp_regen"
             ),
             Upgrade(
@@ -220,7 +290,17 @@ class UpgradePool:
                 ][-1],
                 max_level=4,
                 icon="hp",
-                
+            ),
+            Upgrade(
+                name="Pacifist",
+                description="Increase Max Hp by 200% and adds 0.5% to hp regen, but decreases damage by 20%",
+                Rarity="Epic",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 2),
+                    setattr(player, 'hp_regen_percent_bonus', player.hp_regen_percent_bonus + 0.5),
+                    setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 0.8),
+                ][-1],
+                icon="hp",
             ),
             Upgrade(
                 name="Hp Pickup",
@@ -231,17 +311,16 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Hp Steal",
-                description="Adds 5% Hp steal to all attacks",
+                description="Adds 4% Hp steal to all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.05),
+                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.04),
                 icon="lifesteal"
             ),
             Upgrade(
                 name="Damage Reduction",
-                description=r"Adds 15% damage reduction from all attacks",
+                description=r"Adds 20% damage reduction from all attacks",
                 Rarity="Rare",
-                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 15),
-                max_level=5,
+                apply=lambda player: setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 20),
                 icon="defence"
             ),
             Upgrade(
@@ -281,6 +360,14 @@ class UpgradePool:
                 max_level=1,
                 icon="attack_damage"
             ),
+            Upgrade(
+                name="Size matters",
+                description="Reduces player size by 30%",
+                Rarity="Mythic",
+                apply=lambda player: setattr(player, 'size', floor(player.size * 0.7)),
+                icon="hp",
+                max_level=1,
+            )
         ]
 
     def get_random_upgrades(self, count: int, player: Player) -> List[Upgrade]:
@@ -293,18 +380,25 @@ class UpgradePool:
             if player.upgrade_levels.get(upgrade.name, 0) < upgrade.max_level
         ]
         
+        def has_damage_reduction(upgrade):
+            return getattr(upgrade, "damage_reduction_increase", 0) > 0
+
+        #dont give damage reduction if player already has it maxed out
+        available_upgrades = [
+            upgrade for upgrade in available_upgrades
+            if not (has_damage_reduction(upgrade) and player.damage_reduction_percent_bonus >= constants.player_damage_reduction_percent_cap)
+        ]
+        
         for _ in range(min(count, len(available_upgrades))):
             if not available_upgrades:
                 break
                 
-            # Instead of grouping by rarity:
+            # we weight by upgrade rarity
             weights = [self.rarity_weights[upgrade.Rarity] for upgrade in available_upgrades]
-            
-            # Then randomly select an upgrade of that rarity
             chosen_upgrade = random.choices(available_upgrades, weights=weights, k=1)[0]
             selected_upgrades.append(chosen_upgrade)
             
-            # Remove the chosen upgrade from available pool
+            # Remove the chosen upgrade from the available pool
             available_upgrades.remove(chosen_upgrade)
             
         return selected_upgrades 

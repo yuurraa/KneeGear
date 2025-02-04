@@ -109,13 +109,13 @@ class PlayerBasicBullet(PlayerBaseBullet):
                         constants.BLUE)
         
 class PlayerSpecialBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, can_repierce: bool=False):
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, special_bullet_radius_multiplier: float, can_repierce: bool=False):
         super().__init__(x, y, angle,
                          constants.player_special_bullet_speed * special_bullet_speed_multiplier,
                          constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier,
                          math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
                          can_repierce,
-                         constants.player_special_bullet_size,
+                         constants.player_special_bullet_size * special_bullet_radius_multiplier,
                          constants.PURPLE)
 
 @dataclass
@@ -135,7 +135,11 @@ class BaseEnemyBullet(BaseBullet):
             pierce=1
         )
     def check_and_apply_collision(self, target) -> bool:
-        if pygame.Rect(game_state.player.x - 15, game_state.player.y - 15, 30, 30).colliderect(self.get_rect()):
+        # Use player's size attribute for collision detection
+        if pygame.Rect(game_state.player.x - game_state.player.size/2, 
+                      game_state.player.y - game_state.player.size/2, 
+                      game_state.player.size, 
+                      game_state.player.size).colliderect(self.get_rect()):
             actual_damage = math.floor(self.damage * self.scaling)
             game_state.player.health -= actual_damage
             

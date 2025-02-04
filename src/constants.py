@@ -20,7 +20,7 @@ music_path = "assets/audio/music.mp3"
 
 # Speeds, angles, and cooldowns
 base_player_health = 100
-base_player_hp_regen_percent = 1
+base_player_hp_regen_percent = 0.5
 player_speed = 4.5
 player_basic_bullet_speed = 10
 player_basic_bullet_damage = 10
@@ -29,14 +29,15 @@ player_basic_bullet_pierce = 1
 player_basic_bullet_cooldown = 1
 
 player_special_bullet_speed = 15
-player_special_bullet_damage = 25
+player_special_bullet_damage = 30
 player_special_bullet_size = 20
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
+player_damage_reduction_percent_cap = 95 # if damage reduction is greater than this, it will max out at 95%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.43
+level_up_xp_cost_scaling_factor = 1.45
 
 enemy_stat_doubling_time = 80 # seconds
 
