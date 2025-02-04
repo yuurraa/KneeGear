@@ -65,9 +65,10 @@ class UpgradePool:
         # general rules:
         # 1. general damage scaling should be 1.4x per level as the benchmark, increase or decrease based on rarity or other factors
         # 2. specialized damage scaling should be less than (general damage scaling * 2) but more than (general damage scaling * 1.5) for same rarity
-        # 3. increased damage scaling from cooldown reduction should be slightly less than general damage scaling
-        # 4. hp scaling should be 2x per level as the benchmark
-        # 5. there should be balanced porportion bewteen hp/DR and damage scaling
+        # 3. Special attack should have slightly better scaling than basic attack
+        # 4. increased damage scaling from cooldown reduction should be slightly less than general damage scaling
+        # 5. hp scaling should be 2x per level as the benchmark
+        # 6. there should be balanced porportion bewteen hp/DR and damage scaling
         self.upgrades = [
             Upgrade(
                 name="Attack Damage",
@@ -124,12 +125,12 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Sniper Bullets",
-                description=r"Increase basic attack damage by 150% and bullet speed by 20%, but increases basic attack cooldown by 20%",
+                description=r"Increase basic attack damage by 160% and bullet speed by 20%, but increases basic attack cooldown by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
-                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 2.5),
+                    setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 2.6),
                     setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 1.2),
-                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 1.2)
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 1.25)
                 ][-1],
                 icon="sniper"
             ),
@@ -145,10 +146,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Unhealthy Shot",
-                description=r"Increase damage by 70%, but decreases Max HP by 20%",
+                description=r"Increase damage by 80%, but decreases Max HP by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
-                    setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 1.7),
+                    setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 1.8),
                     setattr(player, 'max_health', player.max_health * 0.8),
                 ][-1],
                 icon="unhealthy"
@@ -185,27 +186,27 @@ class UpgradePool:
             
             Upgrade(
                 name="Special Attack Damage",
-                description="Increase special attack damage by 70%",
+                description="Increase special attack damage by 80%",
                 Rarity="Common",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
-                                           player.special_bullet_damage_multiplier * 1.7),
+                                           player.special_bullet_damage_multiplier * 1.8),
                 icon="attack_damage"
             ),
             Upgrade(
                 name="Special Attack Damage Plus",
-                description="Increase special attack damage by 90%",
+                description="Increase special attack damage by 100%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_damage_multiplier', 
-                                           player.special_bullet_damage_multiplier * 1.9),
+                                           player.special_bullet_damage_multiplier * 2),
                 icon="attack_damage"
             ),
             Upgrade(
                 name="Special Attack Damage EX",
-                description="Increase special attack damage by 100% but decreases attack damage by 20%",
+                description=r"Increase special attack damage by 120% but decreases attack damage by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_bullet_damage_multiplier',     
-                                           player.special_bullet_damage_multiplier * 2),
+                                           player.special_bullet_damage_multiplier * 2.2),
                     setattr(player, 'base_damage_multiplier', 
                                            player.base_damage_multiplier * 0.8),
                 ][-1],
@@ -242,10 +243,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Pierce",
-                description="Increase special bullet piercing by 100%",
+                description="Increase special bullet piercing by 120%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'special_bullet_piercing_multiplier', 
-                                           player.special_bullet_piercing_multiplier * 2),
+                                           player.special_bullet_piercing_multiplier * 2.2),
                 icon="pierce"
             ),
             Upgrade(
