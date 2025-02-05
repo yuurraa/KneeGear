@@ -1,6 +1,8 @@
 import math
 import pygame
 import game_state
+import constants
+import os
 
 
 def calculate_angle(x1, y1, x2, y2):
@@ -26,4 +28,26 @@ def reset_game():
     game_state.wave_enemies_spawned = 0
     game_state.next_enemy_spawn_time = 0
     game_state.first_enemy_spawned = False  # Reset first enemy spawn flag
+    
+def load_music_settings():
+    """Load music settings from a file."""
+    try:
+        if not os.path.exists("data/settings.txt"):
+            save_music_settings(constants.music_volume)
+
+        with open("data/settings.txt", "r") as file:
+            volume_line = file.readline().strip()
+            volume = float(volume_line)
+            return max(0.0, min(1.0, volume))
+    except Exception as e:
+        print(f"Error loading settings: {e}")
+        return constants.music_volume
+
+def save_music_settings(volume):
+    """Save music settings to a file."""
+    try:
+        with open("data/settings.txt", "w") as file:
+            file.write(f"{volume}\n")
+    except Exception as e:
+        print(f"Error saving settings: {e}")
     

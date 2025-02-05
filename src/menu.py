@@ -4,6 +4,7 @@ import game_state
 from player import PlayerState
 from upgrades import UpgradePool
 import random
+from helpers import save_music_settings
 
 class Button:
     def __init__(self, x, y, width, height, text, color):
@@ -67,7 +68,6 @@ class Slider:
         pygame.draw.rect(screen, self.knob_color, (knob_x, knob_y, self.knob_width, self.knob_height))
         pygame.draw.rect(screen, constants.BLACK, (knob_x, knob_y, self.knob_width, self.knob_height), 2)
 
-
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = event.pos
@@ -93,6 +93,7 @@ class Slider:
                 self.value = (new_knob_x - self.x) / (self.width - self.knob_width)
                 constants.music_volume = self.value
                 pygame.mixer.music.set_volume(self.value)
+                save_music_settings(self.value)  # Save the new volume
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.dragging = False
         elif event.type == pygame.MOUSEMOTION and self.dragging:
@@ -104,6 +105,7 @@ class Slider:
             self.value = (new_knob_x - self.x) / (self.width - self.knob_width)
             constants.music_volume = self.value
             pygame.mixer.music.set_volume(self.value)
+            save_music_settings(self.value)  # Save the new volume
 
 class UpgradeButton(Button):
     RARITY_COLORS = {

@@ -1,6 +1,7 @@
 import pygame
 from mutagen import File
 import threading
+import os  # Import os module to check for file existence
 
 import constants
 import game_state
@@ -8,7 +9,7 @@ import logic
 import drawing
 import score
 from player import Player, PlayerState
-from helpers import calculate_angle, reset_game
+from helpers import calculate_angle, reset_game, load_music_settings, save_music_settings
 from menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab
 import random
 
@@ -106,6 +107,9 @@ def load_and_play_music():
     Uses Mutagen to get the duration without loading the entire sound.
     """
     try:
+        # Load music volume from settings
+        constants.music_volume = load_music_settings()
+
         # Use Mutagen to get the duration
         audio = File(constants.music_path)
         if audio is None or not hasattr(audio.info, 'length'):
@@ -123,7 +127,7 @@ def load_and_play_music():
         start_pos = random.uniform(0, max_start)
         print(f"Starting music at position: {start_pos} seconds")
 
-        pygame.mixer.music.play(-1, start= start_pos)  # -1 for infinite loop
+        pygame.mixer.music.play(-1, start=start_pos)  # -1 for infinite loop
 
     except Exception as e:
         print(f"Error loading music: {e}")
@@ -167,6 +171,9 @@ def main():
     # Main game loop
     game_state.running = True
     scroll_offset = 0
+
+    # Load volume at the start
+    constants.music_volume = load_music_settings()
 
     while game_state.running:
         # Fill background with GREY instead of WHITE
@@ -403,4 +410,6 @@ def main():
     pygame.mixer.quit()  # Clean up mixer when quitting
     pygame.quit()
 if __name__ == "__main__":
+    if not os.path.exists("data"):
+        os.makedirs("data")  # Create the data directory if it doesn't exist
     main()

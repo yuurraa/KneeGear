@@ -175,3 +175,4 @@ cython_debug/
 
 # High score
 data/high_score.txt
+data/settings.txt
