@@ -354,7 +354,7 @@ def draw_upgrades_tab(screen):
                   (button_spacing * (num_upgrades - 1))) // max_column_height + 1
 
     # Calculate panel width based on number of columns
-    column_width = int(game_state.screen_width * 0.193)  # ~370px on 1920px width
+    column_width = int(game_state.screen_width * 0.22)  # ~370px on 1920px width
     panel_width = base_panel_width + (num_columns - 1) * column_width
 
     panel_x = (game_state.screen_width - panel_width) // 2
