@@ -225,7 +225,7 @@ def main():
                 # Start a new wave
                 game_state.wave_active = True
                 game_state.wave_enemies_spawned = 0
-                game_state.next_enemy_spawn_time = in_game_seconds
+                game_state.next_enemy_spawn_time = in_game_seconds + 0.5
         else:
             # If a wave is active, spawn enemies at 0.5 second intervals until 5 enemies have been spawned.
             if in_game_seconds >= game_state.next_enemy_spawn_time and game_state.wave_enemies_spawned < 5:
