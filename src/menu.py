@@ -298,7 +298,7 @@ def draw_level_up_menu(screen):
 
     # Get the number of upgrade choices the player should have
     num_choices = 3  # Default
-    if any(upgrade.name == "+1 Upgrade Choice" for upgrade in game_state.player.applied_upgrades):
+    if any(upgrade == "+1 Upgrade Choice" for upgrade in game_state.player.applied_upgrades):
         num_choices = 4
 
     # Create menu panel - using proportional sizes and adjusting width based on number of choices

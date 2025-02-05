@@ -6,6 +6,10 @@ from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
 from src.helpers import calculate_angle
 import src.constants as constants
 
+# Constants for the barrier shield
+barrier_shield_hp_fraction = constants.BARRIER_SHIELD_HP_FRACTION
+barrier_shield_regeneration_time = constants.BARRIER_SHIELD_REGENERATION_TIME
+
 class PlayerState(Enum):
     ALIVE = "alive"
     DEAD = "dead"
@@ -20,7 +24,6 @@ class Player:
         self.screen_height = screen_height
         self.angle = 0  # Add angle property
 
-        
         self.reset()
 
     def reset(self):
@@ -78,6 +81,11 @@ class Player:
         self.applied_upgrades = set()  # Tracks names of applied upgrades
         self.upgrade_levels = {}  # Tracks number of times each upgrade has been applied
         self.active_buffs = {}  # Dictionary to store active buffs and their end ticks (not times)
+        self.barrier_shield_active = False
+        self.barrier_shield_hp = 0
+        self.barrier_shield_regeneration_time = 0  # Timer for shield regeneration
+        self.base_speed = 5.0  # Define a base speed
+        self.speed = self.base_speed
     
     def draw(self, screen):
         # Draw player body
@@ -162,6 +170,16 @@ class Player:
         self.update_hp_regen()
         self.update_buffs()
         self.move(keys)
+
+        # Handle shield regeneration
+        if not self.barrier_shield_active and self.barrier_shield_hp <= 0:
+            if self.barrier_shield_regeneration_time > 0:
+                self.barrier_shield_regeneration_time -= 1
+                print(f"Shield regeneration timer: {self.barrier_shield_regeneration_time}")
+            else:
+                self.barrier_shield_hp = self.max_health * constants.BARRIER_SHIELD_HP_FRACTION
+                self.barrier_shield_active = True
+                print("Shield regenerated and is now active.")
 
     def update_buffs(self):
         # Remove expired buffs
@@ -265,11 +283,30 @@ class Player:
         )]
 
     def take_damage(self, amount):
-        # Apply damage reduction (as a percentage)
-        reduced_damage = amount * (1 - (self.damage_reduction_percent_bonus / 100))
-        self.health = max(0, self.health - reduced_damage)
-        if self.health <= 0:
-            self.state = PlayerState.DEAD
+        if self.barrier_shield_active and self.barrier_shield_hp > 0:
+            absorbed_damage = min(amount, self.barrier_shield_hp)
+            self.barrier_shield_hp -= absorbed_damage
+            remaining_damage = amount - absorbed_damage
+
+            print(f"Shield absorbed {absorbed_damage} damage. Remaining shield HP: {self.barrier_shield_hp}")
+
+            if self.barrier_shield_hp <= 0:
+                self.barrier_shield_active = False
+                self.barrier_shield_regeneration_time = constants.BARRIER_SHIELD_REGENERATION_TIME  # Start regeneration timer
+                print("Shield depleted. Regeneration started.")
+
+            if remaining_damage > 0:
+                self.health -= remaining_damage
+                print(f"Health reduced by {remaining_damage}. Current health: {self.health}")
+                if self.health <= 0:
+                    self.state = PlayerState.DEAD
+                    print("Player has died.")
+        else:
+            self.health -= amount
+            print(f"Health reduced by {amount}. Current health: {self.health}")
+            if self.health <= 0:
+                self.state = PlayerState.DEAD
+                print("Player has died.")
 
     def heal(self, amount):
         self.health = min(self.max_health, self.health + amount)
@@ -318,8 +355,14 @@ class Player:
     def apply_upgrade(self, upgrade):
         upgrade.apply(self)
         self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
-        self.applied_upgrades.add(upgrade)
+        self.applied_upgrades.add(upgrade.name)  # Store upgrade names as strings
         print(f"Applied upgrade: {upgrade.name}")  # Debugging output
+        
+        # Activate the shield if the Barrier Shield upgrade is applied
+        if upgrade.name == "Barrier Shield":
+            self.barrier_shield_active = True
+            self.barrier_shield_hp = self.max_health * constants.BARRIER_SHIELD_HP_FRACTION  # Ensure HP is set
+            print(f"Barrier Shield activated with HP: {self.barrier_shield_hp}")  # Debugging output
 
     def is_dead(self):
         return self.state == PlayerState.DEAD

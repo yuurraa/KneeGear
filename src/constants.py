@@ -18,10 +18,17 @@ BROWN = (139, 69, 19)
 music_volume = 0.1
 music_path = "assets/audio/music.mp3"
 
+
+
 # Speeds, angles, and cooldowns
 base_player_health = 100
 base_player_hp_regen_percent = 0.5
 player_speed = 4.5
+
+# Constants for the barrier shield
+BARRIER_SHIELD_REGENERATION_TIME = 300  # Frames or ticks before regeneration starts
+BARRIER_SHIELD_HP_FRACTION = 0.2  # Fraction of max_health as shield HP
+
 player_basic_bullet_speed = 10
 player_basic_bullet_damage = 10
 player_basic_bullet_size = 5
@@ -108,5 +115,4 @@ CHARGER_ENEMY_OUTLINE_SIZE = 38  # Slightly smaller than regular enemies
 CHARGER_ENEMY_INNER_SIZE = 36
 CHARGER_ENEMY_OUTLINE_COLOR = BLACK
 CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies
-
 

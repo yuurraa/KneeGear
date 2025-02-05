@@ -65,6 +65,28 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=1
     pygame.draw.rect(surface, color, (0, 0, filled_width, bar_height))
     screen.blit(surface, (x, y))
 
+def draw_shield_bar(x, y, shield, max_shield, bar_width=100, bar_height=10):
+    screen = game_state.screen
+    filled_width = int((shield / max_shield) * bar_width)
+    surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
+    pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height))
+    pygame.draw.rect(surface, (0, 0, 255, 128), (0, 0, filled_width, bar_height))  # Translucent blue
+    screen.blit(surface, (x, y))
+
+def draw_player_with_shield(player):
+    # Draw the shield (e.g., a translucent circle around the player)
+    pygame.draw.circle(
+        game_state.screen,
+        (0, 0, 255, 128),  # Translucent blue
+        (int(player.x), int(player.y)),
+        player.size + 10,  # Adjust the shield radius as needed
+        width=2  # Thickness of the shield circle
+    )
+
+    # Draw the shield bar below the player
+    max_shield = player.max_health * constants.BARRIER_SHIELD_HP_FRACTION
+    draw_shield_bar(20, 40, player.barrier_shield_hp, max_shield)
+
 def draw_fade_overlay():
     screen = game_state.screen
     fade_surface = pygame.Surface((game_state.screen_width, game_state.screen_height))

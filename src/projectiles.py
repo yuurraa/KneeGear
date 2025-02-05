@@ -135,17 +135,19 @@ class BaseEnemyBullet(BaseBullet):
             pierce=1
         )
     def check_and_apply_collision(self, target) -> bool:
-        # Use player's size attribute for collision detection
-        if pygame.Rect(game_state.player.x - game_state.player.size/2, 
-                      game_state.player.y - game_state.player.size/2, 
-                      game_state.player.size, 
-                      game_state.player.size).colliderect(self.get_rect()):
+        player = game_state.player
+        player_rect = pygame.Rect(
+            player.x - player.size / 2,
+            player.y - player.size / 2,
+            player.size,
+            player.size
+        )
+        if player_rect.colliderect(self.get_rect()):
             actual_damage = math.floor(self.damage * self.scaling)
-            game_state.player.health -= actual_damage
-            
+            player.take_damage(actual_damage)
             game_state.damage_numbers.append({
-                "x": game_state.player.x,
-                "y": game_state.player.y,
+                "x": player.x,
+                "y": player.y,
                 "value": actual_damage,
                 "timer": 60,
                 "color": constants.RED
@@ -165,6 +167,7 @@ class TankEnemyBullet(BaseEnemyBullet):
             size=3,
             colour=constants.BROWN
         )
+        
 
 @dataclass
 class BasicEnemyBullet(BaseEnemyBullet):
@@ -214,6 +217,7 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
                             else -constants.basic_enemy_bullet_max_turn_angle)
             
             self.angle += angle_diff
+            
 
 @dataclass
 class SniperEnemyBullet(BaseEnemyBullet):
@@ -222,8 +226,10 @@ class SniperEnemyBullet(BaseEnemyBullet):
             x=x,
             y=y,
             angle=angle,
-            speed=speed,
+            speed=constants.sniper_bullet_speed,
             base_damage=constants.sniper_bullet_damage,
             size=5,
             colour=constants.PURPLE
         )
+
+

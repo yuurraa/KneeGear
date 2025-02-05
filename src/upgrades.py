@@ -34,7 +34,7 @@ class UpgradePool:
             "Rare": 30,
             "Epic": 10,
             "Mythic": 3,
-            "Exclusive": 5,
+            "Exclusive": 500000000,
             "Legendary": 1
         }
         
@@ -52,7 +52,7 @@ class UpgradePool:
                           "damage_ex", "defence", "dmg_pickup", "extra_choice", "fat_special", "fear", "frenzy", "heavy",
                           "hp_pickup", "hp_regen", "hp", "hybrid_plus", "hybrid", "lifesteal", "more_pickup", "movement_speed",
                           "pacifist", "permanent_dmg", "permanent_hp", "pierce", "rage", "repierce", "size_matters", "sniper",
-                          "super_regen", "turtle_up", "unhealthy", "you_lucky_bastard"]:
+                          "super_regen", "turtle_up", "unhealthy", "you_lucky_bastard", "barrier_shield"]:
             try:
                 self.icon_images[icon_name] = pygame.image.load(f"assets/icons/{icon_name}.png").convert_alpha()
             except:
@@ -474,7 +474,14 @@ class UpgradePool:
                 max_level=1,
                 icon="extra_choice"
             ),
-            
+            Upgrade(
+                name="Barrier Shield",
+                description="Provides a shield with HP equal to 1/5 of player's HP. Regenerates after 7 seconds if depleted.",
+                Rarity="Exclusive",
+                apply=lambda player: setattr(player, 'barrier_shield_hp', player.max_health * constants.BARRIER_SHIELD_HP_FRACTION),
+                max_level=1,
+                icon="barrier_shield"
+            ),
         ]
 
     def get_random_upgrades(self, count: int, player: Player) -> List[Upgrade]:

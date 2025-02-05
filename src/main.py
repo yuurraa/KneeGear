@@ -276,6 +276,12 @@ def main():
 
         # Draw score
         score.draw_score(game_state.screen)
+
+
+        # If the player has the shield, draw it over the player
+        if "Barrier Shield" in game_state.player.applied_upgrades and game_state.player.barrier_shield_hp > 0:
+            drawing.draw_player_with_shield(game_state.player)
+
         game_state.player.draw(game_state.screen)
 
         # Handle pause menu
@@ -395,7 +401,6 @@ def main():
             
             # Remove all enemies
             game_state.enemies.clear()  # Clears the list, instantly removing all enemies
-            score.update_high_score()
             
             # Display game over screen
             show_game_over_screen(game_state.screen, game_state.screen_width, 
