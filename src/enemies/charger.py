@@ -16,13 +16,20 @@ class ChargerEnemy(BaseEnemy):
         self.vx = 0.0
         self.vy = 0.0
         self.acceleration = constants.CHARGER_ACCELERATION  # e.g., 0.2 or any suitable value
-        self.max_speed = constants.CHARGER_MAX_SPEED        # e.g., 5.0 or any suitable value
+        self.max_speed = constants.CHARGER_MAX_SPEED
         
         # Appearance attributes
         self.outline_size = constants.CHARGER_ENEMY_OUTLINE_SIZE
         self.inner_size = constants.CHARGER_ENEMY_INNER_SIZE
         self.outline_color = constants.CHARGER_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.CHARGER_ENEMY_INNER_COLOR
+
+        self.charge_cooldown = 0  # Cooldown timer for charging
+        self.charge_distance = 200  # Increased distance within which the enemy will charge
+        self.charge_speed = 13.0  # Speed during the charge
+        self.charge_distance_max = 400  # Maximum distance the enemy can charge
+        self.charge_distance_traveled = 0  # Distance traveled during the current charge
+        self.charge_cooldown_duration = 0  # Cooldown duration (0.7 seconds at 60 ticks per second)
 
     @property
     def type(self):
@@ -76,6 +83,41 @@ class ChargerEnemy(BaseEnemy):
         self.vx += steer_x
         self.vy += steer_y
 
+        # Check if the enemy can charge
+        if self.charge_cooldown <= 0 and distance < self.charge_distance:
+            # Start charging towards the player
+            if self.charge_distance_traveled == 0:  # Only set direction on the first charge
+                self.charge_direction_x = desired_dir_x
+                self.charge_direction_y = desired_dir_y
+            
+            # Calculate the distance remaining to the max charge distance
+            remaining_distance = self.charge_distance_max - self.charge_distance_traveled
+            
+            # Slow down as it approaches the end of the charge
+            if remaining_distance < 20:  # Adjust this threshold as needed
+                # Gradually reduce speed
+                speed_factor = remaining_distance / 20  # Scale speed down to 0 as it approaches the end
+                self.vx = self.charge_direction_x * self.charge_speed * speed_factor
+                self.vy = self.charge_direction_y * self.charge_speed * speed_factor
+            else:
+                self.vx = self.charge_direction_x * self.charge_speed
+                self.vy = self.charge_direction_y * self.charge_speed
+            
+            self.charge_distance_traveled += math.hypot(self.vx, self.vy)  # Increment the distance traveled
+            
+            if self.charge_distance_traveled >= self.charge_distance_max:
+                self.charge_cooldown = self.charge_cooldown_duration  # Set cooldown after reaching max charge distance
+                self.charge_distance_traveled = 0  # Reset distance traveled after charge
+        else:
+            # Apply cooldown
+            if self.charge_cooldown > 0:
+                self.charge_cooldown -= 1
+                self.vx = 0  # Stop moving during cooldown
+                self.vy = 0  # Stop moving during cooldown
+            else:
+                # Reset distance if not charging
+                self.charge_distance_traveled = 0  # Ensure distance is reset when not charging
+        
         # After updating, ensure that velocity does not exceed the max speed
         current_speed = math.hypot(self.vx, self.vy)
         if current_speed > self.max_speed:
@@ -106,11 +148,16 @@ class ChargerEnemy(BaseEnemy):
         distance = math.hypot(self.x - player.x, self.y - player.y)
         if distance < (enemy_radius + player_radius):
             # Collision detected!
-            damage = self.health  # Damage is equal to the enemy's current health.
+            # Instead of dealing damage, bounce away from the player
+            bounce_back_x = self.x - player.x
+            bounce_back_y = self.y - player.y
+            bounce_back_distance = 20  # Distance to bounce back
+            self.x += bounce_back_x / distance * bounce_back_distance
+            self.y += bounce_back_y / distance * bounce_back_distance
             
             # Apply contact damage to the player. (nerfed damage)
-            player.take_damage(damage * self.damage_multiplier)
+            player.take_damage(self.health * self.damage_multiplier)
             # The enemy deducts the damage dealt from its own health.
             # This call to apply_damage will also handle adding damage numbers and score rewards.
             if not player.is_dead():
-                self.apply_damage(damage, game_state) 
+                self.apply_damage(self.health, game_state) 
