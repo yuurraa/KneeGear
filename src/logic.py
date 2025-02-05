@@ -3,7 +3,7 @@ import math
 import random
 from src.helpers import calculate_angle
 from src.projectiles import Alignment
-from src.enemies import RegularEnemy, TankEnemy, SniperEnemy
+from src.enemies import BasicEnemy, TankEnemy, SniperEnemy
 
 import src.game_state as game_state
 import src.constants as constants
@@ -43,7 +43,7 @@ def spawn_enemy():
 
     # Use weighted random selection for enemy type
     enemy_types = [
-        (RegularEnemy, 0.6),  
+        (BasicEnemy, 0.6),  
         (TankEnemy, 0.3),     
         (SniperEnemy, 0.1)    
     ]
@@ -108,9 +108,9 @@ def update_enemies():
     # Use the in-game tick counter (which excludes pause time)
     current_tick = game_state.in_game_ticks_elapsed  
     for enemy in game_state.enemies[:]:
-        # enemy.update(game_state.player.x, game_state.player.y, current_tick, game_state)
-        enemy.move(game_state.player.x, game_state.player.y, game_state)
-        enemy.shoot(game_state.player.x, game_state.player.y, current_tick, game_state)
+        enemy.update(game_state.player.x, game_state.player.y, current_tick, game_state)
+        # enemy.move(game_state.player.x, game_state.player.y, game_state)
+        # enemy.shoot(game_state.player.x, game_state.player.y, current_tick, game_state)
 
         if enemy.health <= 0:
             game_state.enemies.remove(enemy)
