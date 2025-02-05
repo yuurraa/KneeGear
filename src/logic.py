@@ -59,7 +59,7 @@ def spawn_enemy():
 
 
 def spawn_heart():
-    if len(game_state.hearts) < 1:
+    if len(game_state.hearts) < game_state.player.max_pickups_on_screen:
         game_state.hearts.append([
             random.randint(20, game_state.screen_width - 20),
             random.randint(20, game_state.screen_height - 20)

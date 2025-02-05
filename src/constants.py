@@ -74,7 +74,7 @@ base_sniper_health = 20         # Base health for a sniper enemy (scaled by enem
 base_sniper_xp_reward = 12      # XP reward when a sniper enemy is defeated
 sniper_volley_interval = 4      # Seconds between sniper volleys
 sniper_bullet_speed = 17        # Speed of sniper bullet (very fast)
-sniper_bullet_damage = 16       # High damage per sniper bullet
+sniper_bullet_damage = 13       # High damage per sniper bullet
 sniper_keep_distance = 800      # Desired minimum distance from the player (in game units)
 sniper_move_speed = 1         
 

@@ -35,6 +35,7 @@ class Player:
         self.experience_to_next_level = constants.initial_experience_to_next_level
         
         self.ticks_since_last_hp_regen = 0
+        self.current_tick = 0  # Add tick counter
         #upgrades
         self.base_damage_multiplier = 1
         self.basic_bullet_damage_multiplier = 1
@@ -47,7 +48,13 @@ class Player:
         self.special_bullet_piercing_multiplier = 1.0
         
         self.hp_regen_percent_bonus = 0
+        
+        self.max_pickups_on_screen = 1
         self.hp_pickup_healing_percent_bonus = 0
+        self.hp_pickup_damage_boost_duration_s = 30
+        self.hp_pickup_damage_boost_percent_bonus = 0
+        self.hp_pickup_permanent_hp_boost_percent_bonus = 0
+        self.hp_pickup_permanent_damage_boost_percent_bonus = 0
 
         self.special_bullet_radius_multiplier = 1.0
         self.special_bullet_can_repierce = False
@@ -59,7 +66,6 @@ class Player:
         self.rage_percent_bonus = 0 # percent damage gain per enemy on screen
         self.frenzy_percent_bonus = 0 # percent damage gain per projectile on screen
         self.fear_percent_bonus = 0 # max percent damage gain based on how low your hp is
-        
 
         self.state = PlayerState.ALIVE
         
@@ -71,6 +77,7 @@ class Player:
 
         self.applied_upgrades = set()  # Tracks names of applied upgrades
         self.upgrade_levels = {}  # Tracks number of times each upgrade has been applied
+        self.active_buffs = {}  # Dictionary to store active buffs and their end ticks (not times)
     
     def draw(self, screen):
         # Draw player body
@@ -136,10 +143,10 @@ class Player:
         if keys[pygame.K_d]:
             new_x += self.speed
 
-        # Restrict player to screen boundaries with size consideration
+        # Restrict player to screen boundaries with size consideration (10 pixel xp bar)
         half_size = self.size/2
-        self.x = max(half_size, min(new_x, self.screen_width - half_size))
-        self.y = max(half_size, min(new_y, self.screen_height - half_size))
+        self.x = max(half_size, min(new_x, self.screen_width - half_size - 10))
+        self.y = max(half_size, min(new_y, self.screen_height - half_size - 10))
 
     def update_hp_regen(self):
         self.ticks_since_last_hp_regen += 1
@@ -151,8 +158,28 @@ class Player:
     def update(self, keys):
         if self.state == PlayerState.DEAD:
             return
+        self.current_tick += 1  # Increment tick counter
         self.update_hp_regen()
+        self.update_buffs()
         self.move(keys)
+
+    def update_buffs(self):
+        # Remove expired buffs
+        self.active_buffs = [buff for buff in self.active_buffs if buff["end_tick"] > self.current_tick]
+
+    def add_temporary_buff(self, buff_name, duration_seconds):
+        # Convert duration from seconds to ticks (60 ticks = 1 second)
+        duration_ticks = duration_seconds * constants.FPS
+        buff = {
+            "name": buff_name,
+            "end_tick": self.current_tick + duration_ticks
+        }
+        if not hasattr(self, 'active_buffs'):
+            self.active_buffs = []
+        self.active_buffs.append(buff)
+
+    def has_active_buff(self, buff_name):
+        return any(buff["name"] == buff_name for buff in self.active_buffs)
 
     @property
     def effective_damage_multiplier(self):
@@ -162,7 +189,13 @@ class Player:
         enemy_bonus = 1 + self.rage_percent_bonus/100 * len(game_state.enemies)
         projectile_bonus = 1 + self.frenzy_percent_bonus/100 * len(game_state.projectiles)
         fear_bonus = 1 + self.fear_percent_bonus/100 * (self.max_health - self.health) / self.max_health
-        return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus
+        
+        # Add heart pickup damage boost - stacks exponentially
+        buff_multiplier = (1 + self.hp_pickup_damage_boost_percent_bonus/100)
+        active_buff_count = sum(1 for buff in self.active_buffs if buff["name"] == "heart_damage_boost")
+        buff_bonus = buff_multiplier ** active_buff_count
+        
+        return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus * buff_bonus
 
     def shoot_regular(self, mouse_pos, current_time):
         """Regular shot (left-click)"""
@@ -245,9 +278,11 @@ class Player:
         self.health = min(self.max_health, self.health + amount)
         
     def heal_from_pickup(self):
-        # Change from fixed amount to percentage of max health
         heal_amount = self.max_health * ((self.hp_pickup_healing_percent_bonus+constants.base_hp_pickup_healing_percent) / 100)
         self.heal(heal_amount)
+        self.add_temporary_buff("heart_damage_boost", self.hp_pickup_damage_boost_duration_s)  # 30 second damage boost
+        self.base_damage_multiplier = self.base_damage_multiplier * (1 + self.hp_pickup_permanent_damage_boost_percent_bonus/100)
+        self.max_health = self.max_health * (1 + self.hp_pickup_permanent_hp_boost_percent_bonus/100)
         return heal_amount
         
 
