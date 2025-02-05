@@ -51,7 +51,7 @@ class Player:
         
         self.max_pickups_on_screen = 1
         self.hp_pickup_healing_percent_bonus = 0
-        self.hp_pickup_damage_boost_duration_s = 30
+        self.hp_pickup_damage_boost_duration_s = 20
         self.hp_pickup_damage_boost_percent_bonus = 0
         self.hp_pickup_permanent_hp_boost_percent_bonus = 0
         self.hp_pickup_permanent_damage_boost_percent_bonus = 0
