@@ -127,6 +127,7 @@ class UpgradeButton(Button):
         self.icon_size = 64
         self.circle_margin = 10
         self.rainbow_timer = 0  # Add timer for rainbow effect
+        self.cooldown = 0  # Add cooldown attribute
 
     def draw(self, screen):
         # Special handling for all rarities
@@ -275,6 +276,18 @@ class UpgradeButton(Button):
             screen.blit(desc_surface, desc_rect)
             y_offset += desc_surface.get_height()
 
+    def handle_event(self, event):
+        if self.cooldown > 0:  # Check if the button is on cooldown
+            return False  # Ignore events if on cooldown
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.cooldown = 30  # Set cooldown (e.g., 30 frames)
+                return True
+        return False
+
+    def update(self):
+        if self.cooldown > 0:
+            self.cooldown -= 1  # Decrease cooldown each frame
 
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay
@@ -329,6 +342,7 @@ def draw_level_up_menu(screen):
 
     # Draw existing buttons
     for button in game_state.current_upgrade_buttons:
+        button.update()  # Update button cooldown
         button.draw(screen)
 
     return game_state.current_upgrade_buttons
