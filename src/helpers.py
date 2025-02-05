@@ -21,6 +21,9 @@ def reset_game():
     game_state.game_over = False
     game_state.start_time_ms = pygame.time.get_ticks()
     game_state.in_game_ticks_elapsed = 0
-    game_state.last_enemy_spawn_time = pygame.time.get_ticks()  # Reset enemy spawn timer
+    game_state.last_wave_time = -999  # Reset enemy spawn timer   
+    game_state.wave_active = False
+    game_state.wave_enemies_spawned = 0
+    game_state.next_enemy_spawn_time = 0
     game_state.first_enemy_spawned = False  # Reset first enemy spawn flag
     
