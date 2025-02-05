@@ -10,6 +10,8 @@ class ChargerEnemy(BaseEnemy):
         # Score reward based on a constant multiplier (make sure to define this in your constants)
         self.score_reward = math.floor(constants.base_charger_xp_reward * self.scaling)
         
+        self.damage_multiplier = 0.4
+        
         # For acceleration-based physics:
         self.vx = 0.0
         self.vy = 0.0
@@ -105,8 +107,9 @@ class ChargerEnemy(BaseEnemy):
         if distance < (enemy_radius + player_radius):
             # Collision detected!
             damage = self.health  # Damage is equal to the enemy's current health.
-            # Apply contact damage to the player.
-            player.take_damage(damage)
+            
+            # Apply contact damage to the player. (nerfed damage)
+            player.take_damage(damage * self.damage_multiplier)
             # The enemy deducts the damage dealt from its own health.
             # This call to apply_damage will also handle adding damage numbers and score rewards.
             if not player.is_dead():
