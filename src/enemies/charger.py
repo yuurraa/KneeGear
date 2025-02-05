@@ -25,11 +25,11 @@ class ChargerEnemy(BaseEnemy):
         self.inner_color = constants.CHARGER_ENEMY_INNER_COLOR
 
         self.charge_cooldown = 0  # Cooldown timer for charging
-        self.charge_distance = 200  # Increased distance within which the enemy will charge
-        self.charge_speed = 13.0  # Speed during the charge
-        self.charge_distance_max = 400  # Maximum distance the enemy can charge
+        self.charge_distance = 250  # Increased distance within which the enemy will charge
+        self.charge_speed = 22.0  # Speed during the charge
+        self.charge_distance_max = 900  # Maximum distance the enemy can charge
         self.charge_distance_traveled = 0  # Distance traveled during the current charge
-        self.charge_cooldown_duration = 0  # Cooldown duration (0.7 seconds at 60 ticks per second)
+        self.charge_cooldown_duration = 30  # Cooldown duration (0.7 seconds at 60 ticks per second)
 
     @property
     def type(self):
@@ -51,89 +51,88 @@ class ChargerEnemy(BaseEnemy):
         and then applies a steering force (difference between desired and current velocity)
         limited by the enemy's acceleration.
         """
-        # Calculate vector from enemy to target (player)
         dx = target_x - self.x
         dy = target_y - self.y
         distance = math.hypot(dx, dy)
-        
-        # If the enemy is exactly at the player's position, there's no steering needed.
+
+        # Compute unit vector toward player
         if distance != 0:
-            # Compute the unit vector in the direction of the player
             desired_dir_x = dx / distance
             desired_dir_y = dy / distance
         else:
             desired_dir_x, desired_dir_y = 0.0, 0.0
-        
-        # Desired velocity is in the direction of the player scaled to the max speed
-        desired_vx = desired_dir_x * self.max_speed
-        desired_vy = desired_dir_y * self.max_speed
 
-        # Steering force is the difference between the desired velocity and the current velocity
-        steer_x = desired_vx - self.vx
-        steer_y = desired_vy - self.vy
-        steer_magnitude = math.hypot(steer_x, steer_y)
-        
-        # Limit the steering force to the maximum acceleration
-        if steer_magnitude > 0:
-            scale = min(1, self.acceleration / steer_magnitude)
-            steer_x *= scale
-            steer_y *= scale
-
-        # Apply the steering force to the current velocity
-        self.vx += steer_x
-        self.vy += steer_y
-
-        # Check if the enemy can charge
-        if self.charge_cooldown <= 0 and distance < self.charge_distance:
-            # Start charging towards the player
-            if self.charge_distance_traveled == 0:  # Only set direction on the first charge
-                self.charge_direction_x = desired_dir_x
-                self.charge_direction_y = desired_dir_y
-            
-            # Calculate the distance remaining to the max charge distance
+        # If the charger is currently charging
+        if self.charge_distance_traveled > 0:
             remaining_distance = self.charge_distance_max - self.charge_distance_traveled
-            
-            # Slow down as it approaches the end of the charge
-            if remaining_distance < 20:  # Adjust this threshold as needed
-                # Gradually reduce speed
-                speed_factor = remaining_distance / 20  # Scale speed down to 0 as it approaches the end
-                self.vx = self.charge_direction_x * self.charge_speed * speed_factor
-                self.vy = self.charge_direction_y * self.charge_speed * speed_factor
+
+            if remaining_distance <= 300:
+                # Stop abruptly with easing
+                self.vx *= 0.5
+                self.vy *= 0.5
+                self.charge_distance_traveled = 0
+                self.charge_cooldown = self.charge_cooldown_duration  # Start cooldown
+
             else:
+                # Continue charging
                 self.vx = self.charge_direction_x * self.charge_speed
                 self.vy = self.charge_direction_y * self.charge_speed
-            
-            self.charge_distance_traveled += math.hypot(self.vx, self.vy)  # Increment the distance traveled
-            
-            if self.charge_distance_traveled >= self.charge_distance_max:
-                self.charge_cooldown = self.charge_cooldown_duration  # Set cooldown after reaching max charge distance
-                self.charge_distance_traveled = 0  # Reset distance traveled after charge
+                self.charge_distance_traveled += math.hypot(self.vx, self.vy)
+
+        elif self.charge_cooldown > 0:
+            # Cooldown phase: Stop moving entirely
+            self.charge_cooldown -= 1
+            self.vx = 1
+            self.vy = 1
+
+        elif distance < self.charge_distance and self.charge_cooldown <= 0:
+            # Start charging if within range and off cooldown
+            self.charge_direction_x = desired_dir_x
+            self.charge_direction_y = desired_dir_y
+            self.vx = self.charge_direction_x * self.charge_speed
+            self.vy = self.charge_direction_y * self.charge_speed
+            self.charge_distance_traveled += math.hypot(self.vx, self.vy)
+
         else:
-            # Apply cooldown
-            if self.charge_cooldown > 0:
-                self.charge_cooldown -= 1
-                self.vx = 0  # Stop moving during cooldown
-                self.vy = 0  # Stop moving during cooldown
-            else:
-                # Reset distance if not charging
-                self.charge_distance_traveled = 0  # Ensure distance is reset when not charging
-        
-        # After updating, ensure that velocity does not exceed the max speed
+            # Normal movement toward player (non-charging phase)
+            desired_vx = desired_dir_x * self.max_speed
+            desired_vy = desired_dir_y * self.max_speed
+
+            steer_x = desired_vx - self.vx
+            steer_y = desired_vy - self.vy
+            max_acceleration = self.acceleration  # Cap how much acceleration can be applied per frame
+            steer_magnitude = math.hypot(steer_x, steer_y)
+
+            if steer_magnitude > max_acceleration:
+                steer_x = (steer_x / steer_magnitude) * max_acceleration
+                steer_y = (steer_y / steer_magnitude) * max_acceleration
+
+            self.vx += steer_x
+            self.vy += steer_y
+
+        if self.charge_distance_traveled > 0:  # If currently charging
+            max_speed = self.charge_speed  # Keep charge speed high
+        else:
+            max_speed = constants.CHARGER_NORMAL_SPEED  # Lower normal movement speed
+
+        # Apply max speed cap
         current_speed = math.hypot(self.vx, self.vy)
-        if current_speed > self.max_speed:
-            scale = self.max_speed / current_speed
+        if current_speed > max_speed:
+            scale = max_speed / current_speed
             self.vx *= scale
             self.vy *= scale
 
-        # Update the enemy's position based on the new velocity
+
+        # Update position
         self.x += self.vx
         self.y += self.vy
 
         # Keep the enemy within screen boundaries
         self._restrict_to_boundaries(game_state)
 
-        # Check for collisions with the player to apply contact damage
+        # Check for collisions with the player
         self.check_collision(game_state)
+
 
     def check_collision(self, game_state):
         """
@@ -147,14 +146,6 @@ class ChargerEnemy(BaseEnemy):
 
         distance = math.hypot(self.x - player.x, self.y - player.y)
         if distance < (enemy_radius + player_radius):
-            # Collision detected!
-            # Instead of dealing damage, bounce away from the player
-            bounce_back_x = self.x - player.x
-            bounce_back_y = self.y - player.y
-            bounce_back_distance = 20  # Distance to bounce back
-            self.x += bounce_back_x / distance * bounce_back_distance
-            self.y += bounce_back_y / distance * bounce_back_distance
-            
             # Apply contact damage to the player. (nerfed damage)
             player.take_damage(self.health * self.damage_multiplier)
             # The enemy deducts the damage dealt from its own health.

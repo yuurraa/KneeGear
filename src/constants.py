@@ -82,8 +82,9 @@ sniper_move_speed = 1
 # Charger Enemy Constants
 base_charger_health = 60        # Moderate health since it's a kamikaze-style enemy
 base_charger_xp_reward = 20     # Good reward since it's risky to deal with
-CHARGER_ACCELERATION = 0.22      # Gradual acceleration for some challenge
-CHARGER_MAX_SPEED = 13        # Fast max speed since charging is its main threat
+CHARGER_ACCELERATION = 0.8      # Gradual acceleration for some challenge
+CHARGER_MAX_SPEED = 22        # Fast max speed since charging is its main threat
+CHARGER_NORMAL_SPEED = 10
 
 
 # Enemy drawing constants
