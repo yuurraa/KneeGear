@@ -212,9 +212,9 @@ def draw_level_up_menu(screen):
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
-    # Create menu panel
-    panel_width = 1100
-    panel_height = 400
+    # Create menu panel - using proportional sizes
+    panel_width = int(game_state.screen_width * 0.65)  # ~57% of screen width
+    panel_height = int(game_state.screen_height * 0.37)  # ~37% of screen height
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
@@ -233,10 +233,10 @@ def draw_level_up_menu(screen):
         upgrade_pool = UpgradePool()
         upgrades = upgrade_pool.get_random_upgrades(3, game_state.player)
         
-        # Create buttons
-        button_width = 310
-        button_height = 160
-        button_spacing = 50
+        # Create buttons with proportional sizes
+        button_width = int(game_state.screen_width * 0.18)  # ~16% of screen width
+        button_height = int(game_state.screen_height * 0.18)  # ~15% of screen height
+        button_spacing = int(game_state.screen_width * 0.026)  # ~2.6% of screen width
         total_width = (button_width * 3) + (button_spacing * 2)
         start_x = (game_state.screen_width - total_width) // 2
 
@@ -261,9 +261,9 @@ def draw_pause_menu(screen):
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
-    # Create menu panel
-    panel_width = 500
-    panel_height = 350  # Increased height
+    # Create menu panel with proportional sizes
+    panel_width = int(game_state.screen_width * 0.28)  # ~26% of screen width
+    panel_height = int(game_state.screen_height * 0.35)  # ~32% of screen height
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
@@ -278,13 +278,13 @@ def draw_pause_menu(screen):
 
     # Initialize UI elements once
     if not hasattr(game_state, 'pause_ui'):
-        # Button dimensions
-        button_width = 200
-        button_height = 60
+        # Button dimensions - proportional
+        button_width = int(game_state.screen_width * 0.104)  # ~10.4% of screen width
+        button_height = int(game_state.screen_height * 0.056)  # ~5.6% of screen height
 
         # Calculate positions for buttons
-        button_x = (game_state.screen_width - (button_width * 2 + 20)) // 2
-        button_y = panel_y + 260  # Moved up slightly
+        button_x = (game_state.screen_width - (button_width * 2 + int(game_state.screen_width * 0.01))) // 2
+        button_y = panel_y + int(panel_height * 0.74)  # ~74% down the panel
 
         # Quit button
         quit_button = Button(button_x + button_width + 20, button_y, button_width, button_height, "Quit", constants.RED)
@@ -292,11 +292,11 @@ def draw_pause_menu(screen):
         # Resume button
         resume_button = Button(button_x, button_y, button_width, button_height, "Resume", constants.GREEN)
 
-        # Volume Slider
-        slider_width = 300
-        slider_height = 20
+        # Volume Slider - proportional
+        slider_width = int(game_state.screen_width * 0.156)  # ~15.6% of screen width
+        slider_height = int(game_state.screen_height * 0.019)  # ~1.9% of screen height
         slider_x = (game_state.screen_width - slider_width) // 2
-        slider_y = panel_y + 120  # Adjusted to give more space
+        slider_y = panel_y + int(panel_height * 0.34)  # ~34% down the panel
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
         # Centralize Upgrades Button
@@ -331,26 +331,31 @@ def draw_upgrades_tab(screen):
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
-    # Constants for button dimensions
-    button_width = 370  # Updated button width
-    button_height = 50
-    button_spacing = 20
-    max_column_height = 1000  # For testing purposes
-    title_height = 40  # Height for the title text
-    close_button_height = 50  # Height for the close button
+    # Constants for button dimensions - now based on screen proportions
+    button_width = int(game_state.screen_width * 0.24)  # ~19% of screen width
+    button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
+    button_spacing = int(game_state.screen_height * 0.019)  # ~1.9% of screen height
+    max_column_height = int(game_state.screen_height * 0.7)  # 70% of screen height
+    title_height = int(game_state.screen_height * 0.037)  # ~3.7% of screen height
+    close_button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
 
     # Calculate the number of upgrades
     num_upgrades = len(game_state.player.applied_upgrades)
 
     # Calculate panel dimensions
-    panel_width = 570  # Base width
-    panel_height = 200 + min((button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)), max_column_height)  # Dynamic height capped
+    base_panel_width = int(game_state.screen_width * 0.3)  # ~570px on 1920px width
+    panel_height = int(game_state.screen_height * 0.185) + min(
+        (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)), 
+        max_column_height
+    )  # 200px base + dynamic height
 
     # Calculate the number of columns needed
-    num_columns = (50 + (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1))) // max_column_height + 1
+    num_columns = (int(game_state.screen_height * 0.046) + (button_height * num_upgrades) + 
+                  (button_spacing * (num_upgrades - 1))) // max_column_height + 1
 
-    # Increase the panel width by 350 pixels for each new column
-    panel_width += (num_columns - 1) * 370
+    # Calculate panel width based on number of columns
+    column_width = int(game_state.screen_width * 0.193)  # ~370px on 1920px width
+    panel_width = base_panel_width + (num_columns - 1) * column_width
 
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2

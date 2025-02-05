@@ -45,6 +45,8 @@ class UpgradePool:
             "damage_ex": pygame.image.load("assets/icons/damage_ex.png"),
             "defence": pygame.image.load("assets/icons/defence.png"),
             "fat_special": pygame.image.load("assets/icons/fat_special.png"),
+            "fear": pygame.image.load("assets/icons/fear.png"),
+            "frenzy": pygame.image.load("assets/icons/frenzy.png"),
             "heavy": pygame.image.load("assets/icons/heavy.png"),
             "hp_pickup": pygame.image.load("assets/icons/hp_pickup.png"),
             "hp_regen": pygame.image.load("assets/icons/hp_regen.png"),
@@ -55,10 +57,12 @@ class UpgradePool:
             "movement_speed": pygame.image.load("assets/icons/movement_speed.png"),
             "pacifist": pygame.image.load("assets/icons/pacifist.png"),
             "pierce": pygame.image.load("assets/icons/pierce.png"),
+            "rage": pygame.image.load("assets/icons/rage.png"),
             "repierce": pygame.image.load("assets/icons/repierce.png"),
             "size_matters": pygame.image.load("assets/icons/size_matters.png"),
             "sniper": pygame.image.load("assets/icons/sniper.png"),
             "super_regen": pygame.image.load("assets/icons/super_regen.png"),
+            "turtle_up": pygame.image.load("assets/icons/turtle_up.png"),
             "unhealthy": pygame.image.load("assets/icons/unhealthy.png"),
             "you_lucky_bastard": pygame.image.load("assets/icons/you_lucky_bastard.png"),
         }
@@ -332,7 +336,7 @@ class UpgradePool:
                     setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 10),
                     setattr(player, 'speed', player.speed * 0.7),
                 ][-1],
-                icon="pacifist",
+                icon="turtle_up",
             ),
             Upgrade(
                 name="Pickup Healing",
@@ -412,7 +416,7 @@ class UpgradePool:
                 apply=lambda player: [
                     setattr(player, 'rage_percent_bonus', player.rage_percent_bonus + 20),
                 ][-1],
-                icon="attack_damage",
+                icon="rage",
                 max_level=1,
             ),
             Upgrade(
@@ -422,7 +426,7 @@ class UpgradePool:
                 apply=lambda player: [
                     setattr(player, 'fear_percent_bonus', player.fear_percent_bonus + 300),
                 ][-1],
-                icon="attack_damage",
+                icon="fear",
                 max_level=1,
             ),
             Upgrade(
@@ -432,7 +436,7 @@ class UpgradePool:
                 apply=lambda player: [
                     setattr(player, 'frenzy_percent_bonus', player.frenzy_percent_bonus + 0.5),
                 ][-1],
-                icon="attack_damage",
+                icon="frenzy",
                 max_level=1,
             ),
             # Upgrade(

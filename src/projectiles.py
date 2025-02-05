@@ -225,5 +225,5 @@ class SniperEnemyBullet(BaseEnemyBullet):
             speed=speed,
             base_damage=constants.sniper_bullet_damage,
             size=5,
-            colour=constants.RED
+            colour=constants.PURPLE
         )
