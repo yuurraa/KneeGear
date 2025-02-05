@@ -1,10 +1,10 @@
 import pygame
-import constants
-import game_state
-from player import PlayerState
-from upgrades import UpgradePool
 import random
-from helpers import save_music_settings
+from src.helpers import save_music_settings
+import src.constants as constants
+import src.game_state as game_state
+from src.player import PlayerState
+from src.upgrades import UpgradePool
 
 class Button:
     def __init__(self, x, y, width, height, text, color):

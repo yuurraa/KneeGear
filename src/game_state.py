@@ -1,5 +1,5 @@
-import constants
-from player import Player
+import src.constants as constants
+from src.player import Player
 
 experience_updates = []
 start_time_ms = 0

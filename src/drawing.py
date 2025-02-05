@@ -1,9 +1,10 @@
 import pygame
 import math
-import game_state
-import constants
 import random
-from helpers import calculate_angle
+
+from src.helpers import calculate_angle
+import src.game_state as game_state
+import src.constants as constants
     
 def draw_experience_bar():
     screen = game_state.screen

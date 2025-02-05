@@ -1,8 +1,9 @@
 import pygame
-import game_state
-import constants
 import os
 import hashlib
+
+import src.game_state as game_state
+import src.constants as constants
 
 # Initialize score
 score = 0

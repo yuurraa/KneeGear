@@ -2,9 +2,9 @@ from enum import Enum
 from dataclasses import dataclass
 import pygame
 import math
-import game_state
-import constants
-import score
+import src.game_state as game_state
+import src.constants as constants
+import src.score as score
 from typing import Tuple
 
 class Alignment(Enum):
@@ -199,7 +199,7 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
     def update(self):
         super().update()
         if self.should_home():
-            from helpers import calculate_angle
+            from src.helpers import calculate_angle
             angle_to_player = calculate_angle(self.x, self.y, game_state.player.x, game_state.player.y)
             angle_diff = angle_to_player - self.angle
             

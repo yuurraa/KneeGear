@@ -2,9 +2,9 @@ from enum import Enum
 import pygame
 import math
 
-from projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from helpers import calculate_angle
-import constants
+from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
+from src.helpers import calculate_angle
+import src.constants as constants
 
 class PlayerState(Enum):
     ALIVE = "alive"
@@ -184,7 +184,7 @@ class Player:
     @property
     def effective_damage_multiplier(self):
         # Import game_state locally to avoid potential circular dependencies.
-        import game_state
+        import src.game_state as game_state
         # For each enemy on screen, add 20% extra damage.
         enemy_bonus = 1 + self.rage_percent_bonus/100 * len(game_state.enemies)
         projectile_bonus = 1 + self.frenzy_percent_bonus/100 * len(game_state.projectiles)
@@ -197,23 +197,21 @@ class Player:
         
         return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus * buff_bonus
 
-    def shoot_regular(self, mouse_pos, current_time):
-        """Regular shot (left-click)"""
-        if (self.state == PlayerState.DEAD or 
-            current_time - self.last_shot_time < self.shoot_cooldown):
+    def shoot_regular(self, mouse_pos):
+        import src.game_state as game_state
+        # Check if the player is dead or the cooldown (in ticks) has not elapsed
+        if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_shot_time) < (self.shoot_cooldown * constants.FPS):
             return None
 
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
-        self.last_shot_time = current_time
-        
+        # Update last shot tick to current tick count
+        self.last_shot_time = game_state.in_game_ticks_elapsed
+
         bullets = []
         total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
-        
-        # Use the effective damage multiplier (which includes the per-enemy bonus)
         effective_multiplier = self.effective_damage_multiplier
-        
-        # If only one projectile is fired:
+
         if total_projectiles == 1:
             bullets.append(PlayerBasicBullet(
                 self.x, self.y, angle, 
@@ -224,10 +222,9 @@ class Player:
             ))
             return bullets
 
-        # For multiple projectiles: space them out perpendicular to the shooting direction
+        # For multiple projectiles, space them out perpendicular to the shooting direction
         spread_distance = 15  # pixels between projectiles
-        perpendicular_angle = angle + 90  # perpendicular direction
-        
+        perpendicular_angle = angle + 90  # perpendicular direction in degrees
         total_spread = spread_distance * (total_projectiles - 1)
         start_x = self.x - (total_spread / 2) * math.cos(math.radians(perpendicular_angle))
         start_y = self.y - (total_spread / 2) * math.sin(math.radians(perpendicular_angle))
@@ -245,18 +242,18 @@ class Player:
         
         return bullets
 
-    def shoot_special(self, mouse_pos, current_time):
-        """Special shot (right-click)"""
-        if (self.state == PlayerState.DEAD or 
-            current_time - self.last_special_shot_time < self.special_shot_cooldown):
+    def shoot_special(self, mouse_pos):
+        import src.game_state as game_state
+        # Check if the player is dead or the special cooldown (in ticks) has not elapsed
+        if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_special_shot_time) < (self.special_shot_cooldown * constants.FPS):
             return None
 
         mx, my = mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
-        self.last_special_shot_time = current_time
-        
+        # Update last special shot tick to current tick count
+        self.last_special_shot_time = game_state.in_game_ticks_elapsed
+
         effective_multiplier = self.effective_damage_multiplier
-        
         return [PlayerSpecialBullet(
             self.x, self.y, angle,
             effective_multiplier,
@@ -286,15 +283,17 @@ class Player:
         return heal_amount
         
 
-    def get_cooldown_progress(self, current_time):
-        """Returns the cooldown progress for both abilities (0.0 to 1.0)"""
-        regular_progress = max(0, (current_time - self.last_shot_time) / self.shoot_cooldown)
-        special_progress = max(0, (current_time - self.last_special_shot_time) / self.special_shot_cooldown)
-        return regular_progress, special_progress 
+    def get_cooldown_progress(self):
+        import src.game_state as game_state
+        current_tick = game_state.in_game_ticks_elapsed
+        regular_progress = (current_tick - self.last_shot_time) / (self.shoot_cooldown * constants.FPS)
+        special_progress = (current_tick - self.last_special_shot_time) / (self.special_shot_cooldown * constants.FPS)
+        # Clamp the progress values so that they do not exceed 1.0
+        return min(1, regular_progress), min(1, special_progress)
     
     def gain_experience(self, amount):
         # Apply XP gain bonus as a percentage increase
-        import game_state
+        import src.game_state as game_state
         bonus_multiplier = 1 + (self.xp_gain_percent_bonus / 100)
         modified_amount = amount * bonus_multiplier
         self.player_experience += modified_amount

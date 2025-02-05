@@ -3,14 +3,14 @@ from mutagen import File
 import threading
 import os  # Import os module to check for file existence
 
-import constants
-import game_state
-import logic
-import drawing
-import score
-from player import Player, PlayerState
-from helpers import calculate_angle, reset_game, load_music_settings, save_music_settings
-from menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab
+import src.constants as constants
+import src.game_state as game_state
+import src.logic as logic
+import src.drawing as drawing
+import src.score as score
+from src.player import Player, PlayerState
+from src.helpers import calculate_angle, reset_game, load_music_settings, save_music_settings
+from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
@@ -220,7 +220,7 @@ def main():
         
         # Get current time for cooldowns
         current_time_s = pygame.time.get_ticks() / 1000.0
-        left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress(current_time_s)
+        left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress()
         drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
         drawing.draw_experience_bar()
         

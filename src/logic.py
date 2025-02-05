@@ -1,12 +1,12 @@
 import pygame
 import math
 import random
-import game_state
-import constants
-from helpers import calculate_angle
-from projectiles import Alignment
-from enemies import RegularEnemy, TankEnemy, SniperEnemy
+from src.helpers import calculate_angle
+from src.projectiles import Alignment
+from src.enemies import RegularEnemy, TankEnemy, SniperEnemy
 
+import src.game_state as game_state
+import src.constants as constants
 
 def move_enemy(enemy, target_x, target_y):
     speed = constants.tank_speed if enemy.type == "tank" else constants.basic_enemy_speed
@@ -86,23 +86,21 @@ def update_hearts():
 def handle_input():
     keys = pygame.key.get_pressed()
     mouse_pressed = pygame.mouse.get_pressed()
-    current_time = pygame.time.get_ticks() / 1000.0
 
     # Handle movement
     game_state.player.update(keys)
 
-    # Handle shooting
+    # Handle shooting: use the new shooting methods (which use the in-game tick counter)
     if mouse_pressed[0] and not game_state.game_over:
-        bullets = game_state.player.shoot_regular(pygame.mouse.get_pos(), current_time)
+        bullets = game_state.player.shoot_regular(pygame.mouse.get_pos())
         if bullets:
             game_state.projectiles.extend(bullets)
 
     if mouse_pressed[2] and not game_state.game_over:
-        bullets = game_state.player.shoot_special(pygame.mouse.get_pos(), current_time)
+        bullets = game_state.player.shoot_special(pygame.mouse.get_pos())
         if bullets:
             game_state.projectiles.extend(bullets)
 
-    # Get cooldown progress for UI
     return keys
 
 
@@ -110,6 +108,7 @@ def update_enemies():
     # Use the in-game tick counter (which excludes pause time)
     current_tick = game_state.in_game_ticks_elapsed  
     for enemy in game_state.enemies[:]:
+        # enemy.update(game_state.player.x, game_state.player.y, current_tick, game_state)
         enemy.move(game_state.player.x, game_state.player.y, game_state)
         enemy.shoot(game_state.player.x, game_state.player.y, current_tick, game_state)
 

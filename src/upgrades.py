@@ -4,8 +4,8 @@ import random
 from math import ceil, floor
 import pygame
 
-import constants
-from player import Player
+import src.constants as constants
+from src.player import Player
 
 @dataclass
 class Upgrade:
@@ -263,7 +263,7 @@ class UpgradePool:
                 description="Increase movement speed by 30%",
                 Rarity="Rare",
                 apply=lambda player: setattr(player, 'speed', player.speed * 1.3),
-                max_level=20,
+                max_level=3,
                 icon="movement_speed"
             ),
             Upgrade(
@@ -333,9 +333,9 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Pickup Temporary Damage Boost",
-                description="Adds 20% to 20s damage boost from pickups",
+                description="Adds 15% to 20s damage boost from pickups",
                 Rarity="Common",
-                apply=lambda player: setattr(player, 'hp_pickup_damage_boost_percent_bonus', player.hp_pickup_damage_boost_percent_bonus + 20),
+                apply=lambda player: setattr(player, 'hp_pickup_damage_boost_percent_bonus', player.hp_pickup_damage_boost_percent_bonus + 15),
                 icon="dmg_pickup",
                 max_level=4,
             ),
@@ -349,17 +349,17 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Pickup Permanent Damage Boost",
-                description="Pickups now permanently increase damage by 1%",
+                description="Pickups now permanently increase damage by 0.5%",
                 Rarity="Epic",
-                apply=lambda player: setattr(player, 'hp_pickup_permanent_damage_boost_percent_bonus', player.hp_pickup_permanent_damage_boost_percent_bonus + 1),
+                apply=lambda player: setattr(player, 'hp_pickup_permanent_damage_boost_percent_bonus', player.hp_pickup_permanent_damage_boost_percent_bonus + 0.5),
                 icon="permanent_dmg",
                 max_level=1,
             ),
             Upgrade(
                 name="Pickup Permanent HP Boost",
-                description="Pickups now permanently increase max hp by 1%",
+                description="Pickups now permanently increase max hp by 0.5%",
                 Rarity="Epic",
-                apply=lambda player: setattr(player, 'hp_pickup_permanent_hp_boost_percent_bonus', player.hp_pickup_permanent_hp_boost_percent_bonus + 1),
+                apply=lambda player: setattr(player, 'hp_pickup_permanent_hp_boost_percent_bonus', player.hp_pickup_permanent_hp_boost_percent_bonus + 0.5),
                 icon="permanent_hp",
                 max_level=1,
             ),

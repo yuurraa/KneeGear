@@ -1,9 +1,10 @@
 import math
-import constants
 from abc import ABC, abstractmethod
-from projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
+
 import random
 
+from src.projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
+import src.constants as constants
 class Enemy(ABC):
     def __init__(self, x, y, scaling):
         self.x = x
@@ -61,7 +62,7 @@ class Enemy(ABC):
         
         # Handle death and rewards
         if self._health <= 0:
-            from score import increase_score
+            from src.score import increase_score
             increase_score(self.score_reward)
             game_state.player.gain_experience(self.score_reward)
             return True
@@ -69,7 +70,7 @@ class Enemy(ABC):
 
     def move(self, target_x, target_y, game_state):
         """Default movement behavior for enemies"""
-        from helpers import calculate_angle
+        from src.helpers import calculate_angle
         angle = math.radians(calculate_angle(self.x, self.y, target_x, target_y))
         self.x += self.speed * math.cos(angle)
         self.y += self.speed * math.sin(angle)
@@ -83,9 +84,9 @@ class Enemy(ABC):
     
     def draw(self):
         import pygame
-        import game_state
-        import constants
-        from drawing import draw_health_bar  # re-use the helper from drawing.py
+        import src.game_state as game_state
+        import src.constants as constants
+        from src.drawing import draw_health_bar  # re-use the helper from drawing.py
 
         screen = game_state.screen
 
@@ -145,7 +146,7 @@ class RegularEnemy(Enemy):
 
         # Homing shot using seconds
         if current_time - last_shot_time >= constants.basic_enemy_homing_interval:
-            from helpers import calculate_angle
+            from src.helpers import calculate_angle
             angle = calculate_angle(self.x, self.y, target_x, target_y)
             bullet = BasicEnemyHomingBullet(
                 x=self.x,
@@ -194,7 +195,7 @@ class TankEnemy(Enemy):
         last_shotgun_time = self.last_shotgun_tick / constants.FPS
 
         if current_time - last_shotgun_time >= constants.tank_shotgun_interval:
-            from helpers import calculate_angle
+            from src.helpers import calculate_angle
             base_angle = calculate_angle(self.x, self.y, target_x, target_y)
             for _ in range(constants.tank_shotgun_pellet_count):
                 angle = base_angle + random.uniform(-constants.tank_shotgun_spread, 
@@ -213,7 +214,7 @@ class TankEnemy(Enemy):
 class SniperEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
-        import game_state
+        import src.game_state as game_state
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_sniper_xp_reward * self.scaling)
         self.last_volley_shot_tick = 0  
@@ -265,7 +266,7 @@ class SniperEnemy(Enemy):
 
         if (self.shots_fired_in_volley < 3 and 
             current_time - last_volley_shot_time >= constants.sniper_shot_delay):
-            from helpers import calculate_angle
+            from src.helpers import calculate_angle
             aim_angle = calculate_angle(self.x, self.y, target_x, target_y)
             
             bullet = SniperEnemyBullet(
