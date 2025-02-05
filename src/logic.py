@@ -107,10 +107,11 @@ def handle_input():
 
 
 def update_enemies():
-    current_time = pygame.time.get_ticks() / 1000.0
+    # Use the in-game tick counter (which excludes pause time)
+    current_tick = game_state.in_game_ticks_elapsed  
     for enemy in game_state.enemies[:]:
         enemy.move(game_state.player.x, game_state.player.y, game_state)
-        enemy.shoot(game_state.player.x, game_state.player.y, current_time, game_state)
+        enemy.shoot(game_state.player.x, game_state.player.y, current_tick, game_state)
 
         if enemy.health <= 0:
             game_state.enemies.remove(enemy)

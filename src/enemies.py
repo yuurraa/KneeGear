@@ -9,8 +9,8 @@ class Enemy(ABC):
         self.x = x
         self.y = y
         self.scaling = scaling
-        self.last_shot_time = 0
-        self.last_aoe_time = 0
+        self.last_shot_tick = 0      # Using in-game tick counter for shooting events
+        self.last_aoe_tick = 0       # Using in-game tick counter for AOE events
         self.score_reward = 5
         self.speed = 0
         
@@ -42,8 +42,8 @@ class Enemy(ABC):
         self._health = value
 
     @abstractmethod
-    def shoot(self, target_x, target_y, current_time, game_state):
-        """Handle shooting logic for the enemy"""
+    def shoot(self, target_x, target_y, current_tick, game_state):
+        """Handle shooting logic for the enemy using in-game ticks"""
         pass
         
     def apply_damage(self, damage, game_state):
@@ -64,7 +64,6 @@ class Enemy(ABC):
             from score import increase_score
             increase_score(self.score_reward)
             game_state.player.gain_experience(self.score_reward)
-
             return True
         return False
 
@@ -138,9 +137,14 @@ class RegularEnemy(Enemy):
     def base_health(self):
         return constants.base_basic_enemy_health
 
-    def shoot(self, target_x, target_y, current_time, game_state):
-        # Homing shot
-        if current_time - self.last_shot_time >= constants.basic_enemy_homing_interval:
+    def shoot(self, target_x, target_y, current_tick, game_state):
+        # Convert ticks to seconds
+        current_time = current_tick / constants.FPS
+        last_shot_time = self.last_shot_tick / constants.FPS
+        last_aoe_time = self.last_aoe_tick / constants.FPS
+
+        # Homing shot using seconds
+        if current_time - last_shot_time >= constants.basic_enemy_homing_interval:
             from helpers import calculate_angle
             angle = calculate_angle(self.x, self.y, target_x, target_y)
             bullet = BasicEnemyHomingBullet(
@@ -149,10 +153,10 @@ class RegularEnemy(Enemy):
                 angle=angle,
             )
             game_state.projectiles.append(bullet)
-            self.last_shot_time = current_time
+            self.last_shot_tick = current_tick
 
-        # AOE shot
-        if current_time - self.last_aoe_time >= constants.basic_enemy_bullet_interval:
+        # AOE shot using seconds
+        if current_time - last_aoe_time >= constants.basic_enemy_bullet_interval:
             for angle in range(0, 360, 45):
                 bullet = BasicEnemyBullet(
                     x=self.x,
@@ -160,7 +164,7 @@ class RegularEnemy(Enemy):
                     angle=angle,
                 )
                 game_state.projectiles.append(bullet)
-            self.last_aoe_time = current_time
+            self.last_aoe_tick = current_tick
 
 
 
@@ -174,7 +178,7 @@ class TankEnemy(Enemy):
         self.inner_size = constants.TANK_ENEMY_INNER_SIZE
         self.outline_color = constants.TANK_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.TANK_ENEMY_INNER_COLOR
-        self.last_shotgun_time = 0  
+        self.last_shotgun_tick = 0  # Using in-game tick counter for shotgun timing
         
     @property
     def type(self):
@@ -184,13 +188,17 @@ class TankEnemy(Enemy):
     def base_health(self):
         return constants.base_tank_health
 
-    def shoot(self, target_x, target_y, current_time, game_state):
-        if current_time - self.last_shotgun_time >= constants.tank_shotgun_interval:
+    def shoot(self, target_x, target_y, current_tick, game_state):
+        # Convert ticks to seconds
+        current_time = current_tick / constants.FPS
+        last_shotgun_time = self.last_shotgun_tick / constants.FPS
+
+        if current_time - last_shotgun_time >= constants.tank_shotgun_interval:
             from helpers import calculate_angle
             base_angle = calculate_angle(self.x, self.y, target_x, target_y)
             for _ in range(constants.tank_shotgun_pellet_count):
                 angle = base_angle + random.uniform(-constants.tank_shotgun_spread, 
-                                                  constants.tank_shotgun_spread)
+                                                      constants.tank_shotgun_spread)
                 speed = random.uniform(*constants.tank_pellet_speed_range)
                 pellet = TankEnemyBullet(
                     x=self.x,
@@ -199,15 +207,17 @@ class TankEnemy(Enemy):
                     speed=speed,
                 )
                 game_state.projectiles.append(pellet)
-            self.last_shotgun_time = current_time
+            self.last_shotgun_tick = current_tick
         
+
 class SniperEnemy(Enemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
+        import game_state
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_sniper_xp_reward * self.scaling)
-        self.last_volley_shot_time = 0  # Track timing of individual shots within volley
-        self.shots_fired_in_volley = 0  # Track number of shots in current volley
+        self.last_volley_shot_tick = 0  
+        self.shots_fired_in_volley = 69  # Track number of shots in current volley
         self.speed = constants.sniper_move_speed
         self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE
         self.inner_size = constants.SNIPER_ENEMY_INNER_SIZE
@@ -225,39 +235,36 @@ class SniperEnemy(Enemy):
 
     def move(self, target_x, target_y, game_state):
         # Sniper keeps its custom movement behavior
-        # Retreated movement if too close to the player
+        # Retreat if too close to the player
         dx = self.x - target_x
         dy = self.y - target_y
         distance = math.hypot(dx, dy)
         
         if distance < constants.sniper_keep_distance:
-            # Move away from player
+            # Move away from the player
             angle = math.atan2(dy, dx)
             self.x += math.cos(angle) * self.speed
             self.y += math.sin(angle) * self.speed
         else:
-            # Use default movement behavior to approach player
+            # Use default movement behavior to approach the player
             super().move(target_x, target_y, game_state)
             
         # Restrict to screen boundaries
         self._restrict_to_boundaries(game_state)
 
-    def shoot(self, target_x, target_y, current_time, game_state):
-        """
-        Sniper enemy behavior:
-        - If the enemy is too close to the player, it now retreats in the move() method.
-        - If the volley cooldown has passed, fire a volley of three fast, high-damage bullets
-          with brief delays between shots.
-        """
-        if current_time - self.last_shot_time >= constants.sniper_volley_interval:
-            # Reset volley counter when starting new volley
-            self.shots_fired_in_volley = 0
-            self.last_volley_shot_time = current_time
-            self.last_shot_time = current_time
+    def shoot(self, target_x, target_y, current_tick, game_state):
+        # Convert ticks to seconds
+        current_time = current_tick / constants.FPS
+        last_shot_time = self.last_shot_tick / constants.FPS
+        last_volley_shot_time = self.last_volley_shot_tick / constants.FPS
 
-        # Fire individual shots within volley with 0.05s spacing
+        if current_time - last_shot_time >= constants.sniper_volley_interval:
+            self.shots_fired_in_volley = 0
+            self.last_volley_shot_tick = current_tick
+            self.last_shot_tick = current_tick
+
         if (self.shots_fired_in_volley < 3 and 
-            current_time - self.last_volley_shot_time >= 0.05):
+            current_time - last_volley_shot_time >= constants.sniper_shot_delay):
             from helpers import calculate_angle
             aim_angle = calculate_angle(self.x, self.y, target_x, target_y)
             
@@ -270,5 +277,5 @@ class SniperEnemy(Enemy):
             game_state.projectiles.append(bullet)
             
             self.shots_fired_in_volley += 1
-            self.last_volley_shot_time = current_time
+            self.last_volley_shot_tick = current_tick
         
