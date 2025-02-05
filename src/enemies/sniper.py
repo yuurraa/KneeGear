@@ -12,10 +12,10 @@ class SniperEnemy(BaseEnemy):
         self.score_reward = math.floor(constants.base_sniper_xp_reward * self.scaling)
         
         # Apply randomized initial delay for the volley shot
-        self.initial_delay_ticks = random.uniform(1.0, constants.sniper_volley_interval) * constants.FPS
+        self.initial_delay_ticks = random.uniform(2.0, constants.sniper_volley_interval) * constants.FPS
         self.last_shot_tick = game_state.in_game_ticks_elapsed - constants.sniper_volley_interval * constants.FPS + self.initial_delay_ticks
         self.last_volley_shot_tick = self.last_shot_tick
-        self.shots_fired_in_volley = 0
+        self.shots_fired_in_volley = 69
         
         self.speed = constants.sniper_move_speed
         self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE

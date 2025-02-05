@@ -3,7 +3,7 @@ import math
 import random
 from src.helpers import calculate_angle
 from src.projectiles import Alignment
-from src.enemies import BasicEnemy, TankEnemy, SniperEnemy
+from src.enemies import BasicEnemy, TankEnemy, SniperEnemy, ChargerEnemy
 
 import src.game_state as game_state
 import src.constants as constants
@@ -44,8 +44,9 @@ def spawn_enemy():
     # Use weighted random selection for enemy type
     enemy_types = [
         (BasicEnemy, 0.6),  
-        (TankEnemy, 0.3),     
-        (SniperEnemy, 0.1)    
+        (TankEnemy, 0.3),
+        (ChargerEnemy, 0.2),
+        (SniperEnemy, 0.2)    
     ]
     
     EnemyClass = random.choices(

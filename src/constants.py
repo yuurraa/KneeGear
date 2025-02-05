@@ -79,6 +79,13 @@ sniper_bullet_damage = 13       # High damage per sniper bullet
 sniper_keep_distance = 800      # Desired minimum distance from the player (in game units)
 sniper_move_speed = 1         
 
+# Charger Enemy Constants
+base_charger_health = 60        # Moderate health since it's a kamikaze-style enemy
+base_charger_xp_reward = 20     # Good reward since it's risky to deal with
+CHARGER_ACCELERATION = 0.22      # Gradual acceleration for some challenge
+CHARGER_MAX_SPEED = 12        # Fast max speed since charging is its main threat
+
+
 # Enemy drawing constants
 REGULAR_ENEMY_OUTLINE_SIZE = 42
 REGULAR_ENEMY_INNER_SIZE = 40
@@ -94,5 +101,12 @@ SNIPER_ENEMY_OUTLINE_SIZE = 42  # Adjust as needed
 SNIPER_ENEMY_INNER_SIZE = 40
 SNIPER_ENEMY_OUTLINE_COLOR = BLACK
 SNIPER_ENEMY_INNER_COLOR = PURPLE
+
+
+# Charger appearance
+CHARGER_ENEMY_OUTLINE_SIZE = 38  # Slightly smaller than regular enemies
+CHARGER_ENEMY_INNER_SIZE = 36
+CHARGER_ENEMY_OUTLINE_COLOR = BLACK
+CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies
 
 

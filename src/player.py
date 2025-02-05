@@ -320,3 +320,6 @@ class Player:
         self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
         self.applied_upgrades.add(upgrade)
         print(f"Applied upgrade: {upgrade.name}")  # Debugging output
+
+    def is_dead(self):
+        return self.state == PlayerState.DEAD
