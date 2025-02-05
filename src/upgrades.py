@@ -125,11 +125,11 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Heavy Bullets",
-                description=r"Increase basic attack damage by 120%, but decreases basic attack bullet speed by 30%",
+                description=r"Increase basic attack damage by 120%, but decreases basic attack bullet speed by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 2.2),
-                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.7),
+                    setattr(player, 'basic_bullet_speed_multiplier', player.basic_bullet_speed_multiplier * 0.75),
                 ][-1],
                 icon="heavy"
             ),
@@ -342,10 +342,10 @@ class UpgradePool:
             Upgrade(
                 name="More pickups",
                 description="1 additional pickup can be present at a time",
-                Rarity="Rare",
+                Rarity="Epic",
                 apply=lambda player: setattr(player, 'max_pickups_on_screen', player.max_pickups_on_screen + 1),
                 icon="more_pickup",
-                max_level=2,
+                max_level=1,
             ),
             Upgrade(
                 name="Pickup Permanent Damage Boost",
