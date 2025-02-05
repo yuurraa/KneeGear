@@ -10,7 +10,7 @@ class ChargerEnemy(BaseEnemy):
         # Score reward based on a constant multiplier (make sure to define this in your constants)
         self.score_reward = math.floor(constants.base_charger_xp_reward * self.scaling)
         
-        self.damage_multiplier = 0.4
+        self.damage_multiplier = 0.5
         
         # For acceleration-based physics:
         self.vx = 0.0
