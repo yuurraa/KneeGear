@@ -3,6 +3,7 @@ import constants
 import game_state
 from player import PlayerState
 from upgrades import UpgradePool
+import random
 
 class Button:
     def __init__(self, x, y, width, height, text, color):
@@ -106,26 +107,94 @@ class Slider:
 
 class UpgradeButton(Button):
     RARITY_COLORS = {
-        "Common": (144, 238, 144),  # Light green
-        "Rare": (135, 206, 250),    # Light blue
-        "Epic": (186, 85, 211),     # Light purple
+        "Common": (144, 238, 144),    # Light green
+        "Rare": (135, 206, 250),      # Light blue
+        "Epic": (186, 85, 211),       # Light purple
         "Mythic": (255, 71, 76),      # Red
-        "Legendary": (255, 215, 0),    # Gold
+        "Legendary": (255, 215, 0),   # Gold
+        "Exclusive": (255, 192, 203),  # Light pink
     }
 
     def __init__(self, x, y, width, height, upgrade, icon_image=None):
         rarity_color = self.RARITY_COLORS.get(upgrade.Rarity, constants.GREEN)
         super().__init__(x, y, width, height, "", rarity_color)
         self.upgrade = upgrade
-        self.icon_image = icon_image  # Store the icon image
-        self.width = width  # Explicitly set width
-        self.height = height  # Explicitly set height
-        self.icon_size = 64  # Fixed icon size
-        self.circle_margin = 10  # Margin around the circle
-
+        self.icon_image = icon_image
+        self.width = width
+        self.height = height
+        self.icon_size = 64
+        self.circle_margin = 10
+        self.rainbow_timer = 0  # Add timer for rainbow effect
 
     def draw(self, screen):
-        super().draw(screen)
+        # Special handling for all rarities
+        self.rainbow_timer = (self.rainbow_timer + 4) % 360  # Speed up by incrementing by 5
+        
+        # Calculate shimmer cycle (separate from rainbow)
+        shimmer_cycle = (self.rainbow_timer % 120) / 60.0  # Halved from 120 to 60 to double shimmer speed
+        show_shimmer = shimmer_cycle < 0.7  # Show shimmer for first half of cycle
+        
+        if show_shimmer:
+            # Calculate diagonal position based on shimmer cycle (0 to 1)
+            diagonal_progress = (shimmer_cycle * 2)  # Convert 0-0.5 to 0-1 range
+            
+            # Use rarity color as base
+            base_color = self.color
+            # Create lighter version for shimmer, with special handling for exclusive
+            if self.upgrade.Rarity == "Exclusive":
+                r = min(base_color[0] + 30, 255)  # Reduced brightness for exclusive
+                g = min(base_color[1] + 30, 255)
+                b = min(base_color[2] + 30, 255)
+            else:
+                r = min(base_color[0] + 70, 255)
+                g = min(base_color[1] + 70, 255)
+                b = min(base_color[2] + 70, 255)
+            
+            # Calculate shimmer width and position (narrower shimmer)
+            shimmer_width = 0.3  # Narrower width of shimmer as percentage of diagonal length
+            shimmer_center = diagonal_progress
+            
+            # For each pixel, calculate its diagonal position and blend accordingly
+            new_color = []
+            for y in range(self.height):
+                row = []
+                for x in range(self.width):
+                    # Calculate diagonal position (0 to 1)
+                    diag_pos = (x / self.width + y / self.height) / 2
+                    
+                    # Calculate distance from shimmer center
+                    dist = abs(diag_pos - shimmer_center)
+                    
+                    # Calculate blend factor based on distance with smoother falloff
+                    blend_factor = max(0, 1 - (dist / shimmer_width) ** 1.5)  # Added power for smoother falloff
+                    blend_factor = min(1, blend_factor)
+                    
+                    # Blend colors
+                    pixel_color = [
+                        int(base_color[0] * (1 - blend_factor) + r * blend_factor),
+                        int(base_color[1] * (1 - blend_factor) + g * blend_factor),
+                        int(base_color[2] * (1 - blend_factor) + b * blend_factor)
+                    ]
+                    row.append(pixel_color)
+                new_color.append(row)
+            
+            # Create surface and set pixels
+            button_surface = pygame.Surface((self.width, self.height))
+            for y in range(self.height):
+                for x in range(self.width):
+                    button_surface.set_at((x, y), new_color[y][x])
+            
+            # Draw the surface
+            screen.blit(button_surface, self.rect)
+            pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
+        else:
+            # Draw normal button during rest period
+            color = (min(self.color[0] + 30, 255), 
+                    min(self.color[1] + 30, 255), 
+                    min(self.color[2] + 30, 255)) if self.hover else self.color
+            
+            pygame.draw.rect(screen, color, self.rect)
+            pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
 
         font_name = pygame.font.Font(None, 32)
         font_desc = pygame.font.Font(None, 24)
@@ -212,9 +281,15 @@ def draw_level_up_menu(screen):
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
-    # Create menu panel - using proportional sizes
-    panel_width = int(game_state.screen_width * 0.65)  # ~57% of screen width
-    panel_height = int(game_state.screen_height * 0.37)  # ~37% of screen height
+    # Get the number of upgrade choices the player should have
+    num_choices = 3  # Default
+    if any(upgrade.name == "+1 Upgrade Choice" for upgrade in game_state.player.applied_upgrades):
+        num_choices = 4
+
+    # Create menu panel - using proportional sizes and adjusting width based on number of choices
+    base_panel_width = int(game_state.screen_width * 0.57)  # Base width for 3 choices
+    panel_width = int(game_state.screen_width * (0.65 if num_choices == 3 else 0.85))  # Wider panel for 4 choices
+    panel_height = int(game_state.screen_height * 0.4)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
@@ -231,13 +306,15 @@ def draw_level_up_menu(screen):
     if not hasattr(game_state, 'current_upgrade_buttons'):
         # Get random upgrades
         upgrade_pool = UpgradePool()
-        upgrades = upgrade_pool.get_random_upgrades(3, game_state.player)
+        upgrades = upgrade_pool.get_random_upgrades(num_choices, game_state.player)
         
         # Create buttons with proportional sizes
         button_width = int(game_state.screen_width * 0.18)  # ~16% of screen width
-        button_height = int(game_state.screen_height * 0.18)  # ~15% of screen height
-        button_spacing = int(game_state.screen_width * 0.026)  # ~2.6% of screen width
-        total_width = (button_width * 3) + (button_spacing * 2)
+        button_height = int(game_state.screen_height * 0.17)  # ~15% of screen height
+        button_spacing = int(game_state.screen_width * 0.023)  # ~2.6% of screen width
+        
+        # Calculate total width of all buttons and spacing
+        total_width = (button_width * num_choices) + (button_spacing * (num_choices - 1))
         start_x = (game_state.screen_width - total_width) // 2
 
         game_state.current_upgrade_buttons = []
@@ -350,11 +427,11 @@ def draw_upgrades_tab(screen):
     )  # 200px base + dynamic height
 
     # Calculate the number of columns needed
-    num_columns = (int(game_state.screen_height * 0.046) + (button_height * num_upgrades) + 
+    num_columns = (int(game_state.screen_height * 0.05) + (button_height * num_upgrades) + 
                   (button_spacing * (num_upgrades - 1))) // max_column_height + 1
 
     # Calculate panel width based on number of columns
-    column_width = int(game_state.screen_width * 0.22)  # ~370px on 1920px width
+    column_width = int(game_state.screen_width * 0.25)  # ~370px on 1920px width
     panel_width = base_panel_width + (num_columns - 1) * column_width
 
     panel_x = (game_state.screen_width - panel_width) // 2

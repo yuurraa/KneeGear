@@ -34,42 +34,10 @@ class UpgradePool:
             "Rare": 30,
             "Epic": 10,
             "Mythic": 3,
+            "Exclusive": 5,
             "Legendary": 1
         }
-        self.icon_images = {
-            "additional_projectiles": pygame.image.load("assets/icons/additional_projectiles.png"),
-            "attack_damage": pygame.image.load("assets/icons/attack_damage.png"),
-            "attack_cooldown": pygame.image.load("assets/icons/attack_cooldown.png"),
-            "bullet_speed": pygame.image.load("assets/icons/bullet_speed.png"),
-            "cooldown_ex": pygame.image.load("assets/icons/cooldown_ex.png"),
-            "damage_ex": pygame.image.load("assets/icons/damage_ex.png"),
-            "defence": pygame.image.load("assets/icons/defence.png"),
-            "dmg_pickup": pygame.image.load("assets/icons/dmg_pickup.png"),
-            "fat_special": pygame.image.load("assets/icons/fat_special.png"),
-            "fear": pygame.image.load("assets/icons/fear.png"),
-            "frenzy": pygame.image.load("assets/icons/frenzy.png"),
-            "heavy": pygame.image.load("assets/icons/heavy.png"),
-            "hp_pickup": pygame.image.load("assets/icons/hp_pickup.png"),
-            "hp_regen": pygame.image.load("assets/icons/hp_regen.png"),
-            "hp": pygame.image.load("assets/icons/hp.png"),
-            "hybrid_plus": pygame.image.load("assets/icons/hybrid_plus.png"),
-            "hybrid": pygame.image.load("assets/icons/hybrid.png"),
-            "lifesteal": pygame.image.load("assets/icons/lifesteal.png"),
-            "more_pickup": pygame.image.load("assets/icons/more_pickup.png"),
-            "movement_speed": pygame.image.load("assets/icons/movement_speed.png"),
-            "pacifist": pygame.image.load("assets/icons/pacifist.png"),
-            "permanent_dmg": pygame.image.load("assets/icons/permanent_dmg.png"),
-            "permanent_hp": pygame.image.load("assets/icons/permanent_hp.png"),
-            "pierce": pygame.image.load("assets/icons/pierce.png"),
-            "rage": pygame.image.load("assets/icons/rage.png"),
-            "repierce": pygame.image.load("assets/icons/repierce.png"),
-            "size_matters": pygame.image.load("assets/icons/size_matters.png"),
-            "sniper": pygame.image.load("assets/icons/sniper.png"),
-            "super_regen": pygame.image.load("assets/icons/super_regen.png"),
-            "turtle_up": pygame.image.load("assets/icons/turtle_up.png"),
-            "unhealthy": pygame.image.load("assets/icons/unhealthy.png"),
-            "you_lucky_bastard": pygame.image.load("assets/icons/you_lucky_bastard.png"),
-        }
+        
         # general rules:
         # 1. general damage scaling should be 1.4x per level as the benchmark, increase or decrease based on rarity or other factors
         # 2. specialized damage scaling should be less than (general damage scaling * 2) but more than (general damage scaling * 1.5) for same rarity
@@ -77,6 +45,19 @@ class UpgradePool:
         # 4. increased damage scaling from cooldown reduction should be slightly less than general damage scaling
         # 5. hp scaling should be 2x per level as the benchmark
         # 6. there should be balanced porportion bewteen hp/DR and damage scaling
+        
+        # Load upgrade icons
+        self.icon_images = {}
+        for icon_name in ["additional_projectiles", "attack_cooldown","attack_damage", "bullet_speed", "cooldown_ex",
+                          "damage_ex", "defence", "dmg_pickup", "extra_choice", "fat_special", "fear", "frenzy", "heavy",
+                          "hp_pickup", "hp_regen", "hp", "hybrid_plus", "hybrid", "lifesteal", "more_pickup", "movement_speed",
+                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "rage", "repierce", "size_matters", "sniper",
+                          "super_regen", "turtle_up", "unhealthy", "you_lucky_bastard"]:
+            try:
+                self.icon_images[icon_name] = pygame.image.load(f"assets/icons/{icon_name}.png").convert_alpha()
+            except:
+                print(f"Failed to load icon: {icon_name}")
+
         self.upgrades = [
             Upgrade(
                 name="Attack Damage",
@@ -485,6 +466,14 @@ class UpgradePool:
             #     icon="attack_damage",
             #     max_level=1,
             # )
+            Upgrade(
+                name="+1 Upgrade Choice",
+                description="Gain one additional upgrade choice when leveling up",
+                Rarity="Exclusive",
+                apply=lambda player: None,  # The effect is handled in the menu code
+                max_level=1,
+                icon="extra_choice"
+            ),
             
         ]
 
