@@ -475,6 +475,21 @@ class UpgradePool:
                 icon="you_lucky_bastard"
             ),
             Upgrade(
+                name="The Sacrifice",
+                description=r"Increases max hp by 100%, increases damage by 100%, decreases all cooldowns by 50%, Adds 20% damage reduction, but decreases xp gain by 50%",
+                Rarity="Legendary",
+                apply=lambda player: [
+                    setattr(player, 'max_health', player.max_health * 2),
+                    setattr(player, 'base_damage_multiplier', player.base_damage_multiplier * 2),
+                    setattr(player, 'shoot_cooldown', player.shoot_cooldown * 0.5),
+                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.5),
+                    setattr(player, 'damage_reduction_percent_bonus', player.damage_reduction_percent_bonus + 20),
+                    setattr(player, 'xp_gain_multiplier', player.xp_gain_multiplier * 0.5),
+                ][-1],
+                max_level=1,
+                icon="sacrifice"
+            ),
+            Upgrade(
                 name="Size Matters",
                 description="Reduces player size by 30%, increases movement speed by 30%",
                 Rarity="Mythic",
@@ -526,16 +541,16 @@ class UpgradePool:
                 icon="pride",
                 max_level=1,
             ),
-            # Upgrade(
-            #     name="Greed",
-            #     description=r"+15% xp gain",
-            #     Rarity="Mythic",
-            #     apply=lambda player: [
-            #         setattr(player, 'xp_gain_percent_bonus', player.xp_gain_percent_bonus + 15),
-            #     ][-1],
-            #     icon="attack_damage",
-            #     max_level=1,
-            # )
+            Upgrade(
+                name="Greed",
+                description=r"Xp bar passively fills up 0.75% per second",
+                Rarity="Mythic",
+                apply=lambda player: [
+                    setattr(player, 'passive_xp_gain_percent_bonus', player.passive_xp_gain_percent_bonus + 0.75),
+                ][-1],
+                icon="greed",
+                max_level=1,
+            ),
             Upgrade(
                 name="+1 Upgrade Choice",
                 description="Gain one additional upgrade choice when leveling up",

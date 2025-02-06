@@ -68,7 +68,8 @@ class Player:
         self.hp_steal = 0
         self.percent_damage_taken_special_attack_bonus = 0
 
-        self.xp_gain_percent_bonus = 0
+        self.xp_gain_multiplier = 1
+        self.passive_xp_gain_percent_bonus = 0 #percent of xp bar per second
         self.rage_percent_bonus = 0 # percent damage gain per enemy on screen
         self.frenzy_percent_bonus = 0 # percent damage gain per projectile on screen
         self.fear_percent_bonus = 0 # max percent damage gain based on how low your hp is
@@ -176,6 +177,7 @@ class Player:
         self.update_hp_regen()
         self.update_buffs()
         self.move(keys)
+        self.update_passive_xp_gain()  # Apply passive XP gain each second
 
     def update_buffs(self):
         # Remove expired buffs
@@ -331,8 +333,7 @@ class Player:
     def gain_experience(self, amount):
         # Apply XP gain bonus as a percentage increase
         import src.game_state as game_state
-        bonus_multiplier = 1 + (self.xp_gain_percent_bonus / 100)
-        modified_amount = amount * bonus_multiplier
+        modified_amount = amount * self.xp_gain_multiplier
         self.player_experience += modified_amount
         if self.player_experience >= self.experience_to_next_level:
             self.level_up()
@@ -401,3 +402,17 @@ class Player:
 
     def is_dead(self):
         return self.state == PlayerState.DEAD
+
+    def update_passive_xp_gain(self):
+        """
+        Adds passive XP gain to the player once per second.
+        The player gains a percentage of the current experience bar per second.
+        For example, if passive_xp_gain_percent_bonus is 1, the player gains 
+        1% of the XP required for the next level every second.
+        """
+        # Only update if there is a bonus
+        if self.passive_xp_gain_percent_bonus > 0:
+            # Check if a full second (i.e. constants.FPS ticks) has passed
+            if self.current_tick % constants.FPS == 0:
+                xp_gain = self.experience_to_next_level * (self.passive_xp_gain_percent_bonus / 100)
+                self.gain_experience(xp_gain)
