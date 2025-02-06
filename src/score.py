@@ -4,6 +4,7 @@ import hashlib
 
 import src.game_state as game_state
 import src.constants as constants
+from src.helpers import get_scaled_font
 
 # Initialize score
 score = 0
@@ -71,7 +72,7 @@ def update_high_score():
         save_high_score()
 
 def draw_score(screen):
-    font = pygame.font.Font(None, 36)
+    font = pygame.font.Font(None, get_scaled_font(36))
     score_text = font.render(f"Score: {score}", True, constants.BLACK)
     high_score_text = font.render(f"High Score: {high_score}", True, constants.BLACK)
     screen.blit(score_text, (20, 50))

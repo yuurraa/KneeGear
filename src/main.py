@@ -9,13 +9,13 @@ import src.logic as logic
 import src.drawing as drawing
 import src.score as score
 from src.player import Player, PlayerState
-from src.helpers import calculate_angle, reset_game, load_music_settings, save_music_settings
+from src.helpers import reset_game, load_music_settings, get_scaled_font
 from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
     # Create text surface
-    font = pygame.font.Font(None, 74)
+    font = pygame.font.Font(None, get_scaled_font(74))
     text = font.render("GOONER INC.", True, constants.WHITE)
     text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
     
@@ -46,13 +46,14 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     game_over_surface.fill((0, 0, 0, alpha))
     
     # Render "YOU DIED" text
-    large_font = pygame.font.Font(None, 74)
+    large_font = pygame.font.Font(None, get_scaled_font(74))
     text_large = large_font.render("YOU DIED", True, constants.WHITE)
     text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 120))
+
     game_over_surface.blit(text_large, text_large_rect)
     
     # Render time, score, high score, and restart prompt
-    small_font = pygame.font.Font(None, 36)
+    small_font = pygame.font.Font(None, get_scaled_font(36))
     
     # Final time (ensure it's available)
     final_time = getattr(game_state, 'final_time', 0)
@@ -80,7 +81,7 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     game_over_surface.blit(restart_text, restart_text_rect)
     
     # Add the version text at the bottom
-    version_font = pygame.font.Font(None, 24)  # Smaller font size
+    version_font = pygame.font.Font(None, get_scaled_font(24))  # Smaller font size
     version_text = version_font.render("Gooner Game v0.1.2", True, constants.WHITE)
     version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))  # Position at the bottom
     game_over_surface.blit(version_text, version_text_rect)
@@ -133,29 +134,49 @@ def load_and_play_music():
         print(f"Error loading music: {e}")
 
 def main():
-    pygame.init()
-    pygame.mixer.init()  # Initialize the mixer
+    pygame.init()          # Initialize Pygame
+    pygame.mixer.init()    # Initialize the mixer
 
-    # Set up the display first
-    game_state.screen_width = pygame.display.Info().current_w
-    game_state.screen_height = pygame.display.Info().current_h
+    # 1. Query the desktop resolution now that Pygame is initialized
+    info = pygame.display.Info()
+    res_width, res_height = info.current_w, info.current_h
+
+    # 2. Use those values to set your desired resolution
+    screen = pygame.display.set_mode((res_width, res_height), pygame.RESIZABLE)
+    game_state.screen = screen
+
+    # 3. Now store them in your game_state or anywhere you need
+    game_state.screen_width = res_width
+    screen_width = res_width
+    game_state.screen_height = res_height
+    screen_height = res_height
+    
+    # 4. If you want a scale factor, define it here (rather than in helpers.py)
+    BASE_WIDTH = 1920
+    BASE_HEIGHT = 1080
+    scale_x = res_width / BASE_WIDTH
+    scale_y = res_height / BASE_HEIGHT
+    scale = min(scale_x, scale_y)
+
+    # Now you can pass `scale` around or store it in game_state:
+    game_state.scale = scale
 
     # Set up the resizable display
     game_state.screen = pygame.display.set_mode(
-        (game_state.screen_width, game_state.screen_height),
+        (screen_width, screen_height),
         pygame.RESIZABLE
     )
 
     # Create the player after screen dimensions are known
     game_state.player = Player(
-        game_state.screen_width // 2,
-        game_state.screen_height // 2,
-        game_state.screen_width,
-        game_state.screen_height
+        screen_width // 2,
+        screen_height // 2,
+        screen_width,
+        screen_height
     )
 
     # Show the intro screen
-    show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
+    show_intro_screen(game_state.screen, screen_width, screen_height)
 
     # Start loading and playing music in a separate thread
     music_thread = threading.Thread(target=load_and_play_music, daemon=True)
@@ -184,7 +205,7 @@ def main():
                 
         # Draw fade overlay if active
         if game_state.fade_alpha > 0:
-            fade_overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
+            fade_overlay = pygame.Surface((screen_width, screen_height))
             fade_overlay.fill(constants.BLACK)
             fade_overlay.set_alpha(game_state.fade_alpha)
             game_state.screen.blit(fade_overlay, (0, 0))
@@ -210,8 +231,8 @@ def main():
                 reset_game()
                 score.reset_score()
                 game_state.fade_alpha = 255
-                game_state.player.x = game_state.screen_width // 2
-                game_state.player.y = game_state.screen_height // 2
+                game_state.player.x = screen_width // 2
+                game_state.player.y = screen_height // 2
                 continue
         
         # Convert in_game_ticks to seconds for enemy spawning
@@ -253,9 +274,9 @@ def main():
         elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
         minutes = elapsed_seconds // 60
         seconds = elapsed_seconds % 60
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, get_scaled_font(36))
         time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
-        time_rect = time_text.get_rect(topright=(game_state.screen_width - 20, 20))
+        time_rect = time_text.get_rect(topright=(screen_width - 20, 20))
         # Add a semi-transparent background for better readability
         bg_rect = time_rect.copy()
         bg_rect.inflate_ip(20, 10)  # Make background slightly larger than text
@@ -399,16 +420,16 @@ def main():
             game_state.fade_alpha = min(game_state.fade_alpha + 10, 255)
             
             # Prevent player from moving
-            game_state.player.x = game_state.screen_width // 2
-            game_state.player.y = game_state.screen_height // 2
+            game_state.player.x = screen_width // 2
+            game_state.player.y = screen_height // 2
             
             # Remove all enemies
             game_state.enemies.clear()  # Clears the list, instantly removing all enemies
             score.update_high_score()
             
             # Display game over screen
-            show_game_over_screen(game_state.screen, game_state.screen_width, 
-                                game_state.screen_height, game_state.fade_alpha)
+            show_game_over_screen(game_state.screen, screen_width, 
+                                screen_height, game_state.fade_alpha)
 
         # Update display
         game_state.in_game_ticks_elapsed += 1

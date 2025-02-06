@@ -146,6 +146,8 @@ class ChargerEnemy(BaseEnemy):
         If a collision is detected, deal contact damage to the player equal to the enemy's current health,
         then deduct that same amount from its own health.
         """
+        if self.dying:
+            return
         player = game_state.player
         player_radius = getattr(player, "collision_radius", 15)
         enemy_radius = self.inner_size / 2

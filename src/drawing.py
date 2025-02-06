@@ -2,9 +2,10 @@ import pygame
 import math
 import random
 
-from src.helpers import calculate_angle
+from src.helpers import calculate_angle, get_scaled_font
 import src.game_state as game_state
 import src.constants as constants
+import src.main as main
     
 def draw_experience_bar():
     screen = game_state.screen
@@ -30,7 +31,7 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     # Draw left click icon
     left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
     pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white
-    font = pygame.font.Font(None, 36)
+    font = pygame.font.Font(None, get_scaled_font(36))
     text = font.render("L", True, (0, 0, 0))  # Black "L"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     left_icon_surface.blit(text, text_rect)
@@ -74,7 +75,7 @@ def draw_fade_overlay():
 
 def draw_player_state_value_updates():
     screen = game_state.screen
-    font = pygame.font.SysFont(None, 24)  # Adjust font size as needed
+    font = pygame.font.SysFont(None, get_scaled_font(24))  # Adjust font size as needed
 
     # Draw damage numbers
     for update in game_state.damage_numbers[:]:
@@ -146,7 +147,7 @@ def draw_notification():
         game_state.notification_current_y = y
 
         # Render the notification text
-        font = pygame.font.SysFont(None, 32)
+        font = pygame.font.SysFont(None, get_scaled_font(32.0))
         text_surface = font.render(game_state.notification_message, True, constants.WHITE)
         text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 21))  # Adjust y for alignment
         

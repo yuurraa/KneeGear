@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from src.helpers import save_music_settings
+from src.helpers import save_music_settings, get_scaled_font
 import src.constants as constants
 import src.game_state as game_state
 from src.player import PlayerState
@@ -21,7 +21,7 @@ class Button:
         pygame.draw.rect(screen, color, self.rect)
         pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
 
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, get_scaled_font(36))
         text_surface = font.render(self.text, True, constants.BLACK)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
@@ -132,7 +132,7 @@ def compute_shimmer_surface_for_tab_icon(rarity_color, rarity, width, height, ph
     blend = np.abs(diag - 0.5) * 2  # 0 at center, 1 at edges.
     shimmer_width = 0.3  # Controls how narrow the bright band is.
     blend = 1 - np.clip(blend / shimmer_width, 0, 1)  # Now 1 means fully bright.
-    blend = blend[:, :, None]  # Make it (height, width, 1) for broadcasting.
+    blend = blend[:, :, None]  # Make it (height, width:.1f}" for broadcasting.
     
     # Compute final color at each pixel.
     pixel_array = base_color * (1 - blend) + bright_color * blend
@@ -192,9 +192,9 @@ class UpgradeButton(Button):
         pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
 
         # Continue with the rest of the drawing (icon, text, etc.)
-        font_name = pygame.font.Font(None, 32)
-        font_desc = pygame.font.Font(None, 24)
-        font_rarity = pygame.font.Font(None, 20)
+        font_name = pygame.font.Font(None, get_scaled_font(32))
+        font_desc = pygame.font.Font(None, get_scaled_font(24))
+        font_rarity = pygame.font.Font(None, get_scaled_font(20))
 
         # Draw the icon in a circle overlapping the top-left corner
         if self.icon_image:
@@ -305,7 +305,7 @@ def draw_level_up_menu(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Level up text
-    font = pygame.font.Font(None, 48)
+    font = pygame.font.Font(None, get_scaled_font(48))
     text = font.render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
     screen.blit(text, text_rect)
@@ -357,7 +357,7 @@ def draw_pause_menu(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Pause menu text
-    font = pygame.font.Font(None, 48)
+    font = pygame.font.Font(None, get_scaled_font(48))
     text = font.render("Paused", True, constants.BLACK)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
     screen.blit(text, text_rect)
@@ -408,7 +408,7 @@ def draw_pause_menu(screen):
     game_state.pause_ui['stats_button'].draw(screen)
 
     # Draw "Volume" label above the slider
-    small_font = pygame.font.Font(None, 30)
+    small_font = pygame.font.Font(None, get_scaled_font(30))
     volume_text = small_font.render("Volume", True, constants.BLACK)
     volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 100))
     screen.blit(volume_text, volume_text_rect)
@@ -462,7 +462,7 @@ def draw_upgrades_tab(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Draw title
-    title_font = pygame.font.Font(None, 36)
+    title_font = pygame.font.Font(None, get_scaled_font(36))
     title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 5))
     screen.blit(title_surface, title_rect)
@@ -486,7 +486,7 @@ def draw_upgrades_tab(screen):
         pygame.draw.rect(screen, constants.BLACK, (x_offset, current_y_offset, button_width, button_height), 2)
 
         # Draw upgrade name
-        desc_font = pygame.font.Font(None, 24)
+        desc_font = pygame.font.Font(None, get_scaled_font(24))
         display_name = f"{upgrade.name} ({game_state.player.upgrade_levels.get(upgrade.name, 0)}x)"
         name_surface = desc_font.render(display_name, True, constants.BLACK)
         name_rect = name_surface.get_rect(center=(x_offset + button_width // 2, current_y_offset + button_height // 2))
@@ -508,7 +508,7 @@ def draw_stats_tab(screen):
     screen.blit(overlay, (0, 0))
 
     # Panel dimensions and positioning
-    panel_width = int(game_state.screen_width * 0.44)
+    panel_width = int(game_state.screen_width * 0.45)
     panel_height = int(game_state.screen_height * 0.7)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
@@ -518,7 +518,7 @@ def draw_stats_tab(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Draw title at the top
-    title_font = pygame.font.Font(None, 36)
+    title_font = pygame.font.Font(None, get_scaled_font(36))
     title_surface = title_font.render("Player Stats", True, constants.BLACK)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + 30))
     screen.blit(title_surface, title_rect)
@@ -526,61 +526,62 @@ def draw_stats_tab(screen):
     # Define groups of stats with headers
     groups = [
         ("Basic Stats", [
-            ("Level", game_state.player.player_level),
-            ("Experience", game_state.player.player_experience),
-            ("XP Gain Multiplier", game_state.player.xp_gain_multiplier),
-            ("Passive XP Gain (%)", game_state.player.passive_xp_gain_percent_bonus),
-            ("Speed", game_state.player.speed),
-            ("Damage Reduction (%)", game_state.player.damage_reduction_percent_bonus),
+            ("Level", f"{game_state.player.player_level:.1f}"),
+            ("Experience", f"{game_state.player.player_experience:.1f}"),
+            ("XP Gain Multiplier", f"{game_state.player.xp_gain_multiplier:.1f}"),
+            ("Passive XP Gain (%)", f"{game_state.player.passive_xp_gain_percent_bonus:.1f}"),
+            ("Speed", f"{game_state.player.speed:.1f}"),
+            ("Damage Reduction (%)", f"{game_state.player.damage_reduction_percent_bonus:.1f}"),
         ]),
         ("Health Stats", [
-            ("Health", game_state.player.health),
-            ("Max Health", game_state.player.max_health),
-            ("Health Regen (%)", game_state.player.hp_regen),
-            ("Health Regen Bonus (%)", game_state.player.hp_regen_percent_bonus),
-            ("Lifesteal (%)", game_state.player.hp_steal),
+            ("Health", f"{game_state.player.health:.1f}"),
+            ("Max Health", f"{game_state.player.max_health:.1f}"),
+            ("Health Regen (%)", f"{game_state.player.hp_regen:.1f}"),
+            ("Health Regen Bonus (%)", f"{game_state.player.hp_regen_percent_bonus:.1f}"),
+            ("Lifesteal (%)", f"{game_state.player.hp_steal:.1f}"),
         ]),
         ("Basic Bullet Stats", [
-            ("Damage Multiplier", game_state.player.base_damage_multiplier),
-            ("Basic Bullet Damage Multiplier", game_state.player.basic_bullet_damage_multiplier),
-            ("Basic Bullet Speed Multiplier", game_state.player.basic_bullet_speed_multiplier),
-            ("Basic Bullet Piercing Multiplier", game_state.player.basic_bullet_piercing_multiplier),
-            ("Basic Bullet Scales w/ Distance", game_state.player.basic_bullet_scales_with_distance_travelled),
-            ("Extra Projs/Shot", game_state.player.basic_bullet_extra_projectiles_per_shot_bonus),
+            ("Damage Multiplier", f"{game_state.player.base_damage_multiplier:.1f}"),
+            ("Basic Bullet Damage Multiplier", f"{game_state.player.basic_bullet_damage_multiplier:.1f}"),
+            ("Basic Bullet Speed Multiplier", f"{game_state.player.basic_bullet_speed_multiplier:.1f}"),
+            ("Basic Bullet Piercing Multiplier", f"{ game_state.player.basic_bullet_piercing_multiplier:.1f}"),
+            ("Basic Bullet Scales w/ Distance", f"{game_state.player.basic_bullet_scales_with_distance_travelled:.1f}"),
+            ("Extra Projectiles/Shot", f"{game_state.player.basic_bullet_extra_projectiles_per_shot_bonus:.1f}"),
         ]),
         ("Random", [
-            ("Roll the Dice Chance (%)", game_state.player.random_upgrade_chance * 100),
+            ("Roll the Dice Chance (%)", f"{game_state.player.random_upgrade_chance * 100:.1f}"),
         ]),
         ("Special Bullet Stats", [
-            ("Special Bullet Damage Multiplier", game_state.player.special_bullet_damage_multiplier),
-            ("Special Bullet Speed Multiplier", game_state.player.special_bullet_speed_multiplier),
-            ("Special Bullet Piercing Multiplier", game_state.player.special_bullet_piercing_multiplier),
-            ("Special Bullet Radius Multiplier", game_state.player.special_bullet_radius_multiplier),
-            ("Special Bullet Can Repierce", game_state.player.special_bullet_can_repierce),
-            ("Special Bullet Scales w/ Dist", game_state.player.special_bullet_scales_with_distance_travelled),
+            ("Special Bullet Damage Multiplier", f"{game_state.player.special_bullet_damage_multiplier:.1f}"),
+            ("Special Bullet Speed Multiplier", f"{game_state.player.special_bullet_speed_multiplier:.1f}"),
+            ("Special Bullet Piercing Multiplier", f"{game_state.player.special_bullet_piercing_multiplier:.1f}"),
+            ("Special Bullet Radius Multiplier", f"{game_state.player.special_bullet_radius_multiplier:.1f}"),
+            ("Special Bullet Can Repierce", f"{game_state.player.special_bullet_can_repierce:.1f}"),
+            ("Special Bullet Scales w/ Dist", f"{game_state.player.special_bullet_scales_with_distance_travelled:.1f}"),
         ]),
         ("Pickup Stats", [
-            ("Maximum Pickups", game_state.player.max_pickups_on_screen),
-            ("Pickup Heal Bonus (%)", game_state.player.hp_pickup_healing_percent_bonus),
-            ("Pickup Temp Damage Boost Duration (s)", game_state.player.hp_pickup_damage_boost_duration_s),
-            ("Pickup Temp Damage Boost (%)", game_state.player.hp_pickup_damage_boost_percent_bonus),
-            ("Pickup Permanent Health Boost (%)", game_state.player.hp_pickup_permanent_hp_boost_percent_bonus),
-            ("Pickup Permanent Damage Boost (%)", game_state.player.hp_pickup_permanent_damage_boost_percent_bonus),
+            ("Maximum Pickups", f"{game_state.player.max_pickups_on_screen:.1f}"),
+            ("Pickup Heal Bonus (%)", f"{game_state.player.hp_pickup_healing_percent_bonus:.1f}"),
+            ("Pickup Temp Damage Boost Duration (s)", f"{game_state.player.hp_pickup_damage_boost_duration_s:.1f}"),
+            ("Pickup Temp Damage Boost (%)", f"{game_state.player.hp_pickup_damage_boost_percent_bonus:.1f}"),
+            ("Pickup Permanent Health Boost (%)", f"{game_state.player.hp_pickup_permanent_hp_boost_percent_bonus:.1f}"),
+            ("Pickup Permanent Damage Boost (%)", f"{game_state.player.hp_pickup_permanent_damage_boost_percent_bonus:.1f}"),
         ]),
         ("Special Bonus Stats", [
-            ("Vengeful Special Bullet Dmg Bonus (%)", game_state.player.percent_damage_taken_special_attack_bonus),
-            ("Rage Bonus (%)", game_state.player.rage_percent_bonus),
-            ("Frenzy Bonus (%)", game_state.player.frenzy_percent_bonus),
-            ("Fear Bonus (%)", game_state.player.fear_percent_bonus),
-            ("Pride (No Damage Buff Req) (s)", game_state.player.no_damage_buff_req_duration),
-            ("Pride (No Damage Buff Mult)", game_state.player.no_damage_buff_damage_bonus_multiplier),
+            ("Vengeful Special Bullet Dmg Bonus (%)", f"{game_state.player.percent_damage_taken_special_attack_bonus:.1f}"),
+            ("Rage Bonus (%)", f"{game_state.player.rage_percent_bonus:.1f}"),
+            ("Frenzy Bonus (%)", f"{game_state.player.frenzy_percent_bonus:.1f}"),
+            ("Fear Bonus (%)", f"{game_state.player.fear_percent_bonus:.1f}"),
+            ("Pride (No Damage Buff Requirement) (s)", f"{game_state.player.no_damage_buff_req_duration:.1f}"),
+            ("Pride (No Damage Buff Multiplier)", f"{game_state.player.no_damage_buff_damage_bonus_multiplier:.1f}"),
+
         ]),
     ]
 
     # Set up fonts
-    header_font = pygame.font.Font(None, 32)
+    header_font = pygame.font.Font(None, get_scaled_font(32))
     header_font.set_underline(True)
-    stat_font = pygame.font.Font(None, 27)
+    stat_font = pygame.font.Font(None, get_scaled_font(27))
 
     # Spacing and margin settings
     top_margin = panel_y + 70  # space reserved at top (below title)

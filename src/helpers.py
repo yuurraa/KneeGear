@@ -50,4 +50,8 @@ def save_music_settings(volume):
             file.write(f"{volume}\n")
     except Exception as e:
         print(f"Error saving settings: {e}")
-    
+        
+
+def get_scaled_font(base_size):
+    scaled_size = int(base_size * game_state.scale)
+    return scaled_size

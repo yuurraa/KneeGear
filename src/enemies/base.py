@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import random
 
 from src.projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
+from src.helpers import get_scaled_font
 import src.constants as constants
 class BaseEnemy(ABC):
     def __init__(self, x, y, scaling):

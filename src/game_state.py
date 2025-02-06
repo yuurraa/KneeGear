@@ -51,3 +51,13 @@ damage_numbers = []
 player:Player = None  # Will be initialized in main.py after screen dimensions are known
 
 scroll_offset = 0  # Initialize scroll offset for upgrades tab
+
+BASE_WIDTH = 1920
+BASE_HEIGHT = 1080
+
+# In your main file, after you set fullscreen:
+scale_x = screen_width / BASE_WIDTH
+scale_y = screen_height / BASE_HEIGHT
+scale = min(scale_x, scale_y)
+
+
