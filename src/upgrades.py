@@ -48,11 +48,11 @@ class UpgradePool:
         
         # Load upgrade icons
         self.icon_images = {}
-        for icon_name in ["additional_projectiles", "attack_cooldown","attack_damage", "bullet_speed", "cooldown_ex",
+        for icon_name in ["additional_projectiles", "attack_cooldown","attack_damage", "basic_distance", "bullet_speed", "cooldown_ex",
                           "damage_ex", "defence", "dmg_pickup", "extra_choice", "fat_special", "fear", "frenzy", "heavy",
                           "hp_pickup", "hp_regen", "hp", "hybrid_plus", "hybrid", "lifesteal", "more_pickup", "movement_speed",
-                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "rage", "repierce", "size_matters", "sniper",
-                          "super_regen", "turtle_up", "unhealthy", "you_lucky_bastard"]:
+                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "pride","rage", "repierce", "size_matters", "sniper",
+                          "special_distance", "super_regen", "turtle_up", "unhealthy", "vengeful", "you_lucky_bastard"]:
             try:
                 self.icon_images[icon_name] = pygame.image.load(f"assets/icons/{icon_name}.png").convert_alpha()
             except:
@@ -199,7 +199,7 @@ class UpgradePool:
                 icon="pierce"
             ),
             Upgrade(
-                name="Basic Attack Scales with Distance",
+                name="Basic Attack Distance Scaling",
                 description="Basic bullets gain up to +200% damage the further they travel, but basic base damage is reduced by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
@@ -207,7 +207,7 @@ class UpgradePool:
                     setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 0.75),
                 ][-1],
                 max_level=1,
-                icon="size_matters"
+                icon="basic_distance"
             ),
             
             Upgrade(
@@ -288,7 +288,7 @@ class UpgradePool:
                 icon="fat_special"
             ),
             Upgrade(
-                name="Vengeful Special Attack",
+                name="Vengeful Special",
                 description="Increases next special attack damage by 200% of raw damage taken, decreases special attack cooldown by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
@@ -296,7 +296,7 @@ class UpgradePool:
                     setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.8),
                 ][-1],
                 max_level=1,
-                icon="damage_bonus"
+                icon="vengeful"
             ),
             Upgrade(
                 name="Repiercing Special Attack",
@@ -307,7 +307,7 @@ class UpgradePool:
                 icon="repierce"
             ),
             Upgrade(
-                name="Special Attack Scales with Distance",
+                name="Special Attack Distance Scaling",
                 description="Special bullets gain up to +200% damage the further they DONT travel, but special base damage is reduced by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
@@ -315,7 +315,7 @@ class UpgradePool:
                     setattr(player, 'special_bullet_damage_multiplier', player.special_bullet_damage_multiplier * 0.75),
                 ][-1],
                 max_level=1,
-                icon="size_matters"
+                icon="special_distance"
             ),
             Upgrade(
                 name="Movement Speed",
@@ -523,7 +523,7 @@ class UpgradePool:
                     setattr(player, 'no_damage_buff_damage_bonus_multiplier', player.no_damage_buff_damage_bonus_multiplier + 2),
                     setattr(player, 'no_damage_buff_req_duration', 4),
                 ][-1],
-                icon="no_damage_buff",
+                icon="pride",
                 max_level=1,
             ),
             # Upgrade(
