@@ -24,7 +24,10 @@ class BaseBullet:
     can_repierce: bool = False #whether the bullet can hit the same target multiple times
     size: float = 5.0
     scaling: float = 1.0
+    initial_x: float = 0
+    initial_y: float = 0
     
+
     def __post_init__(self):
         self.hit_targets = set()  # Track which targets have been hit
     
@@ -82,6 +85,25 @@ class PlayerBaseBullet(BaseBullet):
             can_repierce=can_repierce
         )
 
+    def compute_scaled_damage(self) -> float:
+        # Only modify damage if the bullet was marked to scale with distance.
+        if getattr(self, "scales_with_distance_travelled", False):
+            travel_distance = math.hypot(self.x - self.initial_x, self.y - self.initial_y)
+            if isinstance(self, PlayerBasicBullet):
+                # For a basic bullet: bonus scales up linearly, up to +200% bonus damage at 800px.
+                bonus_multiplier = (min(travel_distance, 800) / 800) * 2
+            elif isinstance(self, PlayerSpecialBullet):
+                # For a special bullet: bonus of +200% at 0px that drops to 0 bonus past 400px.
+                if travel_distance >= 400:
+                    bonus_multiplier = 0
+                else:
+                    bonus_multiplier = ((400 - travel_distance) / 400 * 2)
+            else:
+                bonus_multiplier = 0
+            return self.damage * (1 + bonus_multiplier)
+        else:
+            return self.damage
+
     def check_and_apply_collision(self, enemy) -> bool:
         if (enemy.health > 0 and
             pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
@@ -91,32 +113,43 @@ class PlayerBaseBullet(BaseBullet):
                 return False
                 
             self.pierce -= 1
-            enemy.apply_damage(self.damage, game_state)
-            game_state.player.heal(self.damage * game_state.player.hp_steal)
+            actual_damage = self.compute_scaled_damage()
+            enemy.apply_damage(actual_damage, game_state)
+            game_state.player.heal(actual_damage * game_state.player.hp_steal)
             self.hit_targets.add(enemy)  # Track that we've hit this enemy
             return True
 
         return False
 
 class PlayerBasicBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, can_repierce: bool=False):
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
         super().__init__(x, y, angle, 
-                        constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
-                        constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
-                        math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
-                        can_repierce,
-                        constants.player_basic_bullet_size,
-                        constants.BLUE)
-        
+                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
+                         constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
+                         math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
+                         can_repierce,
+                         constants.player_basic_bullet_size,
+                         constants.BLUE)
+        self.scales_with_distance_travelled = scales_with_distance_travelled
+        if scales_with_distance_travelled:
+            # Record the starting position so that future updates can compute distance travelled.
+            self.initial_x = x
+            self.initial_y = y
+
 class PlayerSpecialBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, special_bullet_radius_multiplier: float, can_repierce: bool=False):
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_damage_bonus: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, special_bullet_radius_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
         super().__init__(x, y, angle,
                          constants.player_special_bullet_speed * special_bullet_speed_multiplier,
-                         constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier,
+                         constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier + special_bullet_damage_bonus,
                          math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
                          can_repierce,
                          constants.player_special_bullet_size * special_bullet_radius_multiplier,
                          constants.PURPLE)
+        self.scales_with_distance_travelled = scales_with_distance_travelled
+        if scales_with_distance_travelled:
+            # Store the starting position to measure travel distance.
+            self.initial_x = x
+            self.initial_y = y
 
 @dataclass
 class BaseEnemyBullet(BaseBullet):
@@ -141,15 +174,8 @@ class BaseEnemyBullet(BaseBullet):
                       game_state.player.size, 
                       game_state.player.size).colliderect(self.get_rect()):
             actual_damage = math.floor(self.damage * self.scaling)
-            game_state.player.health -= actual_damage
-            
-            game_state.damage_numbers.append({
-                "x": game_state.player.x,
-                "y": game_state.player.y,
-                "value": actual_damage,
-                "timer": 60,
-                "color": constants.RED
-            })
+            game_state.player.take_damage(actual_damage)
+        
             return True
         return False
 

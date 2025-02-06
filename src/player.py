@@ -36,6 +36,8 @@ class Player:
         
         self.ticks_since_last_hp_regen = 0
         self.current_tick = 0  # Add tick counter
+        self.last_damage_tick = 0  # New: Track the tick when damage was last taken
+        
         #upgrades
         self.base_damage_multiplier = 1
         self.basic_bullet_damage_multiplier = 1
@@ -59,13 +61,18 @@ class Player:
         self.special_bullet_radius_multiplier = 1.0
         self.special_bullet_can_repierce = False
         self.basic_bullet_extra_projectiles_per_shot_bonus = 0
+        self.basic_bullet_scales_with_distance_travelled = False
+        self.special_bullet_scales_with_distance_travelled = False
         self.damage_reduction_percent_bonus = 0
         self.hp_steal = 0
+        self.percent_damage_taken_special_attack_bonus = 0
 
         self.xp_gain_percent_bonus = 0
         self.rage_percent_bonus = 0 # percent damage gain per enemy on screen
         self.frenzy_percent_bonus = 0 # percent damage gain per projectile on screen
         self.fear_percent_bonus = 0 # max percent damage gain based on how low your hp is
+        self.no_damage_buff_req_duration = 0 # seconds that player must go without taking damage to activate no damage buff
+        self.no_damage_buff_damage_bonus_multiplier = 0
 
         self.state = PlayerState.ALIVE
         
@@ -78,6 +85,9 @@ class Player:
         self.applied_upgrades = set()  # Tracks names of applied upgrades
         self.upgrade_levels = {}  # Tracks number of times each upgrade has been applied
         self.active_buffs = {}  # Dictionary to store active buffs and their end ticks (not times)
+        
+        # NEW: initialize bonus damage accumulation for the next special attack.
+        self.special_attack_bonus_damage = 0
     
     def draw(self, screen):
         # Draw player body
@@ -195,7 +205,12 @@ class Player:
         active_buff_count = sum(1 for buff in self.active_buffs if buff["name"] == "heart_damage_boost")
         buff_bonus = buff_multiplier ** active_buff_count
         
-        return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus * buff_bonus
+        # New: Increase base damage by +200% (total 3x) if no damage has been taken for 10 seconds.
+        no_damage_multiplier = 1
+        if self.current_tick - self.last_damage_tick >= self.no_damage_buff_req_duration * constants.FPS:
+            no_damage_multiplier = 1 + self.no_damage_buff_damage_bonus_multiplier
+        
+        return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus * buff_bonus * no_damage_multiplier
 
     def shoot_regular(self, mouse_pos):
         import src.game_state as game_state
@@ -218,7 +233,8 @@ class Player:
                 effective_multiplier,
                 self.basic_bullet_damage_multiplier, 
                 self.basic_bullet_speed_multiplier, 
-                math.ceil(self.basic_bullet_piercing_multiplier)
+                math.ceil(self.basic_bullet_piercing_multiplier),
+                scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
             ))
             return bullets
 
@@ -237,7 +253,8 @@ class Player:
                 effective_multiplier,
                 self.basic_bullet_damage_multiplier,
                 self.basic_bullet_speed_multiplier,
-                self.basic_bullet_piercing_multiplier
+                math.ceil(self.basic_bullet_piercing_multiplier),
+                scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
             ))
         
         return bullets
@@ -258,18 +275,34 @@ class Player:
             self.x, self.y, angle,
             effective_multiplier,
             self.special_bullet_damage_multiplier,
+            self.special_attack_bonus_damage,
             self.special_bullet_speed_multiplier,
             self.special_bullet_piercing_multiplier,
             self.special_bullet_radius_multiplier,
-            self.special_bullet_can_repierce
+            can_repierce=self.special_bullet_can_repierce,
+            scales_with_distance_travelled=self.special_bullet_scales_with_distance_travelled
         )]
 
     def take_damage(self, amount):
+        import src.game_state as game_state
+        # New: Reset the damage bonus timer because the player just took damage.
+        self.last_damage_tick = self.current_tick
+        
+        capped_damage_reduction_percent = min(self.damage_reduction_percent_bonus, constants.player_damage_reduction_percent_cap)
         # Apply damage reduction (as a percentage)
-        reduced_damage = amount * (1 - (self.damage_reduction_percent_bonus / 100))
+        reduced_damage = amount * (1 - (capped_damage_reduction_percent / 100))
         self.health = max(0, self.health - reduced_damage)
         if self.health <= 0:
             self.state = PlayerState.DEAD
+        self.special_attack_bonus_damage += amount * (self.percent_damage_taken_special_attack_bonus/100)
+        
+        game_state.damage_numbers.append({
+                "x": game_state.player.x,
+                "y": game_state.player.y,
+                "value": reduced_damage,
+                "timer": 60,
+                "color": constants.RED
+        })
 
     def heal(self, amount):
         self.health = min(self.max_health, self.health + amount)
