@@ -19,11 +19,11 @@ music_volume = 0.1
 music_path = "assets/audio/music.mp3"
 
 # Speeds, angles, and cooldowns
-base_player_health = 100
+base_player_health = 1000000
 base_player_hp_regen_percent = 0.5
 player_speed = 4.5
 player_basic_bullet_speed = 10
-player_basic_bullet_damage = 10
+player_basic_bullet_damage = 1000000
 player_basic_bullet_size = 5
 player_basic_bullet_pierce = 1
 player_basic_bullet_cooldown = 1
@@ -76,8 +76,13 @@ sniper_volley_interval = 4      # Seconds between sniper volleys
 sniper_shot_delay = 0.05         # Seconds between shots in a volley
 sniper_bullet_speed = 17        # Speed of sniper bullet (very fast)
 sniper_bullet_damage = 13       # High damage per sniper bullet
-sniper_keep_distance = 800      # Desired minimum distance from the player (in game units)
-sniper_move_speed = 1         
+sniper_bullet_spread = 0.4   # sniper bullet spread in radians
+sniper_keep_distance = 500             # If player is closer than this, retreat.
+sniper_approach_distance = 750         # If player is farther than this, approach.
+sniper_strafe_duration = 40            # Duration (in ticks) before choosing a new strafe angle.
+sniper_strafe_retreat_factor = 0.5     # Additional movement away from the player during strafing.
+sniper_move_speed = 1.5                # Base movement speed.      
+sniper_retreat_multiplier = 2.0        # Multiplier for retreat speed when player is too close.
 
 # Charger Enemy Constants
 base_charger_health = 60        # Moderate health since it's a kamikaze-style enemy
