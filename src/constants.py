@@ -19,11 +19,11 @@ music_volume = 0.1
 music_path = "assets/audio/music.mp3"
 
 # Speeds, angles, and cooldowns
-base_player_health = 1000000
+base_player_health = 100
 base_player_hp_regen_percent = 0.5
 player_speed = 4.5
 player_basic_bullet_speed = 10
-player_basic_bullet_damage = 1000000
+player_basic_bullet_damage = 10
 player_basic_bullet_size = 5
 player_basic_bullet_pierce = 1
 player_basic_bullet_cooldown = 1

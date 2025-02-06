@@ -106,15 +106,16 @@ def handle_input():
 
 
 def update_enemies():
-    # Use the in-game tick counter (which excludes pause time)
     current_tick = game_state.in_game_ticks_elapsed  
     for enemy in game_state.enemies[:]:
         enemy.update(game_state.player.x, game_state.player.y, current_tick, game_state)
-        # enemy.move(game_state.player.x, game_state.player.y, game_state)
-        # enemy.shoot(game_state.player.x, game_state.player.y, current_tick, game_state)
-
-        if enemy.health <= 0:
-            game_state.enemies.remove(enemy)
-
-
-
+        
+        # If the enemy is dying, update the death timer.
+        if enemy.dying:
+            enemy.death_timer -= 1
+            if enemy.death_timer <= 0:
+                game_state.enemies.remove(enemy)
+        elif enemy.health <= 0:
+            # If not already marked as dying, mark it now.
+            enemy.dying = True
+            enemy.death_timer = 60

@@ -152,3 +152,5 @@ class ChargerEnemy(BaseEnemy):
             # This call to apply_damage will also handle adding damage numbers and score rewards.
             if not player.is_dead():
                 self.apply_damage(self.health, game_state) 
+                self.vx = 0
+                self.vy = 0 
