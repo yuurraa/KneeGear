@@ -365,7 +365,6 @@ class Player:
             
             # Notification is already handled in apply_upgrade with source="random"
             print(f"Gained random upgrade: {random_upgrade.name}")  # Debugging output
-            print(f"Roll the Dice chances resets to 2%!")
 
     def apply_upgrade(self, upgrade, source="manual"):
         upgrade.apply(self)
@@ -394,7 +393,7 @@ class Player:
             if random.random() < self.random_upgrade_chance:
                 self.gain_random_upgrade()
                 self.random_upgrade_chance = 0.02
-                print(f"Roll the Dice chances reset to 2%!")
+                print(f"Roll the Dice chances resets to 2%!")
             else:
                 # Double the chance for the next level-up
                 self.random_upgrade_chance = min(self.random_upgrade_chance * 2, 1.0)  # Cap at 100%
