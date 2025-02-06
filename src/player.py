@@ -22,7 +22,7 @@ class Player:
         self.angle = 0  # Add angle property
 
         self.dying = False
-        self.death_timer = 0  # Timer for death animation (in ticks)
+        self.death_timer = 30  # Timer for death animation (in ticks)
         
         self.reset()
 
