@@ -549,7 +549,7 @@ def draw_stats_tab(screen):
             ("Extra Projs/Shot", game_state.player.basic_bullet_extra_projectiles_per_shot_bonus),
         ]),
         ("Random", [
-            ("Roll the Dice Chance (%)", game_state.player.random_upgrade_chance),
+            ("Roll the Dice Chance (%)", game_state.player.random_upgrade_chance * 100),
         ]),
         ("Special Bullet Stats", [
             ("Special Bullet Damage Multiplier", game_state.player.special_bullet_damage_multiplier),
