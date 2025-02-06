@@ -112,7 +112,7 @@ def draw_player_state_value_updates():
             game_state.experience_updates.remove(exp_update)
             
 def draw_notification():
-    if game_state.notification_visible:
+    if game_state.notification_visible:        
         # Define constants for animation
         total_duration = game_state.notification_total_duration
         slide_in_duration = game_state.notification_slide_in_duration
@@ -123,44 +123,55 @@ def draw_notification():
         elapsed = total_duration - timer  # Frames elapsed since notification was triggered
 
         # Define target Y position where the notification should slide to
-        target_y = 40  # Adjust as needed
+        target_y = 50  # Fixed y-coordinate for visibility
 
         # Determine the current phase of the animation
         if elapsed < slide_in_duration:
             # Sliding In
             progress = elapsed / slide_in_duration
-            y = -60 + (target_y + 60) * progress  # Starts at -60, moves to target_y
+            y = -60 + (target_y + 60) * progress  # Starts off-screen at y=-60
         elif elapsed < (slide_in_duration + visible_duration):
             # Fully Visible
             y = target_y
         elif elapsed < (slide_in_duration + visible_duration + slide_out_duration):
             # Sliding Out
             progress = (elapsed - slide_in_duration - visible_duration) / slide_out_duration
-            y = target_y - (60 + 0) * progress  # Moves back to -60
+            y = target_y - (target_y + 60) * progress  # Slides back off-screen
         else:
             # Animation Complete
             game_state.notification_visible = False
-            y = -60
+            y = -60  # Reset position
 
         # Update the current Y position
         game_state.notification_current_y = y
 
-        # Draw the notification box at the current Y position
-        font = pygame.font.SysFont(None, 36)
-        message = game_state.notification_message
-        text_surface = font.render(message, True, constants.WHITE)
-        text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 25))  # Box height is 50
-
+        # Render the notification text
+        font = pygame.font.SysFont(None, 32)
+        text_surface = font.render(game_state.notification_message, True, constants.WHITE)
+        text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 21))  # Adjust y for alignment
+        
+        # Define box dimensions
+        padding = 20
+        box_width = text_rect.width + padding
+        box_height = text_rect.height + padding
+        box_rect = pygame.Rect(
+            (game_state.screen_width - box_width) // 2,
+            y,
+            box_width,
+            box_height
+        )
+        
         # Draw the background box
-        box_height = 50
-        box_width = text_surface.get_width() + 40  # Added padding
-        box_rect = pygame.Rect((game_state.screen_width - box_width) // 2, y, box_width, box_height)
-        pygame.draw.rect(game_state.screen, constants.BLACK, box_rect)  # Background box
-        pygame.draw.rect(game_state.screen, constants.WHITE, box_rect, 2)  # Border
-
+        pygame.draw.rect(game_state.screen, (50, 50, 50), box_rect)  # Dark grey box for visibility
+        pygame.draw.rect(game_state.screen, constants.WHITE, box_rect, 2)  # White border
+        
         # Draw the text
         game_state.screen.blit(text_surface, text_rect)
-
+        
         # Decrement the timer
         game_state.notification_timer -= 1
+        if game_state.notification_timer <= 0:
+            game_state.notification_visible = False
+            game_state.notification_message = ''
+
             

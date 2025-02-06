@@ -178,7 +178,10 @@ def main():
     while game_state.running:
         # Fill background with GREY instead of WHITE
         game_state.screen.fill(constants.LIGHT_GREY)
-        
+        # Draw notification
+        if game_state.notification_message != '' and any("Roll the Dice" in upgrade.name for upgrade in game_state.player.applied_upgrades):
+            drawing.draw_notification()
+                
         # Draw fade overlay if active
         if game_state.fade_alpha > 0:
             fade_overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
@@ -219,7 +222,6 @@ def main():
         game_state.wave_interval = calculate_wave_spawn_interval(in_game_seconds)
         
         # Get current time for cooldowns
-        current_time_s = pygame.time.get_ticks() / 1000.0
         left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress()
         drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
         drawing.draw_experience_bar()
@@ -405,9 +407,6 @@ def main():
         game_state.in_game_ticks_elapsed += 1
         pygame.display.flip()
         clock.tick(constants.FPS)
-
-        # Draw notification
-        drawing.draw_notification()
 
     pygame.mixer.quit()  # Clean up mixer when quitting
     pygame.quit()

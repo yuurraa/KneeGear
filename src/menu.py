@@ -1,5 +1,5 @@
 import pygame
-import random
+import numpy as np
 from src.helpers import save_music_settings
 import src.constants as constants
 import src.game_state as game_state
@@ -107,98 +107,90 @@ class Slider:
             pygame.mixer.music.set_volume(self.value)
             save_music_settings(self.value)  # Save the new volume
 
+# Helper function to compute a shimmer effect surface for a rectangle.
+def compute_shimmer_surface_for_tab_icon(rarity_color, rarity, width, height, phase):
+    """
+    Given a base color (tuple) and rarity (string), compute a shimmer surface
+    of the specified width and height. 'phase' should be a float in [0,1].
+    """
+    # Convert the base color to a NumPy array
+    base_color = np.array(rarity_color, dtype=np.float32)
+    # Compute the "bright" color based on rarity.
+    if rarity == "Exclusive":
+        bright_color = np.minimum(base_color + 30, 255)
+    else:
+        bright_color = np.minimum(base_color + 70, 255)
+    
+    # Create coordinate grids for the given width/height.
+    x_grid, y_grid = np.meshgrid(np.arange(width), np.arange(height))
+    # Compute a diagonal coordinate between 0 and 1.
+    diag = (x_grid / width + y_grid / height) / 2.0
+    # Add phase (wrap around modulo 1)
+    diag = (diag + phase) % 1.0
+    # Compute blend: we want maximum brightness when diag is near 0.5.
+    blend = np.abs(diag - 0.5) * 2  # 0 at center, 1 at edges.
+    shimmer_width = 0.3  # Controls how narrow the bright band is.
+    blend = 1 - np.clip(blend / shimmer_width, 0, 1)  # Now 1 means fully bright.
+    blend = blend[:, :, None]  # Make it (height, width, 1) for broadcasting.
+    
+    # Compute final color at each pixel.
+    pixel_array = base_color * (1 - blend) + bright_color * blend
+    pixel_array = np.clip(pixel_array, 0, 255).astype(np.uint8)
+    
+    # Create a surface from the array.
+    # Pygame expects shape (width, height, channels) so transpose axes.
+    surface = pygame.surfarray.make_surface(np.transpose(pixel_array, (1, 0, 2)))
+    return surface
 class UpgradeButton(Button):
     RARITY_COLORS = {
-        "Common": (144, 238, 144),    # Light green
-        "Rare": (135, 206, 250),      # Light blue
-        "Epic": (186, 85, 211),       # Light purple
-        "Mythic": (255, 71, 76),      # Red
-        "Legendary": (255, 215, 0),   # Gold
-        "Exclusive": (255, 192, 203),  # Light pink
+        "Common": (144, 238, 144),
+        "Rare": (135, 206, 250),
+        "Epic": (186, 85, 211),
+        "Mythic": (255, 71, 76),
+        "Legendary": (255, 215, 0),
+        "Exclusive": (255, 192, 203),
     }
 
     def __init__(self, x, y, width, height, upgrade, icon_image=None):
-        rarity_color = self.RARITY_COLORS.get(upgrade.Rarity, constants.GREEN)
-        super().__init__(x, y, width, height, "", rarity_color)
+        super().__init__(x, y, width, height, "", self.RARITY_COLORS.get(upgrade.Rarity, constants.GREEN))
         self.upgrade = upgrade
         self.icon_image = icon_image
         self.width = width
         self.height = height
         self.icon_size = 64
         self.circle_margin = 10
-        self.rainbow_timer = 0  # Add timer for rainbow effect
-        self.cooldown = 0  # Add cooldown attribute
+        self.rainbow_timer = 0  # Timer for the shimmer effect (in degrees)
+        self.cooldown = 0  # Cooldown attribute
+
+        # Precompute coordinate grids for vectorized shimmer computations
+        # These grids remain constant for the button size.
+        self._x_grid, self._y_grid = np.meshgrid(np.arange(self.width), np.arange(self.height))
+        self.shimmer_width = 0.3  # Parameter for the falloff width
+
+        # We'll cache a sequence of shimmer surfaces if needed.
+        self.cached_shimmer = None
+        self.cached_phase = None
 
     def draw(self, screen):
-        # Special handling for all rarities
-        self.rainbow_timer = (self.rainbow_timer + 4) % 360  # Speed up by incrementing by 5
-        
-        # Calculate shimmer cycle (separate from rainbow)
-        shimmer_cycle = (self.rainbow_timer % 120) / 60.0  # Halved from 120 to 60 to double shimmer speed
-        show_shimmer = shimmer_cycle < 0.7  # Show shimmer for first half of cycle
-        
-        if show_shimmer:
-            # Calculate diagonal position based on shimmer cycle (0 to 1)
-            diagonal_progress = (shimmer_cycle * 2)  # Convert 0-0.5 to 0-1 range
-            
-            # Use rarity color as base
-            base_color = self.color
-            # Create lighter version for shimmer, with special handling for exclusive
-            if self.upgrade.Rarity == "Exclusive":
-                r = min(base_color[0] + 30, 255)  # Reduced brightness for exclusive
-                g = min(base_color[1] + 30, 255)
-                b = min(base_color[2] + 30, 255)
-            else:
-                r = min(base_color[0] + 70, 255)
-                g = min(base_color[1] + 70, 255)
-                b = min(base_color[2] + 70, 255)
-            
-            # Calculate shimmer width and position (narrower shimmer)
-            shimmer_width = 0.3  # Narrower width of shimmer as percentage of diagonal length
-            shimmer_center = diagonal_progress
-            
-            # For each pixel, calculate its diagonal position and blend accordingly
-            new_color = []
-            for y in range(self.height):
-                row = []
-                for x in range(self.width):
-                    # Calculate diagonal position (0 to 1)
-                    diag_pos = (x / self.width + y / self.height) / 2
-                    
-                    # Calculate distance from shimmer center
-                    dist = abs(diag_pos - shimmer_center)
-                    
-                    # Calculate blend factor based on distance with smoother falloff
-                    blend_factor = max(0, 1 - (dist / shimmer_width) ** 1.5)  # Added power for smoother falloff
-                    blend_factor = min(1, blend_factor)
-                    
-                    # Blend colors
-                    pixel_color = [
-                        int(base_color[0] * (1 - blend_factor) + r * blend_factor),
-                        int(base_color[1] * (1 - blend_factor) + g * blend_factor),
-                        int(base_color[2] * (1 - blend_factor) + b * blend_factor)
-                    ]
-                    row.append(pixel_color)
-                new_color.append(row)
-            
-            # Create surface and set pixels
-            button_surface = pygame.Surface((self.width, self.height))
-            for y in range(self.height):
-                for x in range(self.width):
-                    button_surface.set_at((x, y), new_color[y][x])
-            
-            # Draw the surface
-            screen.blit(button_surface, self.rect)
-            pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
-        else:
-            # Draw normal button during rest period
-            color = (min(self.color[0] + 30, 255), 
-                    min(self.color[1] + 30, 255), 
-                    min(self.color[2] + 30, 255)) if self.hover else self.color
-            
-            pygame.draw.rect(screen, color, self.rect)
-            pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
+        # Update the timer. Increase by 4 degrees per frame and convert to a phase in [0,1]
+        self.rainbow_timer = (self.rainbow_timer + 4) % 360
+        phase = self.rainbow_timer / 360.0
 
+        # Get the rarity color safely
+        rarity_color = self.RARITY_COLORS.get(self.upgrade.Rarity, constants.GREEN)
+
+        # Only recompute the shimmer effect if phase changed significantly
+        if self.cached_shimmer is None or self.cached_phase is None or abs(phase - self.cached_phase) > 0.01:
+            self.cached_shimmer = compute_shimmer_surface_for_tab_icon(
+                rarity_color, self.upgrade.Rarity, self.width, self.height, phase
+            )
+            self.cached_phase = phase
+
+        # Draw the cached shimmer surface onto the button's rectangle
+        screen.blit(self.cached_shimmer, self.rect)
+        pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
+
+        # Continue with the rest of the drawing (icon, text, etc.)
         font_name = pygame.font.Font(None, 32)
         font_desc = pygame.font.Font(None, 24)
         font_rarity = pygame.font.Font(None, 20)
@@ -417,6 +409,7 @@ def draw_pause_menu(screen):
 
     return game_state.pause_ui['quit_button'], game_state.pause_ui['resume_button'], game_state.pause_ui['volume_slider'], game_state.pause_ui['upgrades_button']
 
+# In your draw_upgrades_tab function, replace the drawing of each upgrade icon:
 def draw_upgrades_tab(screen):
     # Create semi-transparent overlay
     overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
@@ -424,7 +417,7 @@ def draw_upgrades_tab(screen):
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
-    # Constants for button dimensions - now based on screen proportions
+    # Constants for button dimensions – now based on screen proportions
     button_width = int(game_state.screen_width * 0.22)  # ~19% of screen width
     button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
     button_spacing = int(game_state.screen_height * 0.02)  # ~1.9% of screen height
@@ -438,16 +431,16 @@ def draw_upgrades_tab(screen):
     # Calculate panel dimensions
     base_panel_width = int(game_state.screen_width * 0.33)  # ~570px on 1920px width
     panel_height = int(game_state.screen_height * 0.185) + min(
-        (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)), 
+        (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)),
         max_column_height
     )  # 200px base + dynamic height
 
     # Calculate the number of columns needed
-    num_columns = (int(game_state.screen_height * 0.05) + (button_height * num_upgrades) + 
-                  (button_spacing * (num_upgrades - 1))) // max_column_height + 1
+    num_columns = (int(game_state.screen_height * 0.05) + (button_height * num_upgrades) +
+                   (button_spacing * (num_upgrades - 1))) // max_column_height + 1
 
     # Calculate panel width based on number of columns
-    column_width = int(game_state.screen_width * 0.27)  # ~370px on 1920px width
+    column_width = int(game_state.screen_width * 0.22)  # ~370px on 1920px width
     panel_width = base_panel_width + (num_columns - 1) * column_width
 
     panel_x = (game_state.screen_width - panel_width) // 2
@@ -461,17 +454,20 @@ def draw_upgrades_tab(screen):
     desc_font = pygame.font.Font(None, 24)    # Reduced font size for description
 
     title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
-    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 10))  # Moved down by 10px
+    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 10))
     screen.blit(title_surface, title_rect)
 
+    # Compute a shimmer phase based on time (for all icons in this tab).
+    # Here, we compute phase from the ticks; adjust the multiplier to get your desired speed.
+    phase = ((pygame.time.get_ticks() / 5) % 360) / 360.0
+
     # Display upgrades
-    y_offset = panel_y + title_height + 30  # Updated starting y position
+    y_offset = panel_y + title_height + 30  # Starting y position
     column_index = 0  # Track the current column
 
     for i, upgrade in enumerate(game_state.player.applied_upgrades):
         # Determine the rarity color
         rarity_color = UpgradeButton.RARITY_COLORS.get(upgrade.Rarity, constants.LIGHT_GREY)
-
         # Calculate the x position for the current column
         x_offset = panel_x + (panel_width / num_columns) * column_index + (panel_width / num_columns - button_width) / 2
 
@@ -479,11 +475,14 @@ def draw_upgrades_tab(screen):
         upgrade_count = game_state.player.upgrade_levels.get(upgrade.name, 0)
         display_name = f"{upgrade.name} ({upgrade_count}x)"  # Append count
 
-        # Create a button for each upgrade with the rarity color, but set the text to an empty string
-        button = Button(x_offset, y_offset, button_width, button_height, "", rarity_color)
-        button.draw(screen)  # Draw the button
+        # Compute the shimmer surface for this icon area using our helper.
+        shimmer_surface = compute_shimmer_surface_for_tab_icon(rarity_color, upgrade.Rarity, button_width, button_height, phase)
+        # Blit the shimmer surface at the computed position.
+        screen.blit(shimmer_surface, (x_offset, y_offset))
+        # Draw a border over the shimmer.
+        pygame.draw.rect(screen, constants.BLACK, (x_offset, y_offset, button_width, button_height), 2)
 
-        # Use desc_font to render the upgrade name inside the button
+        # Render and draw the upgrade name in the center of the button.
         name_surface = desc_font.render(display_name, True, constants.BLACK)
         name_rect = name_surface.get_rect(center=(x_offset + button_width // 2, y_offset + button_height // 2))
         screen.blit(name_surface, name_rect)
@@ -491,13 +490,13 @@ def draw_upgrades_tab(screen):
         # Update y_offset for the next button
         y_offset += button_height + button_spacing
 
-        # Check if we need to move to the next column
+        # Move to the next column if needed.
         if y_offset + button_height > panel_y + title_height + 30 + max_column_height:
             y_offset = panel_y + title_height + 30  # Reset y_offset for the new column
-            column_index += 1  # Move to the next column
+            column_index += 1  # Next column
 
-    # Add a close button with a dead zone
-    close_button_x = panel_x + (panel_width - 100) // 2  # Centralize the close button
+    # Add a close button centered at the bottom.
+    close_button_x = panel_x + (panel_width - 100) // 2
     close_button = Button(close_button_x, panel_y + panel_height - close_button_height - 20, 90, close_button_height, "Close", constants.RED)
     close_button.draw(screen)
     return close_button
