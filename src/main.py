@@ -10,7 +10,7 @@ import src.drawing as drawing
 import src.score as score
 from src.player import Player, PlayerState
 from src.helpers import calculate_angle, reset_game, load_music_settings, save_music_settings
-from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab
+from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
@@ -282,7 +282,7 @@ def main():
 
         # Handle pause menu
         if getattr(game_state, 'paused', False):
-            quit_button, resume_button, volume_slider, upgrades_button = draw_pause_menu(game_state.screen)
+            quit_button, resume_button, volume_slider, upgrades_button, stats_button = draw_pause_menu(game_state.screen)
             
             for event in pygame.event.get():
                 # First handle universal events
@@ -305,6 +305,9 @@ def main():
                     elif upgrades_button.rect.collidepoint(event.pos):
                         game_state.showing_upgrades = True
                         game_state.paused = False  # Close pause menu when opening upgrades tab
+                    elif stats_button.rect.collidepoint(event.pos):
+                        game_state.showing_stats = True
+                        game_state.paused = False 
             
             # Draw updates and continue loop
             pygame.display.flip()
@@ -327,13 +330,17 @@ def main():
                         game_state.showing_upgrades = False
                         game_state.paused = True  # Return to pause menu
 
-                # Handle scrolling
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 4:  # Scroll up
-                        game_state.scroll_offset = max(game_state.scroll_offset - 20, 0)
-                    elif event.button == 5:  # Scroll down
-                        game_state.scroll_offset += 20
-
+            pygame.display.flip()
+            continue
+        
+        # Handle stats tab
+        if getattr(game_state, 'showing_stats', False):
+            close_button = draw_stats_tab(game_state.screen)
+            # Check for clicks on the close button:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if close_button.rect.collidepoint(event.pos):
+                    game_state.showing_stats = False
+                    game_state.paused = True  # Return to pause menu
             pygame.display.flip()
             continue
         

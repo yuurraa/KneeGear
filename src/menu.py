@@ -368,7 +368,7 @@ def draw_pause_menu(screen):
         button_width = int(game_state.screen_width * 0.104)  # ~10.4% of screen width
         button_height = int(game_state.screen_height * 0.056)  # ~5.6% of screen height
 
-        # Calculate positions for buttons
+        # Calculate positions for resume and quit buttons (already side by side)
         button_x = (game_state.screen_width - (button_width * 2 + int(game_state.screen_width * 0.01))) // 2
         button_y = panel_y + int(panel_height * 0.74)  # ~74% down the panel
 
@@ -385,15 +385,19 @@ def draw_pause_menu(screen):
         slider_y = panel_y + int(panel_height * 0.34)  # ~34% down the panel
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
-        # Centralize Upgrades Button
-        upgrades_button_x = (game_state.screen_width - button_width) // 2
-        upgrades_button = Button(upgrades_button_x, slider_y + 50, button_width, button_height, "Upgrades", constants.BLUE)
+        # Calculate positions for Upgrades and Stats buttons (side by side)
+        buttons_spacing = 20  # spacing between buttons
+        total_width = button_width * 2 + buttons_spacing
+        start_x = (game_state.screen_width - total_width) // 2
+        upgrades_button = Button(start_x, slider_y + 50, button_width, button_height, "Upgrades", constants.BLUE)
+        stats_button = Button(start_x + button_width + buttons_spacing, slider_y + 50, button_width, button_height, "Stats", constants.ORANGE)
 
         game_state.pause_ui = {
             'quit_button': quit_button,
             'resume_button': resume_button,
             'volume_slider': volume_slider,
-            'upgrades_button': upgrades_button
+            'upgrades_button': upgrades_button,
+            'stats_button': stats_button
         }
 
     # Draw persistent elements
@@ -401,6 +405,7 @@ def draw_pause_menu(screen):
     game_state.pause_ui['resume_button'].draw(screen)
     game_state.pause_ui['volume_slider'].draw(screen)
     game_state.pause_ui['upgrades_button'].draw(screen)
+    game_state.pause_ui['stats_button'].draw(screen)
 
     # Draw "Volume" label above the slider
     small_font = pygame.font.Font(None, 30)
@@ -408,7 +413,12 @@ def draw_pause_menu(screen):
     volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 100))
     screen.blit(volume_text, volume_text_rect)
 
-    return game_state.pause_ui['quit_button'], game_state.pause_ui['resume_button'], game_state.pause_ui['volume_slider'], game_state.pause_ui['upgrades_button']
+    return (game_state.pause_ui['quit_button'],
+            game_state.pause_ui['resume_button'],
+            game_state.pause_ui['volume_slider'],
+            game_state.pause_ui['upgrades_button'],
+            game_state.pause_ui['stats_button'])
+
 
 def draw_upgrades_tab(screen):
     # Create semi-transparent overlay
@@ -490,3 +500,161 @@ def draw_upgrades_tab(screen):
 
     return close_button
 
+def draw_stats_tab(screen):
+    # Create semi-transparent overlay
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
+    overlay.fill(constants.BLACK)
+    overlay.set_alpha(128)
+    screen.blit(overlay, (0, 0))
+
+    # Panel dimensions and positioning
+    panel_width = int(game_state.screen_width * 0.44)
+    panel_height = int(game_state.screen_height * 0.7)
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
+
+    # Draw the panel background and border
+    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
+
+    # Draw title at the top
+    title_font = pygame.font.Font(None, 36)
+    title_surface = title_font.render("Player Stats", True, constants.BLACK)
+    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + 30))
+    screen.blit(title_surface, title_rect)
+
+    # Define groups of stats with headers
+    groups = [
+        ("Basic Stats", [
+            ("Level", game_state.player.player_level),
+            ("Experience", game_state.player.player_experience),
+            ("XP Gain Multiplier", game_state.player.xp_gain_multiplier),
+            ("Passive XP Gain (%)", game_state.player.passive_xp_gain_percent_bonus),
+            ("Speed", game_state.player.speed),
+            ("Damage Reduction (%)", game_state.player.damage_reduction_percent_bonus),
+        ]),
+        ("Health Stats", [
+            ("Health", game_state.player.health),
+            ("Max Health", game_state.player.max_health),
+            ("Health Regen (%)", game_state.player.hp_regen),
+            ("Health Regen Bonus (%)", game_state.player.hp_regen_percent_bonus),
+            ("Lifesteal (%)", game_state.player.hp_steal),
+        ]),
+        ("Basic Bullet Stats", [
+            ("Damage Multiplier", game_state.player.base_damage_multiplier),
+            ("Basic Bullet Damage Multiplier", game_state.player.basic_bullet_damage_multiplier),
+            ("Basic Bullet Speed Multiplier", game_state.player.basic_bullet_speed_multiplier),
+            ("Basic Bullet Piercing Multiplier", game_state.player.basic_bullet_piercing_multiplier),
+            ("Basic Bullet Scales w/ Distance", game_state.player.basic_bullet_scales_with_distance_travelled),
+            ("Extra Projs/Shot", game_state.player.basic_bullet_extra_projectiles_per_shot_bonus),
+        ]),
+        ("Random", [
+            ("Roll the Dice Chance (%)", game_state.player.random_upgrade_chance),
+        ]),
+        ("Special Bullet Stats", [
+            ("Special Bullet Damage Multiplier", game_state.player.special_bullet_damage_multiplier),
+            ("Special Bullet Speed Multiplier", game_state.player.special_bullet_speed_multiplier),
+            ("Special Bullet Piercing Multiplier", game_state.player.special_bullet_piercing_multiplier),
+            ("Special Bullet Radius Multiplier", game_state.player.special_bullet_radius_multiplier),
+            ("Special Bullet Can Repierce", game_state.player.special_bullet_can_repierce),
+            ("Special Bullet Scales w/ Dist", game_state.player.special_bullet_scales_with_distance_travelled),
+        ]),
+        ("Pickup Stats", [
+            ("Maximum Pickups", game_state.player.max_pickups_on_screen),
+            ("Pickup Heal Bonus (%)", game_state.player.hp_pickup_healing_percent_bonus),
+            ("Pickup Temp Damage Boost Duration (s)", game_state.player.hp_pickup_damage_boost_duration_s),
+            ("Pickup Temp Damage Boost (%)", game_state.player.hp_pickup_damage_boost_percent_bonus),
+            ("Pickup Permanent Health Boost (%)", game_state.player.hp_pickup_permanent_hp_boost_percent_bonus),
+            ("Pickup Permanent Damage Boost (%)", game_state.player.hp_pickup_permanent_damage_boost_percent_bonus),
+        ]),
+        ("Special Bonus Stats", [
+            ("Vengeful Special Bullet Dmg Bonus (%)", game_state.player.percent_damage_taken_special_attack_bonus),
+            ("Rage Bonus (%)", game_state.player.rage_percent_bonus),
+            ("Frenzy Bonus (%)", game_state.player.frenzy_percent_bonus),
+            ("Fear Bonus (%)", game_state.player.fear_percent_bonus),
+            ("Pride (No Damage Buff Req) (s)", game_state.player.no_damage_buff_req_duration),
+            ("Pride (No Damage Buff Mult)", game_state.player.no_damage_buff_damage_bonus_multiplier),
+        ]),
+    ]
+
+    # Set up fonts
+    header_font = pygame.font.Font(None, 32)
+    header_font.set_underline(True)
+    stat_font = pygame.font.Font(None, 27)
+
+    # Spacing and margin settings
+    top_margin = panel_y + 70  # space reserved at top (below title)
+    bottom_margin = 20         # bottom margin before close button area
+    left_margin = panel_x + 20
+    column_spacing = 15
+
+    # Calculate the maximum available vertical space for the columns
+    available_height = panel_y + panel_height - bottom_margin - top_margin
+
+    # First, compute each group’s height (header + each stat + intra-group spacing)
+    group_heights = []
+    group_spacing = 15  # extra space after each group
+    for header, stat_list in groups:
+        # header height plus a small gap
+        h = header_font.get_linesize() + 15
+        # add each stat line height plus a small gap
+        for _name, _value in stat_list:
+            h += stat_font.get_linesize() + 5
+        # add extra spacing after the group
+        h += group_spacing
+        group_heights.append(h)
+
+    # Now, greedily distribute groups into columns so that the total height in each column <= available_height
+    columns = []   # each column is a list of group indices
+    current_column = []
+    current_height = 0
+
+    for i, group_h in enumerate(group_heights):
+        if current_height + group_h > available_height and current_column:
+            # Start a new column if this group doesn't fit in the current column
+            columns.append(current_column)
+            current_column = [i]
+            current_height = group_h
+        else:
+            current_column.append(i)
+            current_height += group_h
+    if current_column:
+        columns.append(current_column)
+
+    # Determine column width (distribute available width evenly)
+    available_width = panel_width - 40  # leaving some left/right margins
+    num_columns = len(columns)
+    column_width = (available_width - (num_columns - 1) * column_spacing) // num_columns
+
+    # Draw the groups in each column
+    for col_index, group_indices in enumerate(columns):
+        # X position for this column
+        col_x = left_margin + col_index * (column_width + column_spacing)
+        current_y = top_margin  # start at the top margin for each column
+
+        for i in group_indices:
+            header, stat_list = groups[i]
+            # Render header
+            header_surface = header_font.render(header, True, constants.BLACK)
+            screen.blit(header_surface, (col_x, current_y))
+            current_y += header_font.get_linesize() + 2
+
+            # Render each stat line (indented slightly)
+            for name, value in stat_list:
+                stat_text = f"{name}: {value}"
+                stat_surface = stat_font.render(stat_text, True, constants.BLACK)
+                screen.blit(stat_surface, (col_x + 10, current_y))
+                current_y += stat_font.get_linesize() + 5
+
+            # Extra space after group
+            current_y += group_spacing
+
+    # Draw the close button at the bottom center of the panel
+    close_button_width = 100
+    close_button_height = int(game_state.screen_height * 0.046)
+    close_button_x = panel_x + (panel_width - close_button_width) // 2
+    close_button_y = panel_y + panel_height - close_button_height - 20
+    close_button = Button(close_button_x, close_button_y, close_button_width, close_button_height, "Close", constants.RED)
+    close_button.draw(screen)
+
+    return close_button
