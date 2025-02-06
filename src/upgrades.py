@@ -49,9 +49,9 @@ class UpgradePool:
         # Load upgrade icons
         self.icon_images = {}
         for icon_name in ["additional_projectiles", "attack_cooldown","attack_damage", "basic_distance", "bullet_speed", "cooldown_ex",
-                          "damage_ex", "defence", "dmg_pickup", "extra_choice", "fat_special", "fear", "frenzy", "heavy",
+                          "damage_ex", "defence", "dmg_pickup", "extra_choice", "fat_special", "fear", "frenzy", "greed", "heavy",
                           "hp_pickup", "hp_regen", "hp", "hybrid_plus", "hybrid", "lifesteal", "more_pickup", "movement_speed",
-                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "pride","rage", "repierce", "roll_the_dice", "size_matters", 
+                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "pride","rage", "repierce", "roll_the_dice", "sacrifice", "size_matters", 
                           "sniper", "special_distance", "super_regen", "turtle_up", "unhealthy", "vengeful", "you_lucky_bastard"]:
             try:
                 self.icon_images[icon_name] = pygame.image.load(f"assets/icons/{icon_name}.png").convert_alpha()
