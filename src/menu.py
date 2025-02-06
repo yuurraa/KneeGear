@@ -5,6 +5,7 @@ import src.constants as constants
 import src.game_state as game_state
 from src.player import PlayerState
 from src.upgrades import UpgradePool
+import math
 
 class Button:
     def __init__(self, x, y, width, height, text, color):
@@ -409,7 +410,6 @@ def draw_pause_menu(screen):
 
     return game_state.pause_ui['quit_button'], game_state.pause_ui['resume_button'], game_state.pause_ui['volume_slider'], game_state.pause_ui['upgrades_button']
 
-# In your draw_upgrades_tab function, replace the drawing of each upgrade icon:
 def draw_upgrades_tab(screen):
     # Create semi-transparent overlay
     overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
@@ -417,87 +417,76 @@ def draw_upgrades_tab(screen):
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
-    # Constants for button dimensions – now based on screen proportions
-    button_width = int(game_state.screen_width * 0.22)  # ~19% of screen width
-    button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
-    button_spacing = int(game_state.screen_height * 0.02)  # ~1.9% of screen height
-    max_column_height = int(game_state.screen_height * 0.7)  # 70% of screen height
-    title_height = int(game_state.screen_height * 0.037)  # ~3.7% of screen height
-    close_button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
+    # Constants for button dimensions
+    button_width = int(game_state.screen_width * 0.22)
+    button_height = int(game_state.screen_height * 0.046)
+    button_spacing = int(game_state.screen_width * 0.01)  # Horizontal spacing
+
+    # Use 70% of the screen height for the icon area
+    max_column_height = int(game_state.screen_height * 0.85)
+    title_height = int(game_state.screen_height * 0.037)
+    close_button_height = int(game_state.screen_height * 0.046)
 
     # Calculate the number of upgrades
     num_upgrades = len(game_state.player.applied_upgrades)
 
-    # Calculate panel dimensions
-    base_panel_width = int(game_state.screen_width * 0.33)  # ~570px on 1920px width
-    panel_height = int(game_state.screen_height * 0.185) + min(
-        (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)),
-        max_column_height
-    )  # 200px base + dynamic height
+    # Calculate total height for all buttons
+    total_icon_height = (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1))
 
-    # Calculate the number of columns needed
-    num_columns = (int(game_state.screen_height * 0.05) + (button_height * num_upgrades) +
-                   (button_spacing * (num_upgrades - 1))) // max_column_height + 1
+    # Calculate the number of columns
+    num_columns = math.ceil(total_icon_height / max_column_height) if total_icon_height > 0 else 1
 
-    # Calculate panel width based on number of columns
-    column_width = int(game_state.screen_width * 0.22)  # ~370px on 1920px width
-    panel_width = base_panel_width + (num_columns - 1) * column_width
+    # Dynamic panel height based on the total icon height
+    dynamic_panel_height = min(total_icon_height, max_column_height)
+    panel_height = title_height + dynamic_panel_height + close_button_height + 60
 
+    # Calculate panel width based on the number of columns
+    panel_width = num_columns * (button_width + button_spacing)
+
+    # Center the panel
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
 
+    # Draw the panel
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
-    # Draw title text
-    title_font = pygame.font.Font(None, 36)  # Reduced font size for title
-    desc_font = pygame.font.Font(None, 24)    # Reduced font size for description
-
+    # Draw title
+    title_font = pygame.font.Font(None, 36)
     title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
-    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 10))
+    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 5))
     screen.blit(title_surface, title_rect)
 
-    # Compute a shimmer phase based on time (for all icons in this tab).
-    # Here, we compute phase from the ticks; adjust the multiplier to get your desired speed.
+    # Draw upgrades
     phase = ((pygame.time.get_ticks() / 5) % 360) / 360.0
+    column_width = button_width + button_spacing
 
-    # Display upgrades
-    y_offset = panel_y + title_height + 30  # Starting y position
-    column_index = 0  # Track the current column
-
+    y_offset = panel_y + title_height + 20  # Starting Y position
     for i, upgrade in enumerate(game_state.player.applied_upgrades):
-        # Determine the rarity color
+        column_index = i % num_columns
+        row_index = i // num_columns
+
+        x_offset = panel_x + column_index * column_width + (column_width - button_width) // 2
+        current_y_offset = y_offset + row_index * (button_height + button_spacing) - 10
+
         rarity_color = UpgradeButton.RARITY_COLORS.get(upgrade.Rarity, constants.LIGHT_GREY)
-        # Calculate the x position for the current column
-        x_offset = panel_x + (panel_width / num_columns) * column_index + (panel_width / num_columns - button_width) / 2
-
-        # Append the count of the upgrade to its name
-        upgrade_count = game_state.player.upgrade_levels.get(upgrade.name, 0)
-        display_name = f"{upgrade.name} ({upgrade_count}x)"  # Append count
-
-        # Compute the shimmer surface for this icon area using our helper.
         shimmer_surface = compute_shimmer_surface_for_tab_icon(rarity_color, upgrade.Rarity, button_width, button_height, phase)
-        # Blit the shimmer surface at the computed position.
-        screen.blit(shimmer_surface, (x_offset, y_offset))
-        # Draw a border over the shimmer.
-        pygame.draw.rect(screen, constants.BLACK, (x_offset, y_offset, button_width, button_height), 2)
+        screen.blit(shimmer_surface, (x_offset, current_y_offset))
 
-        # Render and draw the upgrade name in the center of the button.
+        pygame.draw.rect(screen, constants.BLACK, (x_offset, current_y_offset, button_width, button_height), 2)
+
+        # Draw upgrade name
+        desc_font = pygame.font.Font(None, 24)
+        display_name = f"{upgrade.name} ({game_state.player.upgrade_levels.get(upgrade.name, 0)}x)"
         name_surface = desc_font.render(display_name, True, constants.BLACK)
-        name_rect = name_surface.get_rect(center=(x_offset + button_width // 2, y_offset + button_height // 2))
+        name_rect = name_surface.get_rect(center=(x_offset + button_width // 2, current_y_offset + button_height // 2))
         screen.blit(name_surface, name_rect)
 
-        # Update y_offset for the next button
-        y_offset += button_height + button_spacing
-
-        # Move to the next column if needed.
-        if y_offset + button_height > panel_y + title_height + 30 + max_column_height:
-            y_offset = panel_y + title_height + 30  # Reset y_offset for the new column
-            column_index += 1  # Next column
-
-    # Add a close button centered at the bottom.
+    # Draw close button
     close_button_x = panel_x + (panel_width - 100) // 2
-    close_button = Button(close_button_x, panel_y + panel_height - close_button_height - 20, 90, close_button_height, "Close", constants.RED)
+    close_button_y = panel_y + panel_height - close_button_height - 20
+    close_button = Button(close_button_x, close_button_y, 100, close_button_height, "Close", constants.RED)
     close_button.draw(screen)
+
     return close_button
 
