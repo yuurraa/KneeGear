@@ -425,7 +425,7 @@ def draw_upgrades_tab(screen):
     screen.blit(overlay, (0, 0))
 
     # Constants for button dimensions - now based on screen proportions
-    button_width = int(game_state.screen_width * 0.27)  # ~19% of screen width
+    button_width = int(game_state.screen_width * 0.22)  # ~19% of screen width
     button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
     button_spacing = int(game_state.screen_height * 0.02)  # ~1.9% of screen height
     max_column_height = int(game_state.screen_height * 0.7)  # 70% of screen height
@@ -458,7 +458,7 @@ def draw_upgrades_tab(screen):
 
     # Draw title text
     title_font = pygame.font.Font(None, 36)  # Reduced font size for title
-    desc_font = pygame.font.Font(None, 28)    # Reduced font size for description
+    desc_font = pygame.font.Font(None, 24)    # Reduced font size for description
 
     title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 10))  # Moved down by 10px

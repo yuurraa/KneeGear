@@ -355,40 +355,45 @@ class Player:
     def gain_random_upgrade(self):
         import src.game_state as game_state
         from src.upgrades import UpgradePool
-
-        # Initialize UpgradePool inside the method to avoid circular imports
         upgrade_pool = UpgradePool()
-        available_upgrades = [
-            upgrade for upgrade in upgrade_pool.upgrades 
-            if upgrade.name not in self.applied_upgrades or self.upgrade_levels.get(upgrade.name, 0) < upgrade.max_level
-        ]
-
-        if available_upgrades:
-            random_upgrade = random.choice(available_upgrades)
-            self.apply_upgrade(random_upgrade)  # Apply the random upgrade
-
+        upgrades = upgrade_pool.get_random_upgrades(1, self)
+        
+        if upgrades:
+            random_upgrade = upgrades[0]
+            self.apply_upgrade(random_upgrade)
+            self.random_upgrade_chance = 0.02
+            
             # Set the notification message and make it visible
             game_state.notification_message = f"Random upgrade obtained: {random_upgrade.name}!"
             game_state.notification_visible = True
-            game_state.notification_timer = game_state.notification_total_duration  # Set to total duration
-
+            game_state.notification_timer = game_state.notification_total_duration
+            
             print(f"Gained random upgrade: {random_upgrade.name}")  # Debugging output
             print(f"Roll the Dice chances resets to 2%!")
 
     def apply_upgrade(self, upgrade):
         upgrade.apply(self)
+        # Increment the upgrade level
         self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
         self.applied_upgrades.add(upgrade)
         print(f"Applied upgrade: {upgrade.name}")  # Debugging output
         
-        # Check for "Roll the Dice" upgrade
+        # Set notification message when an upgrade is applied
+        import src.game_state as game_state
+        game_state.notification_message = f"Applied upgrade: {upgrade.name}!"
+        game_state.notification_visible = True  # Make the notification visible
+        game_state.notification_timer = game_state.notification_total_duration  # Reset timer
+        
+        # Prevent recursive gain_random_upgrade calls
+        if upgrade.name == "Roll the Dice":
+            # Do not perform Roll the Dice logic when the upgrade itself is Roll the Dice
+            return
+        
+        # Check if "Roll the Dice" upgrade is active
         if self.random_upgrade_chance > 0:
-            # Generate a random number to determine if the player gets an additional upgrade
             if random.random() < self.random_upgrade_chance:
-                # Logic to gain a random upgrade
                 self.gain_random_upgrade()
-                # Reset the chance back to 2% (Listed as 1% due to doubling)
-                self.random_upgrade_chance = 0.01
+                self.random_upgrade_chance = 0.02
             else:
                 # Double the chance for the next level-up
                 self.random_upgrade_chance = min(self.random_upgrade_chance * 2, 1.0)  # Cap at 100%

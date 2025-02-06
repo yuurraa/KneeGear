@@ -51,8 +51,8 @@ class UpgradePool:
         for icon_name in ["additional_projectiles", "attack_cooldown","attack_damage", "basic_distance", "bullet_speed", "cooldown_ex",
                           "damage_ex", "defence", "dmg_pickup", "extra_choice", "fat_special", "fear", "frenzy", "heavy",
                           "hp_pickup", "hp_regen", "hp", "hybrid_plus", "hybrid", "lifesteal", "more_pickup", "movement_speed",
-                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "pride","rage", "repierce", "size_matters", "sniper",
-                          "special_distance", "super_regen", "turtle_up", "unhealthy", "vengeful", "you_lucky_bastard"]:
+                          "pacifist", "permanent_dmg", "permanent_hp", "pierce", "pride","rage", "repierce", "roll_the_dice", "size_matters", 
+                          "sniper", "special_distance", "super_regen", "turtle_up", "unhealthy", "vengeful", "you_lucky_bastard"]:
             try:
                 self.icon_images[icon_name] = pygame.image.load(f"assets/icons/{icon_name}.png").convert_alpha()
             except:
@@ -76,8 +76,8 @@ class UpgradePool:
                 icon="attack_damage"
             ),
             Upgrade(
-                name="Attack Damage and Decreased Cooldown",
-                description="Increase attack damage by 25% and decrease all cooldowns by 10%",
+                name="Attack Damage & Decreased Cooldown",
+                description="Increase attack damage by 25% & decrease all cooldowns by 10%",
                 Rarity="Common",
                 apply=lambda player: [
                     setattr(player, 'base_damage_multiplier', 
@@ -88,7 +88,7 @@ class UpgradePool:
                 icon="hybrid"
             ),
             Upgrade(
-                name="Attack Damage and Increased Cooldown",
+                name="Attack Damage & Increased Cooldown",
                 description="Increase attack damage by 60% but increase all cooldowns by 10%",
                 Rarity="Common",
                 apply=lambda player: [
@@ -100,8 +100,8 @@ class UpgradePool:
                 icon="hybrid"
             ),
             Upgrade(
-                name="Attack Damage and bullet speed",
-                description="Increase attack damage by 40% and increase all bullet speed by 20%",
+                name="Attack Damage & Bullet Speed",
+                description="Increase attack damage by 40% & increase all bullet speed by 20%",
                 Rarity="Rare",
                 apply=lambda player: [
                     setattr(player, 'base_damage_multiplier', 
@@ -171,7 +171,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Sniper Bullets",
-                description=r"Increase basic attack damage by 160% and bullet speed by 20%, but increases basic attack cooldown by 25%",
+                description=r"Increase basic attack damage by 160% & bullet speed by 20%, but increases basic attack cooldown by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'basic_bullet_damage_multiplier', player.basic_bullet_damage_multiplier * 2.6),
@@ -277,7 +277,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Fat Special Attack",
-                description=r"Increase special attack bullet damage by 200% and radius by 25%, but increases special attack cooldown by 30%",
+                description=r"Increase special attack bullet damage by 200% & radius by 25%, but increases special attack cooldown by 30%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_bullet_damage_multiplier', player.special_bullet_damage_multiplier * 3),
@@ -351,7 +351,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Max HP + Damage Reduction",
-                description="Increase Max Hp by 100% and adds 10% damage reduction",
+                description="Increase Max Hp by 100% & adds 10% damage reduction",
                 Rarity="Rare",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 2),
@@ -362,7 +362,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Pacifist",
-                description="Increase Max Hp by 200% and adds 1.5% to hp regen, but decreases damage by 20%",
+                description="Increase Max Hp by 200% & adds 1.5% to hp regen, but decreases damage by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 3),
@@ -372,8 +372,8 @@ class UpgradePool:
                 icon="pacifist",
             ),
             Upgrade(
-                name="Turtle up",
-                description="Increase Max Hp by 100% and adds 20% to damage reduction, but decreases movement speed by 30%",
+                name="Turtle Up",
+                description="Increase Max Hp by 100% & adds 20% to damage reduction, but decreases movement speed by 30%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'max_health', player.max_health * 2),
@@ -399,7 +399,7 @@ class UpgradePool:
                 max_level=4,
             ),
             Upgrade(
-                name="More pickups",
+                name="More Pickups",
                 description="1 additional pickup can be present at a time",
                 Rarity="Epic",
                 apply=lambda player: setattr(player, 'max_pickups_on_screen', player.max_pickups_on_screen + 1),
@@ -548,9 +548,9 @@ class UpgradePool:
                 name="Roll the Dice",
                 description="Start with a 2% chance to gain a random upgrade when leveling up. Chance doubles on failure and resets on success.",
                 Rarity="Exclusive",
-                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.01), # (Listed as 1% due to doubling)
+                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.02),
                 max_level=1,
-                icon="extra_choice"
+                icon="roll_the_dice"
             ),
         ]
 
@@ -562,6 +562,13 @@ class UpgradePool:
         available_upgrades = [
             upgrade for upgrade in available_upgrades 
             if player.upgrade_levels.get(upgrade.name, 0) < upgrade.max_level
+        ]
+        
+        # Explicitly exclude "Roll the Dice" if it's already been applied
+        available_upgrades = [
+            upgrade for upgrade in available_upgrades 
+            if upgrade.name != "Roll the Dice" 
+            or player.upgrade_levels.get("Roll the Dice", 0) < upgrade.max_level
         ]
         
         def has_damage_reduction(upgrade):
@@ -577,12 +584,16 @@ class UpgradePool:
             if not available_upgrades:
                 break
                 
-            # we weight by upgrade rarity
             weights = [self.rarity_weights[upgrade.Rarity] for upgrade in available_upgrades]
             chosen_upgrade = random.choices(available_upgrades, weights=weights, k=1)[0]
             selected_upgrades.append(chosen_upgrade)
             
-            # Remove the chosen upgrade from the available pool
+            # Remove the chosen upgrade to prevent duplicates in this selection
             available_upgrades.remove(chosen_upgrade)
-            
+        
+        # Debugging: Print selected upgrades
+        print("Selected random upgrade(s):")
+        for upgrade in selected_upgrades:
+            print(f"- {upgrade.name}")
+        
         return selected_upgrades 
