@@ -14,7 +14,7 @@ from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, dra
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):
-    # Create text surface
+    # Create text surface using a scaled font size.
     font = pygame.font.Font(None, get_scaled_font(74))
     text = font.render("GOONER INC.", True, constants.WHITE)
     text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
@@ -45,14 +45,14 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     # Fill with black background using the provided alpha for transparency
     game_over_surface.fill((0, 0, 0, alpha))
     
-    # Render "YOU DIED" text
+    # Render "YOU DIED" text using a scaled font
     large_font = pygame.font.Font(None, get_scaled_font(74))
     text_large = large_font.render("YOU DIED", True, constants.WHITE)
-    text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 120))
-
+    # Scale vertical offsets (120 becomes 120 * scale)
+    text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - int(120 * game_state.scale)))
     game_over_surface.blit(text_large, text_large_rect)
     
-    # Render time, score, high score, and restart prompt
+    # Render time, score, high score, and restart prompt using a smaller scaled font
     small_font = pygame.font.Font(None, get_scaled_font(36))
     
     # Final time (ensure it's available)
@@ -62,43 +62,41 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     
     # Time survived
     timer_text = small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
-    timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - 40))
+    timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - int(40 * game_state.scale)))
     game_over_surface.blit(timer_text, timer_text_rect)
     
     # Score
     score_text = small_font.render(f"Score: {score.score}", True, constants.WHITE)
-    score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 20))
+    score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + int(20 * game_state.scale)))
     game_over_surface.blit(score_text, score_text_rect)
     
     # High score
     high_score_text = small_font.render(f"High Score: {score.high_score}", True, constants.WHITE)
-    high_score_text_rect = high_score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 60))
+    high_score_text_rect = high_score_text.get_rect(center=(screen_width // 2, screen_height // 2 + int(60 * game_state.scale)))
     game_over_surface.blit(high_score_text, high_score_text_rect)
     
     # Restart prompt
     restart_text = small_font.render("Press SPACE to restart", True, constants.WHITE)
-    restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
+    restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + int(100 * game_state.scale)))
     game_over_surface.blit(restart_text, restart_text_rect)
     
-    # Add the version text at the bottom
+    # Add the version text at the bottom (using scaled margin)
     version_font = pygame.font.Font(None, get_scaled_font(24))  # Smaller font size
     version_text = version_font.render("Gooner Game v0.1.2", True, constants.WHITE)
-    version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))  # Position at the bottom
+    version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - int(20 * game_state.scale)))
     game_over_surface.blit(version_text, version_text_rect)
     
     # Draw the entire game over surface onto the main screen
     screen.blit(game_over_surface, (0, 0))
 
 def calculate_enemy_scaling(elapsed_seconds):
-    # Double stats every 200 seconds
-    # Using 2^(t/200) as scaling formula
+    # Double stats every enemy_stat_doubling_time seconds using 2^(t/T)
     scaling_factor = 2 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
 def calculate_wave_spawn_interval(elapsed_seconds):
-    # Start with base_enemy_spawn_interval and halve it every enemy_spawn_rate_doubling_time_seconds
+    # Start with base_wave_interval and halve it every wave_spawn_rate_doubling_time_seconds
     spawn_interval = constants.base_wave_interval * (2 ** (-elapsed_seconds / constants.wave_spawn_rate_doubling_time_seconds))
-    
     # Set a minimum spawn interval to prevent enemies from spawning too quickly
     return max(0.5, spawn_interval)
 
@@ -197,9 +195,9 @@ def main():
     constants.music_volume = load_music_settings()
 
     while game_state.running:
-        # Fill background with GREY instead of WHITE
+        # Fill background with LIGHT_GREY instead of WHITE
         game_state.screen.fill(constants.LIGHT_GREY)
-        # Draw notification
+        # Draw notification if applicable
         if game_state.notification_message != '' and any("Roll the Dice" in upgrade.name for upgrade in game_state.player.applied_upgrades):
             drawing.draw_notification()
                 
@@ -247,7 +245,6 @@ def main():
         drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
         drawing.draw_experience_bar()
         
-
         if not game_state.wave_active:
             # Start a new wave if enough time has passed OR if there are no enemies
             if (in_game_seconds - game_state.last_wave_time >= game_state.wave_interval or 
@@ -268,15 +265,14 @@ def main():
                 game_state.wave_active = False
                 game_state.last_wave_time = in_game_seconds
             
-            
-
         # Draw stopwatch using in_game_ticks
         elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
         minutes = elapsed_seconds // 60
         seconds = elapsed_seconds % 60
         font = pygame.font.Font(None, get_scaled_font(36))
+        # Scale the margin offsets (20 becomes 20 * scale)
         time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
-        time_rect = time_text.get_rect(topright=(screen_width - 20, 20))
+        time_rect = time_text.get_rect(topright=(screen_width - int(20 * game_state.scale), int(20 * game_state.scale)))
         # Add a semi-transparent background for better readability
         bg_rect = time_rect.copy()
         bg_rect.inflate_ip(20, 10)  # Make background slightly larger than text
@@ -293,9 +289,9 @@ def main():
         for projectile in game_state.projectiles:
             projectile.draw(game_state.screen)
 
-        # Draw hearts
+        # Draw hearts (scale the circle radius)
         for heart in game_state.hearts:
-            pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)
+            pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), int(10 * game_state.scale))
 
         # Draw score
         score.draw_score(game_state.screen)
@@ -375,7 +371,7 @@ def main():
                     game_state.running = False
                     break  # Exit the event loop if quitting
                 
-                # Add this block to handle ESC key during level-up menu
+                # Handle ESC key during level-up menu
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     # Cancel the level-up menu and bring up the pause menu immediately
                     game_state.paused = True
@@ -429,7 +425,7 @@ def main():
             
             # Display game over screen
             show_game_over_screen(game_state.screen, screen_width, 
-                                screen_height, game_state.fade_alpha)
+                                  screen_height, game_state.fade_alpha)
 
         # Update display
         game_state.in_game_ticks_elapsed += 1
@@ -438,6 +434,7 @@ def main():
 
     pygame.mixer.quit()  # Clean up mixer when quitting
     pygame.quit()
+
 if __name__ == "__main__":
     if not os.path.exists("data"):
         os.makedirs("data")  # Create the data directory if it doesn't exist

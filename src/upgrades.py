@@ -34,7 +34,7 @@ class UpgradePool:
             "Rare": 30,
             "Epic": 10,
             "Mythic": 3,
-            "Exclusive": 5,
+            "Exclusive": 5000000000,
             "Legendary": 1
         }
         

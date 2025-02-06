@@ -21,23 +21,24 @@ class BaseBullet:
     damage: float
     colour: Tuple[int, int, int]
     pierce: int = 1
-    can_repierce: bool = False #whether the bullet can hit the same target multiple times
+    can_repierce: bool = False  # whether the bullet can hit the same target multiple times
     size: float = 5.0
     scaling: float = 1.0
     initial_x: float = 0
     initial_y: float = 0
-    
 
     def __post_init__(self):
         self.hit_targets = set()  # Track which targets have been hit
-    
+
     def update(self):
+        # Multiply speed by cosine/sine of angle (assumes self.speed is already scaled)
         self.x += self.speed * math.cos(math.radians(self.angle))
         self.y += self.speed * math.sin(math.radians(self.angle))
         
         # Check if bullet is out of bounds first
         if self.is_out_of_bounds():
-            game_state.projectiles.remove(self)
+            if self in game_state.projectiles:
+                game_state.projectiles.remove(self)
             return
         
         # Check for collisions based on alignment
@@ -45,15 +46,16 @@ class BaseBullet:
             for enemy in game_state.enemies[:]:  # Use slice copy to avoid modification during iteration
                 if self.check_and_apply_collision(enemy):
                     if self.pierce <= 0:
-                        game_state.projectiles.remove(self)
-                    break
-                
-            
+                        if self in game_state.projectiles:
+                            game_state.projectiles.remove(self)
+                    break                
         elif self.alignment == Alignment.ENEMY:
             if self.check_and_apply_collision(game_state.player):
-                game_state.projectiles.remove(self)
+                if self in game_state.projectiles:
+                    game_state.projectiles.remove(self)
     
     def draw(self, screen):
+        # Draw a circle for the bullet. Scale the radius.
         pygame.draw.circle(screen, self.colour, (int(self.x), int(self.y)), int(self.size))
     
     def get_rect(self) -> pygame.Rect:
@@ -72,14 +74,17 @@ class BaseBullet:
 @dataclass
 class PlayerBaseBullet(BaseBullet):
     def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, pierce: int, can_repierce: bool, size: float, colour: Tuple[int, int, int]):
+        # Scale speed and size
+        scaled_speed = speed * game_state.scale  # Scaled speed
+        scaled_size = size * game_state.scale    # Scaled size
         super().__init__(
             x=x,
             y=y,
             angle=angle,
             alignment=Alignment.PLAYER,
-            speed=speed,
+            speed=scaled_speed,
             damage=damage,
-            size=size,
+            size=scaled_size,
             colour=colour,
             pierce=pierce,
             can_repierce=can_repierce
@@ -105,6 +110,7 @@ class PlayerBaseBullet(BaseBullet):
             return self.damage
 
     def check_and_apply_collision(self, enemy) -> bool:
+        # Use a collision rectangle around the enemy; here we assume enemy occupies a 40x40 box.
         if (enemy.health > 0 and
             pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
             
@@ -123,12 +129,15 @@ class PlayerBaseBullet(BaseBullet):
 
 class PlayerBasicBullet(PlayerBaseBullet):
     def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
+        # Scale the speed and size. Multiply bullet speed by game_state.scale.
+        bullet_speed = constants.player_basic_bullet_speed * basic_bullet_speed_multiplier
+        bullet_size = constants.player_basic_bullet_size  # Base size; scale it in PlayerBaseBullet
         super().__init__(x, y, angle, 
-                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
+                         bullet_speed,
                          constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
                          math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
                          can_repierce,
-                         constants.player_basic_bullet_size,
+                         bullet_size,
                          constants.BLUE)
         self.scales_with_distance_travelled = scales_with_distance_travelled
         if scales_with_distance_travelled:
@@ -138,12 +147,15 @@ class PlayerBasicBullet(PlayerBaseBullet):
 
 class PlayerSpecialBullet(PlayerBaseBullet):
     def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_damage_bonus: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, special_bullet_radius_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
+        bullet_speed = constants.player_special_bullet_speed * special_bullet_speed_multiplier
+        # Multiply the base size by the special bullet radius multiplier.
+        bullet_size = constants.player_special_bullet_size * special_bullet_radius_multiplier
         super().__init__(x, y, angle,
-                         constants.player_special_bullet_speed * special_bullet_speed_multiplier,
+                         bullet_speed,
                          constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier + special_bullet_damage_bonus,
                          math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
                          can_repierce,
-                         constants.player_special_bullet_size * special_bullet_radius_multiplier,
+                         bullet_size,
                          constants.PURPLE)
         self.scales_with_distance_travelled = scales_with_distance_travelled
         if scales_with_distance_travelled:
@@ -154,41 +166,45 @@ class PlayerSpecialBullet(PlayerBaseBullet):
 @dataclass
 class BaseEnemyBullet(BaseBullet):
     def __init__(self, x: float, y: float, angle: float, speed: float, base_damage: float, size: float, colour: Tuple[int, int, int]):
+        # Multiply damage by enemy scaling as before
         damage = base_damage * game_state.enemy_scaling
-        
+        # Scale speed and size
+        scaled_speed = speed * game_state.scale  # Scaled enemy bullet speed
+        scaled_size = size * game_state.scale    # Scaled enemy bullet size
         super().__init__(
             x=x,
             y=y,
             angle=angle,
             alignment=Alignment.ENEMY,
-            speed=speed,
+            speed=scaled_speed,
             damage=damage,
-            size=size,
+            size=scaled_size,
             colour=colour,
             pierce=1
         )
     def check_and_apply_collision(self, target) -> bool:
-        # Use player's size attribute for collision detection
+        # Use player's size attribute for collision detection.
+        # Note: player.size is already scaled.
         if pygame.Rect(game_state.player.x - game_state.player.size/2, 
                       game_state.player.y - game_state.player.size/2, 
                       game_state.player.size, 
                       game_state.player.size).colliderect(self.get_rect()):
             actual_damage = math.floor(self.damage * self.scaling)
             game_state.player.take_damage(actual_damage)
-        
             return True
         return False
 
 @dataclass
 class TankEnemyBullet(BaseEnemyBullet):
     def __init__(self, x: float, y: float, speed: float, angle: float):
+        # Size is set to 3 (base), scale it.
         super().__init__(
             x=x,
             y=y,
             angle=angle,
             speed=speed,
             base_damage=constants.base_tank_damage,
-            size=3,
+            size=3,  # Will be scaled in BaseEnemyBullet
             colour=constants.BROWN
         )
 
@@ -201,7 +217,7 @@ class BasicEnemyBullet(BaseEnemyBullet):
             angle=angle,
             speed=constants.basic_enemy_bullet_speed,
             base_damage=constants.base_basic_enemy_damage,
-            size=5,
+            size=5,  # Will be scaled
             colour=constants.RED,
         )
 
@@ -213,7 +229,7 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
             angle=angle,
             speed=constants.basic_enemy_homing_bullet_speed,
             base_damage=constants.base_basic_enemy_damage,
-            size=5,
+            size=5,  # Will be scaled
             colour=constants.RED
         )
         self.spawn_time: float = pygame.time.get_ticks() / 1000.0
@@ -250,6 +266,6 @@ class SniperEnemyBullet(BaseEnemyBullet):
             angle=angle,
             speed=speed,
             base_damage=constants.sniper_bullet_damage,
-            size=5,
+            size=5,  # Will be scaled
             colour=constants.PURPLE
         )

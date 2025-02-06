@@ -71,11 +71,11 @@ wave_spawn_rate_doubling_time_seconds = 300
 experience_bar_height = 10  # Match the height used in draw_experience_bar
 
 # Sniper Enemy Constants
-base_sniper_health = 22         # Base health for a sniper enemy (scaled by enemy scaling)
+base_sniper_health = 20         # Base health for a sniper enemy (scaled by enemy scaling)
 base_sniper_xp_reward = 13      # XP reward when a sniper enemy is defeated
 sniper_volley_interval = 3      # Seconds between sniper volleys
-sniper_shot_delay = 0.02         # Seconds between shots in a volley
-sniper_bullet_speed = 20        # Speed of sniper bullet (very fast)
+sniper_shot_delay = 0.03         # Seconds between shots in a volley
+sniper_bullet_speed = 18        # Speed of sniper bullet (very fast)
 sniper_bullet_damage = 14       # High damage per sniper bullet
 sniper_bullet_spread = 0.5   # sniper bullet spread in radians
 sniper_keep_distance = 500             # If player is closer than this, retreat.
@@ -116,4 +116,8 @@ CHARGER_ENEMY_INNER_SIZE = 36
 CHARGER_ENEMY_OUTLINE_COLOR = BLACK
 CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies
 
-
+ENEMY_BASE_SPEED = 0
+ENEMY_OUTLINE_SIZE = 0
+ENEMY_INNER_SIZE = 0
+ENEMY_OUTLINE_COLOR = 0
+ENEMY_INNER_COLOR = 0

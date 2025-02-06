@@ -6,6 +6,7 @@ import random
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
 from src.helpers import calculate_angle
 import src.constants as constants
+import src.game_state as game_state
 
 class PlayerState(Enum):
     ALIVE = "alive"
@@ -14,7 +15,7 @@ class PlayerState(Enum):
 
 class Player:
     def __init__(self, x, y, screen_width, screen_height):
-        # Position
+        # Position (these are provided in raw pixels)
         self.x = x
         self.y = y
         self.screen_width = screen_width
@@ -28,11 +29,12 @@ class Player:
 
     def reset(self):
         # Stats
-        self.size = 25  # Base size of the player square
+        # Scale the player's base size according to game_state.scale
+        self.size = int(25 * game_state.scale)  # Scaled size of the player square
         self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
-        self.speed = constants.player_speed
+        self.speed = constants.player_speed  # (Assumed to be defined in constants; adjust there if needed)
         self.player_experience = 0
         self.player_level = 1
         self.experience_to_next_level = constants.initial_experience_to_next_level
@@ -41,7 +43,7 @@ class Player:
         self.current_tick = 0  # Add tick counter
         self.last_damage_tick = 0  # New: Track the tick when damage was last taken
         
-        #upgrades
+        # Upgrades
         self.base_damage_multiplier = 1
         self.basic_bullet_damage_multiplier = 1
         self.special_bullet_damage_multiplier = 1
@@ -71,11 +73,11 @@ class Player:
         self.percent_damage_taken_special_attack_bonus = 0
 
         self.xp_gain_multiplier = 1
-        self.passive_xp_gain_percent_bonus = 0 #percent of xp bar per second
-        self.rage_percent_bonus = 0 # percent damage gain per enemy on screen
-        self.frenzy_percent_bonus = 0 # percent damage gain per projectile on screen
-        self.fear_percent_bonus = 0 # max percent damage gain based on how low your hp is
-        self.no_damage_buff_req_duration = 0 # seconds that player must go without taking damage to activate no damage buff
+        self.passive_xp_gain_percent_bonus = 0  # percent of xp bar per second
+        self.rage_percent_bonus = 0  # percent damage gain per enemy on screen
+        self.frenzy_percent_bonus = 0  # percent damage gain per projectile on screen
+        self.fear_percent_bonus = 0  # max percent damage gain based on how low your hp is
+        self.no_damage_buff_req_duration = 0  # seconds that player must go without taking damage to activate no damage buff
         self.no_damage_buff_damage_bonus_multiplier = 0
 
         self.state = PlayerState.ALIVE
@@ -88,7 +90,7 @@ class Player:
 
         self.applied_upgrades = set()  # Tracks names of applied upgrades
         self.upgrade_levels = {}  # Tracks number of times each upgrade has been applied
-        self.active_buffs = {}  # Dictionary to store active buffs and their end ticks (not times)
+        self.active_buffs = []  # Dictionary to store active buffs and their end ticks (not times)
         
         # NEW: initialize bonus damage accumulation for the next special attack.
         self.special_attack_bonus_damage = 0
@@ -125,7 +127,8 @@ class Player:
             death_progress = (max_death_timer - self.death_timer) / max_death_timer
             alpha = int(255 * (1 - death_progress))
 
-        # Create the player body with per-pixel alpha
+        # Create the player body with per-pixel alpha.
+        # The surfaces use self.size (which is already scaled)
         body_surface = pygame.Surface((self.size + 2, self.size + 2), pygame.SRCALPHA)
         body_inner_surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
 
@@ -139,14 +142,14 @@ class Player:
             body_inner_surface = dissolve_surface(body_inner_surface, death_progress)
 
         # Blit the body (outline and inner rectangle)
+        # Positions are centered on (self.x, self.y); offsets are scaled
         screen.blit(body_surface, (self.x - self.size / 2 - 1, self.y - self.size / 2 - 1))
         screen.blit(body_inner_surface, (self.x - self.size / 2, self.y - self.size / 2))
 
         # Direction arrow
         if not self.dying:  # Optionally, you can hide the arrow during the dissolve
-            outline_offset = 1
-            arc_radius = self.size  # Distance from the center where the line starts
-            arrow_length = self.size / 2  # Length of the line beyond that point
+            arc_radius = self.size  # Distance from the center where the line starts (scaled)
+            arrow_length = self.size / 2  # Length of the line beyond that point (scaled)
             angle_rad = math.radians(self.angle)
 
             # Starting point: on the circle (arc) boundary relative to the player's center
@@ -159,18 +162,21 @@ class Player:
 
             pygame.draw.line(screen, constants.BLUE,
                             (start_line_x, start_line_y),
-                            (end_line_x, end_line_y), 3)
+                            (end_line_x, end_line_y), int(3 * game_state.scale))  # Scaled line thickness
 
         # Draw health bar with fade effect during death
         self.draw_health_bar(screen)
 
     def draw_health_bar(self, screen, bar_width=100, bar_height=10):
-        x = 20  # Fixed position for health bar
-        y = 20
-        filled_width = int((self.health / self.max_health) * bar_width)
-        surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
-        pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height))
-        pygame.draw.rect(surface, constants.TRANSLUCENT_GREEN, (0, 0, filled_width, bar_height))
+        # Scale health bar dimensions and position
+        x = int(20 * game_state.scale)  # Scaled fixed position for health bar
+        y = int(20 * game_state.scale)
+        scaled_bar_width = int(bar_width * game_state.scale)
+        scaled_bar_height = int(bar_height * game_state.scale)
+        filled_width = int((self.health / self.max_health) * scaled_bar_width)
+        surface = pygame.Surface((scaled_bar_width, scaled_bar_height), pygame.SRCALPHA)
+        pygame.draw.rect(surface, constants.BLACK, (0, 0, scaled_bar_width, scaled_bar_height))
+        pygame.draw.rect(surface, constants.TRANSLUCENT_GREEN, (0, 0, filled_width, scaled_bar_height))
         screen.blit(surface, (x, y))
 
     def update_angle(self, mouse_pos):
@@ -190,10 +196,10 @@ class Player:
         if keys[pygame.K_d]:
             new_x += self.speed
 
-        # Restrict player to screen boundaries with size consideration (10 pixel xp bar)
-        half_size = self.size/2
-        self.x = max(half_size, min(new_x, self.screen_width - half_size - 10))
-        self.y = max(half_size, min(new_y, self.screen_height - half_size - 10))
+        # Restrict player to screen boundaries with size consideration (10 pixel xp bar scaled)
+        half_size = self.size / 2  # self.size is already scaled
+        self.x = max(half_size, min(new_x, self.screen_width - half_size - int(10 * game_state.scale)))
+        self.y = max(half_size, min(new_y, self.screen_height - half_size - int(10 * game_state.scale)))
 
     def update_hp_regen(self):
         self.ticks_since_last_hp_regen += 1
@@ -234,12 +240,12 @@ class Player:
         # Import game_state locally to avoid potential circular dependencies.
         import src.game_state as game_state
         # For each enemy on screen, add 20% extra damage.
-        enemy_bonus = 1 + self.rage_percent_bonus/100 * len(game_state.enemies)
-        projectile_bonus = 1 + self.frenzy_percent_bonus/100 * len(game_state.projectiles)
-        fear_bonus = 1 + self.fear_percent_bonus/100 * (self.max_health - self.health) / self.max_health
+        enemy_bonus = 1 + self.rage_percent_bonus / 100 * len(game_state.enemies)
+        projectile_bonus = 1 + self.frenzy_percent_bonus / 100 * len(game_state.projectiles)
+        fear_bonus = 1 + self.fear_percent_bonus / 100 * (self.max_health - self.health) / self.max_health
         
         # Add heart pickup damage boost - stacks exponentially
-        buff_multiplier = (1 + self.hp_pickup_damage_boost_percent_bonus/100)
+        buff_multiplier = (1 + self.hp_pickup_damage_boost_percent_bonus / 100)
         active_buff_count = sum(1 for buff in self.active_buffs if buff["name"] == "heart_damage_boost")
         buff_bonus = buff_multiplier ** active_buff_count
         
@@ -277,7 +283,7 @@ class Player:
             return bullets
 
         # For multiple projectiles, space them out perpendicular to the shooting direction
-        spread_distance = 15  # pixels between projectiles
+        spread_distance = 15  # pixels between projectiles (base value)
         perpendicular_angle = angle + 90  # perpendicular direction in degrees
         total_spread = spread_distance * (total_projectiles - 1)
         start_x = self.x - (total_spread / 2) * math.cos(math.radians(perpendicular_angle))
@@ -332,7 +338,7 @@ class Player:
         self.health = max(0, self.health - reduced_damage)
         if self.health <= 0:
             self.state = PlayerState.DEAD
-        self.special_attack_bonus_damage += amount * (self.percent_damage_taken_special_attack_bonus/100)
+        self.special_attack_bonus_damage += amount * (self.percent_damage_taken_special_attack_bonus / 100)
         
         game_state.damage_numbers.append({
                 "x": game_state.player.x,
@@ -346,11 +352,11 @@ class Player:
         self.health = min(self.max_health, self.health + amount)
         
     def heal_from_pickup(self):
-        heal_amount = self.max_health * ((self.hp_pickup_healing_percent_bonus+constants.base_hp_pickup_healing_percent) / 100)
+        heal_amount = self.max_health * ((self.hp_pickup_healing_percent_bonus + constants.base_hp_pickup_healing_percent) / 100)
         self.heal(heal_amount)
         self.add_temporary_buff("heart_damage_boost", self.hp_pickup_damage_boost_duration_s)  # 30 second damage boost
-        self.base_damage_multiplier = self.base_damage_multiplier * (1 + self.hp_pickup_permanent_damage_boost_percent_bonus/100)
-        self.max_health = self.max_health * (1 + self.hp_pickup_permanent_hp_boost_percent_bonus/100)
+        self.base_damage_multiplier = self.base_damage_multiplier * (1 + self.hp_pickup_permanent_damage_boost_percent_bonus / 100)
+        self.max_health = self.max_health * (1 + self.hp_pickup_permanent_hp_boost_percent_bonus / 100)
         return heal_amount
         
 
@@ -415,11 +421,6 @@ class Player:
         
         game_state.notification_visible = True  # Make the notification visible
         game_state.notification_timer = game_state.notification_total_duration  # Reset timer
-        
-        # # Prevent recursive gain_random_upgrade calls
-        # if upgrade.name == "Roll the Dice":
-        #     # Do not perform Roll the Dice logic when the upgrade itself is Roll the Dice
-        #     return
         
         # Check if "Roll the Dice" upgrade is active
         if self.random_upgrade_chance > 0:
