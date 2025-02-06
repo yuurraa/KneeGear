@@ -423,7 +423,7 @@ def draw_upgrades_tab(screen):
     button_spacing = int(game_state.screen_width * 0.01)  # Horizontal spacing
 
     # Use 70% of the screen height for the icon area
-    max_column_height = int(game_state.screen_height * 0.85)
+    max_column_height = int(game_state.screen_height * 0.75)
     title_height = int(game_state.screen_height * 0.037)
     close_button_height = int(game_state.screen_height * 0.046)
 
