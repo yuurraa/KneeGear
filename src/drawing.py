@@ -111,3 +111,56 @@ def draw_player_state_value_updates():
         if exp_update["timer"] <= 0:
             game_state.experience_updates.remove(exp_update)
             
+def draw_notification():
+    if game_state.notification_visible:
+        # Define constants for animation
+        total_duration = game_state.notification_total_duration
+        slide_in_duration = game_state.notification_slide_in_duration
+        visible_duration = game_state.notification_visible_duration
+        slide_out_duration = game_state.notification_slide_out_duration
+
+        timer = game_state.notification_timer
+        elapsed = total_duration - timer  # Frames elapsed since notification was triggered
+
+        # Define target Y position where the notification should slide to
+        target_y = 40  # Adjust as needed
+
+        # Determine the current phase of the animation
+        if elapsed < slide_in_duration:
+            # Sliding In
+            progress = elapsed / slide_in_duration
+            y = -60 + (target_y + 60) * progress  # Starts at -60, moves to target_y
+        elif elapsed < (slide_in_duration + visible_duration):
+            # Fully Visible
+            y = target_y
+        elif elapsed < (slide_in_duration + visible_duration + slide_out_duration):
+            # Sliding Out
+            progress = (elapsed - slide_in_duration - visible_duration) / slide_out_duration
+            y = target_y - (60 + 0) * progress  # Moves back to -60
+        else:
+            # Animation Complete
+            game_state.notification_visible = False
+            y = -60
+
+        # Update the current Y position
+        game_state.notification_current_y = y
+
+        # Draw the notification box at the current Y position
+        font = pygame.font.SysFont(None, 36)
+        message = game_state.notification_message
+        text_surface = font.render(message, True, constants.WHITE)
+        text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 25))  # Box height is 50
+
+        # Draw the background box
+        box_height = 50
+        box_width = text_surface.get_width() + 40  # Added padding
+        box_rect = pygame.Rect((game_state.screen_width - box_width) // 2, y, box_width, box_height)
+        pygame.draw.rect(game_state.screen, constants.BLACK, box_rect)  # Background box
+        pygame.draw.rect(game_state.screen, constants.WHITE, box_rect, 2)  # Border
+
+        # Draw the text
+        game_state.screen.blit(text_surface, text_rect)
+
+        # Decrement the timer
+        game_state.notification_timer -= 1
+            

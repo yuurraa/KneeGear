@@ -34,7 +34,7 @@ class UpgradePool:
             "Rare": 30,
             "Epic": 10,
             "Mythic": 3,
-            "Exclusive": 5,
+            "Exclusive": 5000000000,
             "Legendary": 1
         }
         
@@ -76,7 +76,7 @@ class UpgradePool:
                 icon="attack_damage"
             ),
             Upgrade(
-                name="Attack Damage and decrease cooldown",
+                name="Attack Damage and Decreased Cooldown",
                 description="Increase attack damage by 25% and decrease all cooldowns by 10%",
                 Rarity="Common",
                 apply=lambda player: [
@@ -88,7 +88,7 @@ class UpgradePool:
                 icon="hybrid"
             ),
             Upgrade(
-                name="Attack Damage and increase cooldown",
+                name="Attack Damage and Increased Cooldown",
                 description="Increase attack damage by 60% but increase all cooldowns by 10%",
                 Rarity="Common",
                 apply=lambda player: [
@@ -544,7 +544,14 @@ class UpgradePool:
                 max_level=1,
                 icon="extra_choice"
             ),
-            
+            Upgrade(
+                name="Roll the Dice",
+                description="Start with a 2% chance to gain a random upgrade when leveling up. Chance doubles on failure and resets on success.",
+                Rarity="Exclusive",
+                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.01), # (Listed as 1% due to doubling)
+                max_level=1,
+                icon="extra_choice"
+            ),
         ]
 
     def get_random_upgrades(self, count: int, player: Player) -> List[Upgrade]:

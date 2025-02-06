@@ -406,6 +406,8 @@ def main():
         pygame.display.flip()
         clock.tick(constants.FPS)
 
+        # Draw notification
+        drawing.draw_notification()
 
     pygame.mixer.quit()  # Clean up mixer when quitting
     pygame.quit()

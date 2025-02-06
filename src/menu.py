@@ -325,7 +325,7 @@ def draw_level_up_menu(screen):
         
         # Create buttons with proportional sizes
         button_width = int(game_state.screen_width * 0.18)  # ~16% of screen width
-        button_height = int(game_state.screen_height * 0.19)  # ~15% of screen height
+        button_height = int(game_state.screen_height * 0.2)  # ~15% of screen height
         button_spacing = int(game_state.screen_width * 0.023)  # ~2.6% of screen width
         
         # Calculate total width of all buttons and spacing
@@ -425,9 +425,9 @@ def draw_upgrades_tab(screen):
     screen.blit(overlay, (0, 0))
 
     # Constants for button dimensions - now based on screen proportions
-    button_width = int(game_state.screen_width * 0.24)  # ~19% of screen width
+    button_width = int(game_state.screen_width * 0.27)  # ~19% of screen width
     button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
-    button_spacing = int(game_state.screen_height * 0.019)  # ~1.9% of screen height
+    button_spacing = int(game_state.screen_height * 0.02)  # ~1.9% of screen height
     max_column_height = int(game_state.screen_height * 0.7)  # 70% of screen height
     title_height = int(game_state.screen_height * 0.037)  # ~3.7% of screen height
     close_button_height = int(game_state.screen_height * 0.046)  # ~4.6% of screen height
@@ -436,7 +436,7 @@ def draw_upgrades_tab(screen):
     num_upgrades = len(game_state.player.applied_upgrades)
 
     # Calculate panel dimensions
-    base_panel_width = int(game_state.screen_width * 0.3)  # ~570px on 1920px width
+    base_panel_width = int(game_state.screen_width * 0.33)  # ~570px on 1920px width
     panel_height = int(game_state.screen_height * 0.185) + min(
         (button_height * num_upgrades) + (button_spacing * (num_upgrades - 1)), 
         max_column_height
@@ -447,7 +447,7 @@ def draw_upgrades_tab(screen):
                   (button_spacing * (num_upgrades - 1))) // max_column_height + 1
 
     # Calculate panel width based on number of columns
-    column_width = int(game_state.screen_width * 0.25)  # ~370px on 1920px width
+    column_width = int(game_state.screen_width * 0.27)  # ~370px on 1920px width
     panel_width = base_panel_width + (num_columns - 1) * column_width
 
     panel_x = (game_state.screen_width - panel_width) // 2

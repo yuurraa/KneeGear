@@ -1,6 +1,7 @@
 from enum import Enum
 import pygame
 import math
+import random
 
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
 from src.helpers import calculate_angle
@@ -88,6 +89,9 @@ class Player:
         
         # NEW: initialize bonus damage accumulation for the next special attack.
         self.special_attack_bonus_damage = 0
+        
+        # NEW: Initialize random upgrade chance
+        self.random_upgrade_chance = 0.0  # Default chance
     
     def draw(self, screen):
         # Draw player body
@@ -345,14 +349,50 @@ class Player:
         self.player_experience -= self.experience_to_next_level
         self.experience_to_next_level = int(self.experience_to_next_level * constants.level_up_xp_cost_scaling_factor)
         self.state = PlayerState.LEVELING_UP
+
         print(f"Player leveled up to level {self.player_level}")
-            
+
+    def gain_random_upgrade(self):
+        import src.game_state as game_state
+        from src.upgrades import UpgradePool
+
+        # Initialize UpgradePool inside the method to avoid circular imports
+        upgrade_pool = UpgradePool()
+        available_upgrades = [
+            upgrade for upgrade in upgrade_pool.upgrades 
+            if upgrade.name not in self.applied_upgrades or self.upgrade_levels.get(upgrade.name, 0) < upgrade.max_level
+        ]
+
+        if available_upgrades:
+            random_upgrade = random.choice(available_upgrades)
+            self.apply_upgrade(random_upgrade)  # Apply the random upgrade
+
+            # Set the notification message and make it visible
+            game_state.notification_message = f"Random upgrade obtained: {random_upgrade.name}!"
+            game_state.notification_visible = True
+            game_state.notification_timer = game_state.notification_total_duration  # Set to total duration
+
+            print(f"Gained random upgrade: {random_upgrade.name}")  # Debugging output
+            print(f"Roll the Dice chances resets to 2%!")
 
     def apply_upgrade(self, upgrade):
         upgrade.apply(self)
         self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
         self.applied_upgrades.add(upgrade)
         print(f"Applied upgrade: {upgrade.name}")  # Debugging output
+        
+        # Check for "Roll the Dice" upgrade
+        if self.random_upgrade_chance > 0:
+            # Generate a random number to determine if the player gets an additional upgrade
+            if random.random() < self.random_upgrade_chance:
+                # Logic to gain a random upgrade
+                self.gain_random_upgrade()
+                # Reset the chance back to 2% (Listed as 1% due to doubling)
+                self.random_upgrade_chance = 0.01
+            else:
+                # Double the chance for the next level-up
+                self.random_upgrade_chance = min(self.random_upgrade_chance * 2, 1.0)  # Cap at 100%
+                print(f"Roll the Dice chances increases to {self.random_upgrade_chance}!")
 
     def is_dead(self):
         return self.state == PlayerState.DEAD
