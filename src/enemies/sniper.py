@@ -13,7 +13,7 @@ class SniperEnemy(BaseEnemy):
         
         # Apply randomized initial delay for the volley shot
         self.initial_delay_ticks = random.uniform(2.0, constants.sniper_volley_interval) * constants.FPS
-        self.last_shot_tick = game_state.in_game_ticks_elapsed - constants.sniper_volley_interval * constants.FPS + self.initial_delay_ticks
+        self.last_shot_tick = self.current_tick - constants.sniper_volley_interval * constants.FPS + self.initial_delay_ticks
         self.last_volley_shot_tick = self.last_shot_tick
         self.shots_fired_in_volley = 69
         
@@ -132,16 +132,16 @@ class SniperEnemy(BaseEnemy):
         self._restrict_to_boundaries(game_state)
 
 
-    def shoot(self, target_x, target_y, current_tick, game_state):
+    def shoot(self, target_x, target_y, game_state):
         # Convert ticks to seconds
-        current_time = current_tick / constants.FPS
+        current_time = self.current_tick / constants.FPS
         last_shot_time = self.last_shot_tick / constants.FPS
         last_volley_shot_time = self.last_volley_shot_tick / constants.FPS
 
         if current_time - last_shot_time >= constants.sniper_volley_interval:
             self.shots_fired_in_volley = 0
-            self.last_volley_shot_tick = current_tick
-            self.last_shot_tick = current_tick
+            self.last_volley_shot_tick = self.current_tick
+            self.last_shot_tick = self.current_tick
 
         if (self.shots_fired_in_volley < 3 and 
             current_time - last_volley_shot_time >= constants.sniper_shot_delay):
@@ -163,5 +163,5 @@ class SniperEnemy(BaseEnemy):
             game_state.projectiles.append(bullet)
             
             self.shots_fired_in_volley += 1
-            self.last_volley_shot_tick = current_tick
+            self.last_volley_shot_tick = self.current_tick
 

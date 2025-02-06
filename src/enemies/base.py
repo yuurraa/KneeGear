@@ -18,9 +18,12 @@ class BaseEnemy(ABC):
         self.outline_color = 0
         self.inner_color = 0
         
-        self.dying = False
-        self.death_timer = 30  # Timer for death animation (in ticks)
+        self.current_tick = 0
+        self.death_animation_duration = 0.2 # seconds
         
+        self.dying = False
+        self.death_animation_start_tick = 0
+
     @property
     @abstractmethod
     def type(self):
@@ -44,7 +47,7 @@ class BaseEnemy(ABC):
         self._health = value
 
     @abstractmethod
-    def shoot(self, target_x, target_y, current_tick, game_state):
+    def shoot(self, target_x, target_y, game_state):
         """Handle shooting logic for the enemy using in-game ticks"""
         pass
         
@@ -65,14 +68,11 @@ class BaseEnemy(ABC):
             if not self.dying:
                 # Mark enemy as dying and set a death animation timer (say 60 ticks)
                 self.dying = True
-                self.death_timer = 60
+                self.death_animation_start_tick = self.current_tick
                 # Reward the player only once at the start of the death animation.
                 from src.score import increase_score
                 increase_score(self.score_reward)
                 game_state.player.gain_experience(self.score_reward)
-            # Return True if the enemy is dead or dying (so that damage numbers might be processed)
-            return True
-        return False
 
     def move(self, target_x, target_y, game_state):
         """Default movement behavior for enemies"""
@@ -84,13 +84,20 @@ class BaseEnemy(ABC):
         self._restrict_to_boundaries(game_state)
     
 
-    def update(self, target_x, target_y, current_tick, game_state):
+    def update(self, target_x, target_y, game_state):
         """Default update behavior for enemies"""
-        if self.dying:
-            return
-        self.move(target_x, target_y, game_state)
-        self.shoot(target_x, target_y, current_tick, game_state)
-    
+        # Only perform movement and shooting if not dying.
+        self.current_tick += 1
+        if not self.dying:
+            self.move(target_x, target_y, game_state)
+            self.shoot(target_x, target_y, game_state)
+        
+        #death animation finished
+        if self.dying and self.current_tick - self.death_animation_start_tick > self.death_animation_duration * constants.FPS:
+            import src.game_state as game_state
+            game_state.enemies.remove(self)
+            
+            
         
     def _restrict_to_boundaries(self, game_state):
         """Helper method to keep enemies within screen boundaries"""
@@ -103,65 +110,48 @@ class BaseEnemy(ABC):
         import src.constants as constants
         from src.drawing import draw_health_bar
         
-        def dissolve_surface(surface, death_progress):
-            """
-            Returns a new surface where a fraction of the pixels (determined by death_progress)
-            have been set fully transparent. death_progress should be between 0 (no dissolve)
-            and 1 (fully dissolved).
-            """
-            # Create a copy with per-pixel alpha
-            new_surface = surface.copy()
-            new_surface = new_surface.convert_alpha()  # Ensure alpha channel
-
-            width, height = new_surface.get_size()
-            for x in range(width):
-                for y in range(height):
-                    # For each pixel, with probability equal to death_progress, clear it.
-                    if random.random() < death_progress:
-                        # Set pixel fully transparent.
-                        new_surface.set_at((x, y), (0, 0, 0, 0))
-            return new_surface
-
         screen = game_state.screen
 
-        # Determine alpha and death progress if dying.
-        # Assume the death animation lasts for 60 ticks.
-        max_death_timer = 60
+        # Determine alpha and death progress if dying
         alpha = 255
-        death_progress = 0.0  # 0 means no dissolve; 1 means fully dissolved.
         if self.dying:
-            death_progress = (max_death_timer - self.death_timer) / max_death_timer
+            death_duration_ticks = self.death_animation_duration * constants.FPS
+            death_progress = (self.current_tick - self.death_animation_start_tick) / death_duration_ticks
             alpha = int(255 * (1 - death_progress))
             alpha = max(0, min(255, alpha))
+            # Compute a scale factor that decreases from 1 to 0
+            scale_factor = max(0, 1 - death_progress)
+            # Compute new sizes for the enemy surfaces
+            new_outline_size = max(1, int(self.outline_size * scale_factor))
+            new_inner_size = max(1, int(self.inner_size * scale_factor))
+        else:
+            new_outline_size = self.outline_size
+            new_inner_size = self.inner_size
 
-        # Create surfaces for drawing the enemy shapes with per-pixel alpha.
-        outline_surface = pygame.Surface((self.outline_size, self.outline_size), pygame.SRCALPHA)
-        inner_surface = pygame.Surface((self.inner_size, self.inner_size), pygame.SRCALPHA)
+        # Create surfaces with current sizes
+        outline_surface = pygame.Surface((new_outline_size, new_outline_size), pygame.SRCALPHA)
+        inner_surface = pygame.Surface((new_inner_size, new_inner_size), pygame.SRCALPHA)
 
-        # Prepare the outline color with current alpha.
+        # Prepare colors with current alpha
         outline_color = self.outline_color
         if isinstance(outline_color, (list, tuple)) and len(outline_color) == 3:
             outline_color = (*outline_color, alpha)
-        # Fill the outline surface with the outline color.
         outline_surface.fill(outline_color)
 
-        # Prepare the inner color with current alpha.
         inner_color = self.inner_color
         if isinstance(inner_color, (list, tuple)) and len(inner_color) == 3:
             inner_color = (*inner_color, alpha)
         inner_surface.fill(inner_color)
 
-        # If the enemy is dying, apply the dissolve effect.
-        if self.dying:
-            outline_surface = dissolve_surface(outline_surface, death_progress)
-            inner_surface = dissolve_surface(inner_surface, death_progress)
+        # Calculate positions
+        outline_pos = (self.x - new_outline_size // 2, self.y - new_outline_size // 2)
+        inner_pos = (self.x - new_inner_size // 2, self.y - new_inner_size // 2)
 
         # Blit the surfaces to the main screen.
-        screen.blit(outline_surface, (self.x - self.outline_size // 2, self.y - self.outline_size // 2))
-        screen.blit(inner_surface, (self.x - self.inner_size // 2, self.y - self.inner_size // 2))
+        screen.blit(outline_surface, outline_pos)
+        screen.blit(inner_surface, inner_pos)
 
         # Draw the health bar only if the enemy is still alive.
-        # If dying, fade it out and also apply a dissolve effect.
         if not self.dying:
             health_bar_x = self.x - self.inner_size // 2
             health_bar_y = self.y - 35
@@ -174,15 +164,3 @@ class BaseEnemy(ABC):
                 bar_width=self.inner_size,
                 bar_height=5
             )
-        else:
-            # Create a temporary surface for the health bar.
-            health_bar_width = self.inner_size
-            health_bar_height = 5
-            health_bar_surface = pygame.Surface((health_bar_width, health_bar_height), pygame.SRCALPHA)
-            # Fade out the health bar color.
-            bar_color = list(constants.TRANSLUCENT_RED)
-            bar_color[-1] = alpha  # adjust alpha
-            health_bar_surface.fill(tuple(bar_color))
-            # Optionally, apply the dissolve effect.
-            health_bar_surface = dissolve_surface(health_bar_surface, death_progress)
-            screen.blit(health_bar_surface, (self.x - health_bar_width // 2, self.y - 35))

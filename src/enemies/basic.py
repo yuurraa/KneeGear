@@ -13,11 +13,11 @@ class BasicEnemy(BaseEnemy):
         
         # Randomized initial delay for the homing shot:
         self.initial_delay_homing_ticks = random.uniform(1.0, constants.basic_enemy_homing_interval) * constants.FPS
-        self.last_shot_tick = game_state.in_game_ticks_elapsed - constants.basic_enemy_homing_interval * constants.FPS + self.initial_delay_homing_ticks
+        self.last_shot_tick = self.current_tick - constants.basic_enemy_homing_interval * constants.FPS + self.initial_delay_homing_ticks
         
         # Randomized initial delay for the AOE shot:
         self.initial_delay_aoe_ticks = random.uniform(1.0, constants.basic_enemy_bullet_interval) * constants.FPS
-        self.last_aoe_tick = game_state.in_game_ticks_elapsed - constants.basic_enemy_bullet_interval * constants.FPS + self.initial_delay_aoe_ticks
+        self.last_aoe_tick = self.current_tick - constants.basic_enemy_bullet_interval * constants.FPS + self.initial_delay_aoe_ticks
         
         self.score_reward = math.floor(constants.base_basic_enemy_xp_reward * self.scaling)
         self.speed = constants.basic_enemy_speed
@@ -34,9 +34,9 @@ class BasicEnemy(BaseEnemy):
     def base_health(self):
         return constants.base_basic_enemy_health
 
-    def shoot(self, target_x, target_y, current_tick, game_state):
+    def shoot(self, target_x, target_y, game_state):
         # Convert ticks to seconds
-        current_time = current_tick / constants.FPS
+        current_time = self.current_tick / constants.FPS
         last_shot_time = self.last_shot_tick / constants.FPS
         last_aoe_time = self.last_aoe_tick / constants.FPS
 
@@ -49,7 +49,7 @@ class BasicEnemy(BaseEnemy):
                 angle=angle,
             )
             game_state.projectiles.append(bullet)
-            self.last_shot_tick = current_tick
+            self.last_shot_tick = self.current_tick
 
         # AOE shot using seconds
         if current_time - last_aoe_time >= constants.basic_enemy_bullet_interval:
@@ -60,4 +60,4 @@ class BasicEnemy(BaseEnemy):
                     angle=angle,
                 )
                 game_state.projectiles.append(bullet)
-            self.last_aoe_tick = current_tick
+            self.last_aoe_tick = self.current_tick

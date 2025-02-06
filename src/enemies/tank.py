@@ -16,7 +16,7 @@ class TankEnemy(BaseEnemy):
         self.outline_color = constants.TANK_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.TANK_ENEMY_INNER_COLOR
         self.initial_delay_ticks = random.uniform(1.0, constants.tank_shotgun_interval) * constants.FPS
-        self.last_shotgun_tick = game_state.in_game_ticks_elapsed - constants.tank_shotgun_interval * constants.FPS + self.initial_delay_ticks
+        self.last_shotgun_tick = self.current_tick - constants.tank_shotgun_interval * constants.FPS + self.initial_delay_ticks
         
     @property
     def type(self):
@@ -26,9 +26,9 @@ class TankEnemy(BaseEnemy):
     def base_health(self):
         return constants.base_tank_health
 
-    def shoot(self, target_x, target_y, current_tick, game_state):
+    def shoot(self, target_x, target_y, game_state):
         # Convert ticks to seconds
-        if current_tick - self.last_shotgun_tick >= constants.tank_shotgun_interval * constants.FPS:
+        if self.current_tick - self.last_shotgun_tick >= constants.tank_shotgun_interval * constants.FPS:
             from src.helpers import calculate_angle
             base_angle = calculate_angle(self.x, self.y, target_x, target_y)
             for _ in range(constants.tank_shotgun_pellet_count):
@@ -42,4 +42,4 @@ class TankEnemy(BaseEnemy):
                     speed=speed,
                 )
                 game_state.projectiles.append(pellet)
-            self.last_shotgun_tick = current_tick
+            self.last_shotgun_tick = self.current_tick

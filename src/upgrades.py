@@ -228,13 +228,13 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Damage EX",
-                description=r"Increase special attack damage by 120% but decreases attack damage by 20%",
+                description=r"Increase special attack damage by 120% but decreases basic attack damage by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_bullet_damage_multiplier',     
                                            player.special_bullet_damage_multiplier * 2.2),
-                    setattr(player, 'base_damage_multiplier', 
-                                           player.base_damage_multiplier * 0.8),
+                    setattr(player, 'basic_bullet_damage_multiplier', 
+                                           player.basic_bullet_damage_multiplier * 0.8),
                 ][-1],
                 icon="damage_ex"
             ),
@@ -257,13 +257,13 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Cooldown EX",
-                description="Decrease special attack cooldown by 50% but increases basic attack cooldown by 10%",
+                description="Decrease special attack cooldown by 50% but increases basic attack cooldown by 20%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_shot_cooldown', 
                                            player.special_shot_cooldown * 0.5),
                     setattr(player, 'shoot_cooldown', 
-                                           player.shoot_cooldown * 1.1),
+                                           player.shoot_cooldown * 1.2),
                 ][-1],
                 icon="cooldown_ex"
             ),

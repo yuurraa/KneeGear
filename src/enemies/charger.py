@@ -39,11 +39,14 @@ class ChargerEnemy(BaseEnemy):
     def base_health(self):
         return constants.base_charger_health
 
-    def shoot(self, target_x, target_y, current_tick, game_state):
+    def shoot(self, target_x, target_y, game_state):
         # The charger enemy does not shoot.
         pass
+    
+    def move(self, target_x, target_y, game_state):
+        pass
 
-    def update(self, target_x, target_y, current_tick, game_state):
+    def update(self, target_x, target_y, game_state):
         """
         Update the charger enemy using a steering behavior that ensures it
         directly homes in on the player instead of orbiting when the player strafes.
@@ -51,6 +54,9 @@ class ChargerEnemy(BaseEnemy):
         and then applies a steering force (difference between desired and current velocity)
         limited by the enemy's acceleration.
         """
+        super().update(target_x, target_y, game_state)
+        if self.dying:
+            return
         dx = target_x - self.x
         dy = target_y - self.y
         distance = math.hypot(dx, dy)
