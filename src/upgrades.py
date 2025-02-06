@@ -200,7 +200,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Basic Attack Distance Scaling",
-                description="Basic bullets gain up to +200% damage the further they travel, but basic base damage is reduced by 25%",
+                description="Basic bullets gain up to +200% damage the further they travel, but base basic damage is reduced by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'basic_bullet_scales_with_distance_travelled', True),
@@ -308,7 +308,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Special Attack Distance Scaling",
-                description="Special bullets gain up to +200% damage the further they DONT travel, but special base damage is reduced by 25%",
+                description="Special bullets gain up to +200% damage the closer you are to the enemy, but special base damage is reduced by 25%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'special_bullet_scales_with_distance_travelled', True),

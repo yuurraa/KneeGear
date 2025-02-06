@@ -325,7 +325,7 @@ def draw_level_up_menu(screen):
         
         # Create buttons with proportional sizes
         button_width = int(game_state.screen_width * 0.18)  # ~16% of screen width
-        button_height = int(game_state.screen_height * 0.17)  # ~15% of screen height
+        button_height = int(game_state.screen_height * 0.19)  # ~15% of screen height
         button_spacing = int(game_state.screen_width * 0.023)  # ~2.6% of screen width
         
         # Calculate total width of all buttons and spacing
