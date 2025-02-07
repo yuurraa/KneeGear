@@ -64,30 +64,8 @@ def get_ui_scaling_factor():
 
 def get_text_scaling_factor(font_size):
     return round(font_size * (game_state.screen_width / game_state.DESIGN_WIDTH) * 1.4)
-
-def fade_from_black(surface, wait_time=10, step=5):
-    """
-    Assumes that 'surface' already has the new scene drawn underneath.
-    Gradually removes a black overlay (alpha decreases from 255 to 0)
-    so that the new scene is revealed.
-    """
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
-    overlay.fill((0, 0, 0))
-    for alpha in range(255, -1, -step):
-        overlay.set_alpha(alpha)
-        temp_surface = surface.copy()
-        temp_surface.blit(overlay, (0, 0))
-        scaled = pygame.transform.smoothscale(temp_surface, (game_state.screen_width, game_state.screen_height))
-        game_state.screen.blit(scaled, (0, 0))
-        pygame.display.flip()
-        pygame.time.wait(wait_time)
-    # Final update: ensure overlay is completely removed.
-    scaled = pygame.transform.smoothscale(surface, (game_state.screen_width, game_state.screen_height))
-    game_state.screen.blit(scaled, (0, 0))
-    pygame.display.flip()
-
-        
-def fade_to_black(surface, wait_time=10, step=5):
+      
+def fade_to_black(surface, wait_time=5, step=20):
     """
     Assumes that 'surface' already has the current scene drawn.
     Gradually overlays a black surface (alpha increases from 0 to 255)
@@ -102,10 +80,28 @@ def fade_to_black(surface, wait_time=10, step=5):
         scaled = pygame.transform.smoothscale(temp_surface, (game_state.screen_width, game_state.screen_height))
         game_state.screen.blit(scaled, (0, 0))
         pygame.display.flip()
-        pygame.time.wait(wait_time)
+        # pygame.time.wait(wait_time)
     # Final update: ensure the screen is completely black.
     black_surface = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
     black_surface.fill((0, 0, 0))
     scaled = pygame.transform.smoothscale(black_surface, (game_state.screen_width, game_state.screen_height))
     game_state.screen.blit(scaled, (0, 0))
     pygame.display.flip()
+
+def fade_from_black_step(surface, step=5):
+    """
+    Fades one step from black by decreasing the alpha.
+    Should be called once per frame.
+    Returns the updated alpha value.
+    """
+    game_state.fade_alpha = max(game_state.fade_alpha - step, 0)
+    
+    # Create an overlay the same size as the surface.
+    overlay = pygame.Surface(surface.get_size())
+    overlay.fill((0, 0, 0))
+    overlay.set_alpha(game_state.fade_alpha)
+    
+    # Draw the overlay on top of the current scene.
+    surface.blit(overlay, (0, 0))
+    
+    return game_state.fade_alpha

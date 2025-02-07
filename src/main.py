@@ -1,3 +1,4 @@
+import time
 import pygame
 from mutagen import File
 import threading
@@ -9,7 +10,7 @@ import src.logic as logic
 import src.drawing as drawing
 import src.score as score
 from src.player import Player, PlayerState
-from src.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_from_black, fade_to_black
+from src.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step
 from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu
 import random
 
@@ -173,7 +174,7 @@ def main():
         # ---- MAIN MENU LOOP ----
         game_state.in_main_menu = True
         main_menu_faded_in = False
-        # game_state.fade_alpha = 255
+        game_state.fade_alpha = 255
         
         # Main menu event loop:
         while game_state.in_main_menu:
@@ -181,9 +182,12 @@ def main():
             start_button, quit_button = draw_main_menu(game_state.dummy_surface)
             
             if not main_menu_faded_in:
-                fade_from_black(game_state.dummy_surface, wait_time=5, step=5)
-                main_menu_faded_in = True
+                if game_state.fade_alpha > 0:
+                    fade_from_black_step(game_state.dummy_surface, step=20)
+                else:
+                    main_menu_faded_in = True
                 
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -195,8 +199,9 @@ def main():
                         main_menu_faded_in = False
                         game_state.in_main_menu = False
                         game_state.running = True
-                        fade_to_black(game_state.dummy_surface, 5, 5)
+                        fade_to_black(game_state.dummy_surface, 5, 10)
                         game_state.dummy_surface.fill(constants.BLACK)
+                        game_state.fade_alpha = 255
                         break
                     elif quit_button.rect.collidepoint(design_mouse_pos):
                         pygame.quit()
@@ -224,6 +229,12 @@ def main():
         while game_state.running:
             # Fill background with GREY instead of WHITE
             game_state.dummy_surface.fill(constants.LIGHT_GREY)
+            
+            if not getattr(game_state, 'paused', False) and game_state.player.state != PlayerState.LEVELING_UP and not getattr(game_state, 'showing_upgrades', False) and not getattr(game_state, 'showing_stats', False):
+                # Handle player input for movement
+                logic.handle_input()
+                # Update player angle to mouse
+                game_state.player.update_angle(pygame.mouse.get_pos())
                 
             # Draw notification
             if game_state.notification_message != '' and any("Roll the Dice" in upgrade.name for upgrade in game_state.player.applied_upgrades):
@@ -244,15 +255,16 @@ def main():
                         delattr(game_state, 'final_time')
                     reset_game()
                     score.reset_score()
-                    # game_state.fade_alpha = 255
-                    
+                    game_state.enemies.clear()
+                    game_state.projectiles.clear()
+                    game_state.hearts.clear()
+
                     game_state.player.x = game_state.DESIGN_WIDTH // 2
                     game_state.player.y = game_state.DESIGN_HEIGHT // 2
                     # Fill the dummy surface with the game background or initial game state
-                    game_state.dummy_surface.fill(constants.BLACK)  # Or your game background
-
-                    # Fade in the game screen
-                    fade_from_black(game_state.dummy_surface, 5, 5)
+                    game_state.dummy_surface.fill(constants.LIGHT_GREY)  # Or your game background
+                    game_loop_faded_in = False
+                    game_state.fade_alpha = 255
                     continue
             
             # Convert in_game_ticks to seconds for enemy spawning
@@ -320,16 +332,6 @@ def main():
             # Draw score
             score.draw_score(game_state.dummy_surface)
             game_state.player.draw(game_state.dummy_surface)
-            
-            # Handle player input (shooting, movement)
-            logic.handle_input()
-            
-            # Update player angle to mouse
-            game_state.player.update_angle(pygame.mouse.get_pos())
-            
-            if not game_loop_faded_in:
-                fade_from_black(game_state.dummy_surface, wait_time=5, step=5)
-                game_loop_faded_in = True
 
             # Handle pause menu
             if getattr(game_state, 'paused', False):
@@ -356,7 +358,6 @@ def main():
                                 delattr(game_state, 'final_time')
                             reset_game()
                             score.reset_score()
-                            # game_state.fade_alpha = 255
                             game_state.player.x = game_state.DESIGN_WIDTH // 2
                             game_state.player.y = game_state.DESIGN_HEIGHT // 2
                             
@@ -364,7 +365,7 @@ def main():
                             game_state.in_main_menu = True
                             game_loop_faded_in = False
                             game_state.running = False  # Exit game loop to return to main menu
-                            fade_to_black(game_state.dummy_surface, 5, 5)
+                            fade_to_black(game_state.dummy_surface, 5, 10)
                             game_state.dummy_surface.fill(constants.BLACK)
                             break
                         elif resume_button.rect.collidepoint(design_mouse_pos):
@@ -483,9 +484,17 @@ def main():
                 show_game_over_screen(game_state.dummy_surface, game_state.DESIGN_WIDTH, 
                                     game_state.DESIGN_HEIGHT, game_state.fade_alpha)
 
+            
             # Update display
             game_state.in_game_ticks_elapsed += 1
             clock.tick(constants.FPS)
+            
+            if not game_loop_faded_in:
+                if game_state.fade_alpha > 0:
+                    fade_from_black_step(game_state.dummy_surface, step=20)
+                else:
+                    game_loop_faded_in = True
+            
             # Scale the surface and update game_state.surface
             scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
             game_state.screen.blit(scaled_surface, (0, 0))
