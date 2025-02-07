@@ -37,6 +37,8 @@ is_fading_out = False
 paused = False
 game_over = False
 running = True
+in_main_menu = True
+quit = False
 first_enemy_spawned = False
 
 # Screen-related (filled in after pygame.init in main.py)

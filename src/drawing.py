@@ -173,6 +173,4 @@ def draw_notification():
         game_state.notification_timer -= 1
         if game_state.notification_timer <= 0:
             game_state.notification_visible = False
-            game_state.notification_message = ''
-
-            
+            game_state.notification_message = ''            

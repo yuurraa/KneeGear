@@ -666,3 +666,26 @@ def draw_stats_tab(screen):
     close_button.draw(screen)
 
     return close_button
+
+def draw_main_menu(screen):
+    # Create a semi-transparent overlay for the menu
+    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay.fill(constants.WHITE)
+    overlay.set_alpha(255)
+    screen.blit(overlay, (0, 0))
+
+    # Draw menu title
+    font = pygame.font.Font(None, get_text_scaling_factor(74))
+    title_text = font.render("Main Menu", True, constants.BLACK)
+    title_rect = title_text.get_rect(center=(game_state.DESIGN_WIDTH // 2, game_state.DESIGN_HEIGHT // 2 - 100))
+    screen.blit(title_text, title_rect)
+
+    # Draw Start Game button
+    start_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2, 200, 50, "Start Game", constants.GREEN)
+    start_button.draw(screen)
+
+    # Draw Quit button
+    quit_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2 + 60, 200, 50, "Quit", constants.RED)
+    quit_button.draw(screen)
+
+    return start_button, quit_button
