@@ -93,11 +93,13 @@ class PlayerBaseBullet(BaseBullet):
                 # For a basic bullet: bonus scales up linearly, up to +200% bonus damage at 800px.
                 bonus_multiplier = (min(travel_distance, 800) / 800) * 2
             elif isinstance(self, PlayerSpecialBullet):
-                # For a special bullet: bonus of +200% at 0px that drops to 0 bonus past 400px.
-                if travel_distance >= 400:
+                # For a special bullet: bonus of +200% at <=50px that drops to 0 bonus past 500px.
+                if travel_distance >= 500:
                     bonus_multiplier = 0
+                elif travel_distance <= 50:
+                    bonus_multiplier = 2  # Full 200% bonus
                 else:
-                    bonus_multiplier = ((400 - travel_distance) / 400 * 2)
+                    bonus_multiplier = ((500 - travel_distance) / 450 * 2)  # Linear falloff from 50px to 500px
             else:
                 bonus_multiplier = 0
             return self.damage * (1 + bonus_multiplier)
