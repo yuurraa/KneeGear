@@ -106,8 +106,8 @@ class BaseEnemy(ABC):
         
     def _restrict_to_boundaries(self, game_state):
         """Helper method to keep enemies within screen boundaries"""
-        self.x = max(20, min(self.x, game_state.DESIGN_WIDTH - 20))
-        self.y = max(20, min(self.y, game_state.DESIGN_HEIGHT - 20 - constants.experience_bar_height))
+        self.x = max(20, min(self.x, game_state.DESIGN_WIDTH - self.inner_size // 2))
+        self.y = max(20, min(self.y, game_state.DESIGN_HEIGHT - self.inner_size // 2 - constants.experience_bar_height))
     
     def draw(self):
         import pygame
@@ -159,7 +159,7 @@ class BaseEnemy(ABC):
         # Draw the health bar only if the enemy is still alive.
         if not self.dying:
             health_bar_x = self.x - self.inner_size // 2
-            health_bar_y = self.y - 35
+            health_bar_y = self.y - self.inner_size // 2 - 12
             draw_health_bar(
                 health_bar_x,
                 health_bar_y,

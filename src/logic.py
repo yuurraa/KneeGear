@@ -8,17 +8,6 @@ from src.enemies import BasicEnemy, TankEnemy, SniperEnemy, ChargerEnemy
 import src.game_state as game_state
 import src.constants as constants
 
-def move_enemy(enemy, target_x, target_y):
-    speed = constants.tank_speed if enemy.type == "tank" else constants.basic_enemy_speed
-    angle = math.radians(calculate_angle(enemy.x, enemy.y, target_x, target_y))
-    enemy.x += speed * math.cos(angle)
-    enemy.y += speed * math.sin(angle)
-
-    # Restrict enemies to screen boundaries, accounting for experience bar
-    enemy.x = max(20, min(enemy.x, game_state.DESIGN_WIDTH - 20))
-    # Add padding above experience bar
-    enemy.y = max(20, min(enemy.y, game_state.DESIGN_HEIGHT - 20 - constants.experience_bar_height))
-
 
 def update_projectiles():
     # Update all projectiles

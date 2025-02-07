@@ -4,10 +4,9 @@ import math
 import random
 
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.helpers import calculate_angle, get_design_mouse_pos, get_ui_scaling_factor
+from src.helpers import calculate_angle, get_design_mouse_pos
 import src.constants as constants
 
-ui_scaling_factor = get_ui_scaling_factor()
 class PlayerState(Enum):
     ALIVE = "alive"
     DEAD = "dead"
@@ -29,7 +28,7 @@ class Player:
 
     def reset(self):
         # Stats
-        self.size = 27 * ui_scaling_factor  # Base size of the player square
+        self.size = constants.player_size  # Base size of the player square
         self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
@@ -174,7 +173,7 @@ class Player:
         # Restrict player to screen boundaries with size consideration (10 pixel xp bar)
         half_size = self.size/2
         self.x = max(half_size, min(new_x, self.screen_width - half_size - 10))
-        self.y = max(half_size, min(new_y, self.screen_height - half_size - 10))
+        self.y = max(half_size, min(new_y, self.screen_height - half_size - constants.experience_bar_height))
 
     def update_hp_regen(self):
         self.ticks_since_last_hp_regen += 1

@@ -23,15 +23,16 @@ music_path = "assets/audio/music.mp3"
 base_player_health = 100
 base_player_hp_regen_percent = 0.5
 player_speed = 5
+player_size = 32
 player_basic_bullet_speed = 11
 player_basic_bullet_damage = 10
-player_basic_bullet_size = 5
+player_basic_bullet_size = 4
 player_basic_bullet_pierce = 1
 player_basic_bullet_cooldown = 1
 
 player_special_bullet_speed = 16
 player_special_bullet_damage = 40
-player_special_bullet_size = 23
+player_special_bullet_size = 15
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
@@ -45,16 +46,22 @@ enemy_stat_doubling_time = 80 # seconds
 base_tank_health = 120
 base_tank_damage = 2
 base_tank_xp_reward = 25
+
 tank_speed = 1.2
 tank_shotgun_interval = 4
 tank_shotgun_spread = 20
 tank_shotgun_pellet_count = 20
 tank_pellet_speed_range = (7, 12)
+tank_bullet_size = 3
 
+
+base_enemy_bullet_size = 4
 
 base_basic_enemy_health = 25
 base_basic_enemy_damage = 5
 base_basic_enemy_xp_reward = 12
+
+
 basic_enemy_speed = 1.9
 basic_enemy_homing_bullet_speed = 7
 basic_enemy_bullet_speed = 9
@@ -93,24 +100,24 @@ CHARGER_NORMAL_SPEED = 9
 
 
 # Enemy drawing constants
-REGULAR_ENEMY_OUTLINE_SIZE = 55
-REGULAR_ENEMY_INNER_SIZE = 53
+REGULAR_ENEMY_OUTLINE_SIZE = 42
+REGULAR_ENEMY_INNER_SIZE = 40
 REGULAR_ENEMY_OUTLINE_COLOR = BLACK
 REGULAR_ENEMY_INNER_COLOR = RED
 
-TANK_ENEMY_OUTLINE_SIZE = 63
-TANK_ENEMY_INNER_SIZE = 61
+TANK_ENEMY_OUTLINE_SIZE = 52
+TANK_ENEMY_INNER_SIZE = 50
 TANK_ENEMY_OUTLINE_COLOR = BLACK
 TANK_ENEMY_INNER_COLOR = BROWN
 
-SNIPER_ENEMY_OUTLINE_SIZE = 50  # Adjust as needed
-SNIPER_ENEMY_INNER_SIZE = 48
+SNIPER_ENEMY_OUTLINE_SIZE = 42  # Adjust as needed
+SNIPER_ENEMY_INNER_SIZE = 40
 SNIPER_ENEMY_OUTLINE_COLOR = BLACK
 SNIPER_ENEMY_INNER_COLOR = PURPLE
 
 
 # Charger appearance
-CHARGER_ENEMY_OUTLINE_SIZE = 53  # Slightly smaller than regular enemies
-CHARGER_ENEMY_INNER_SIZE = 51
+CHARGER_ENEMY_OUTLINE_SIZE = 42  # Slightly smaller than regular enemies
+CHARGER_ENEMY_INNER_SIZE = 40
 CHARGER_ENEMY_OUTLINE_COLOR = BLACK
 CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies

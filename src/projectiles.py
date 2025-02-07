@@ -159,7 +159,7 @@ class PlayerSpecialBullet(PlayerBaseBullet):
 
 @dataclass
 class BaseEnemyBullet(BaseBullet):
-    def __init__(self, x: float, y: float, angle: float, speed: float, base_damage: float, size: float, colour: Tuple[int, int, int]):
+    def __init__(self, x: float, y: float, angle: float, speed: float, base_damage: float,  colour: Tuple[int, int, int], size: float=constants.base_enemy_bullet_size * ui_scaling_factor):
         damage = base_damage * game_state.enemy_scaling
         
         super().__init__(
@@ -194,7 +194,7 @@ class TankEnemyBullet(BaseEnemyBullet):
             angle=angle,
             speed=speed * ui_scaling_factor,
             base_damage=constants.base_tank_damage,
-            size=3 * ui_scaling_factor,
+            size=constants.tank_bullet_size * ui_scaling_factor,
             colour=constants.BROWN
         )
 
@@ -207,7 +207,6 @@ class BasicEnemyBullet(BaseEnemyBullet):
             angle=angle,
             speed=constants.basic_enemy_bullet_speed * ui_scaling_factor,
             base_damage=constants.base_basic_enemy_damage,
-            size=5 * ui_scaling_factor,
             colour=constants.RED,
         )
 
@@ -219,7 +218,6 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
             angle=angle,
             speed=constants.basic_enemy_homing_bullet_speed * ui_scaling_factor,
             base_damage=constants.base_basic_enemy_damage,
-            size=5 * ui_scaling_factor,
             colour=constants.RED
         )
         self.spawn_time: float = pygame.time.get_ticks() / 1000.0
@@ -256,6 +254,5 @@ class SniperEnemyBullet(BaseEnemyBullet):
             angle=angle,
             speed=speed * ui_scaling_factor,
             base_damage=constants.sniper_bullet_damage,
-            size=5 * ui_scaling_factor,
             colour=constants.PURPLE
         )
