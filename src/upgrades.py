@@ -289,11 +289,11 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Vengeful Special",
-                description="Increases next special attack damage by 200% of raw damage taken, decreases special attack cooldown by 20%",
+                description="Increases next special attack damage by 200% of raw damage taken, increases special attack damage by 50%",
                 Rarity="Epic",
                 apply=lambda player: [
                     setattr(player, 'percent_damage_taken_special_attack_bonus', player.percent_damage_taken_special_attack_bonus + 200),
-                    setattr(player, 'special_shot_cooldown', player.special_shot_cooldown * 0.8),
+                    setattr(player, 'special_bullet_damage_multiplier', player.special_bullet_damage_multiplier * 1.5),
                 ][-1],
                 max_level=1,
                 icon="vengeful"

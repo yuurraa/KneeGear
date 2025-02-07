@@ -323,6 +323,7 @@ class Player:
             can_repierce=self.special_bullet_can_repierce,
             scales_with_distance_travelled=self.special_bullet_scales_with_distance_travelled
         )]
+        self.special_attack_bonus_damage = 0
 
     def take_damage(self, amount):
         import src.game_state as game_state
