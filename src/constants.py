@@ -53,7 +53,6 @@ tank_shotgun_spread = 20
 tank_shotgun_bullet_count = 16
 tank_bullet_speed_range = (4, 7)
 tank_bullet_size = 3
-tank_bullet_speed = 5
 
 
 base_enemy_bullet_size = 4

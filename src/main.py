@@ -282,7 +282,45 @@ def main():
                 not getattr(game_state, 'showing_stats', False)):
                 logic.handle_input()
                 game_state.player.update_angle(pygame.mouse.get_pos())
+                        # Draw enemies, projectiles, hearts, score and player
+            
+            for enemy in game_state.enemies:
+                enemy.draw()
 
+            for projectile in game_state.projectiles:
+                projectile.draw(game_state.dummy_surface)
+
+            for heart in game_state.hearts:
+                pygame.draw.circle(game_state.dummy_surface, constants.PINK, (heart[0], heart[1]), 10)
+
+            score.draw_score(game_state.dummy_surface)
+            game_state.player.draw(game_state.dummy_surface)
+            
+            # Update enemy scaling and wave spawning based on elapsed time
+            in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
+            game_state.enemy_scaling = calculate_enemy_scaling(in_game_seconds)
+            game_state.wave_interval = calculate_wave_spawn_interval(in_game_seconds)
+
+            # Draw cooldown icons and experience bar
+            left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress()
+            drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
+            drawing.draw_experience_bar()
+            
+            # Draw stopwatch (time survived)
+            elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
+            minutes = elapsed_seconds // 60
+            seconds = elapsed_seconds % 60
+            font = pygame.font.Font(None, get_text_scaling_factor(36))
+            time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
+            time_rect = time_text.get_rect(topright=(game_state.DESIGN_WIDTH - 20, 20))
+            bg_rect = time_rect.copy()
+            bg_rect.inflate_ip(20, 10)
+            bg_surface = pygame.Surface((bg_rect.width, bg_rect.height))
+            bg_surface.fill(constants.BLACK)
+            bg_surface.set_alpha(128)
+            game_state.dummy_surface.blit(bg_surface, bg_rect)
+            game_state.dummy_surface.blit(time_text, time_rect)
+            
             # ---- PAUSE MENU ----
             if getattr(game_state, 'paused', False):
                 # Instead of re-filling with LIGHT_GREY, start with the captured snapshot.
@@ -394,15 +432,7 @@ def main():
 
             # ---- GAME LOGIC & DRAWING ----
 
-            # Update enemy scaling and wave spawning based on elapsed time
-            in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
-            game_state.enemy_scaling = calculate_enemy_scaling(in_game_seconds)
-            game_state.wave_interval = calculate_wave_spawn_interval(in_game_seconds)
 
-            # Draw cooldown icons and experience bar
-            left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress()
-            drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
-            drawing.draw_experience_bar()
 
             # Spawn new waves or enemies if appropriate
             if not game_state.wave_active:
@@ -420,33 +450,7 @@ def main():
                     game_state.wave_active = False
                     game_state.last_wave_time = in_game_seconds
 
-            # Draw stopwatch (time survived)
-            elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
-            minutes = elapsed_seconds // 60
-            seconds = elapsed_seconds % 60
-            font = pygame.font.Font(None, get_text_scaling_factor(36))
-            time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
-            time_rect = time_text.get_rect(topright=(game_state.DESIGN_WIDTH - 20, 20))
-            bg_rect = time_rect.copy()
-            bg_rect.inflate_ip(20, 10)
-            bg_surface = pygame.Surface((bg_rect.width, bg_rect.height))
-            bg_surface.fill(constants.BLACK)
-            bg_surface.set_alpha(128)
-            game_state.dummy_surface.blit(bg_surface, bg_rect)
-            game_state.dummy_surface.blit(time_text, time_rect)
 
-            # Draw enemies, projectiles, hearts, score and player
-            for enemy in game_state.enemies:
-                enemy.draw()
-
-            for projectile in game_state.projectiles:
-                projectile.draw(game_state.dummy_surface)
-
-            for heart in game_state.hearts:
-                pygame.draw.circle(game_state.dummy_surface, constants.PINK, (heart[0], heart[1]), 10)
-
-            score.draw_score(game_state.dummy_surface)
-            game_state.player.draw(game_state.dummy_surface)
 
             # (Optional) draw any notification (if an upgrade is applied)
             if game_state.notification_message != '' and any("Roll the Dice" in upgrade.name for upgrade in game_state.player.applied_upgrades):
