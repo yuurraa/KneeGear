@@ -75,7 +75,7 @@ def draw_fade_overlay():
 
 def draw_player_state_value_updates():
     screen = game_state.dummy_surface
-    font = pygame.font.SysFont(None, get_text_scaling_factor(24))  # Adjust font size as needed
+    font = pygame.font.SysFont(None, get_text_scaling_factor(18))  # Adjust font size as needed
 
     # Draw damage numbers
     for update in game_state.damage_numbers[:]:

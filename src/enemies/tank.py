@@ -33,10 +33,10 @@ class TankEnemy(BaseEnemy):
         if self.current_tick - self.last_shotgun_tick >= constants.tank_shotgun_interval * constants.FPS:
             from src.helpers import calculate_angle
             base_angle = calculate_angle(self.x, self.y, target_x, target_y)
-            for _ in range(constants.tank_shotgun_pellet_count):
+            for _ in range(constants.tank_shotgun_bullet_count):
                 angle = base_angle + random.uniform(-constants.tank_shotgun_spread, 
                                                   constants.tank_shotgun_spread)
-                speed = random.uniform(*constants.tank_pellet_speed_range) * ui_scaling_factor
+                speed = random.uniform(*constants.tank_bullet_speed_range) * ui_scaling_factor
                 pellet = TankEnemyBullet(
                     x=self.x,
                     y=self.y,

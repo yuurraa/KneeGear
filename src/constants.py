@@ -50,9 +50,10 @@ base_tank_xp_reward = 25
 tank_speed = 1.2
 tank_shotgun_interval = 4
 tank_shotgun_spread = 20
-tank_shotgun_pellet_count = 20
-tank_pellet_speed_range = (7, 12)
+tank_shotgun_bullet_count = 16
+tank_bullet_speed_range = (4, 7)
 tank_bullet_size = 3
+tank_bullet_speed = 5
 
 
 base_enemy_bullet_size = 4
@@ -63,8 +64,8 @@ base_basic_enemy_xp_reward = 12
 
 
 basic_enemy_speed = 1.9
-basic_enemy_homing_bullet_speed = 7
-basic_enemy_bullet_speed = 9
+basic_enemy_homing_bullet_speed = 5
+basic_enemy_bullet_speed = 6
 basic_enemy_homing_interval = 1
 basic_enemy_bullet_interval = 5
 basic_enemy_bullet_max_turn_angle = 1.6
@@ -81,7 +82,7 @@ base_sniper_health = 21         # Base health for a sniper enemy (scaled by enem
 base_sniper_xp_reward = 14      # XP reward when a sniper enemy is defeated
 sniper_volley_interval = 3.5      # Seconds between sniper volleys
 sniper_shot_delay = 0.04         # Seconds between shots in a volley
-sniper_bullet_speed = 15        # Speed of sniper bullet (very fast)
+sniper_bullet_speed = 10        # Speed of sniper bullet (very fast)
 sniper_bullet_damage = 13       # High damage per sniper bullet
 sniper_bullet_spread = 0.5   # sniper bullet spread in radians
 sniper_keep_distance = 500             # If player is closer than this, retreat.
