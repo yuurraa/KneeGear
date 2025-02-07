@@ -5,9 +5,14 @@ import random
 
 from src.projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
 import src.constants as constants
+import src.game_state as game_state
+from src.helpers import get_ui_scaling_factor
+
+ui_scaling_factor = get_ui_scaling_factor()
 class BaseEnemy(ABC):
     def __init__(self, x, y, scaling):
         self.x = x
+
         self.y = y
         self.scaling = scaling
         self.score_reward = 5
@@ -78,12 +83,12 @@ class BaseEnemy(ABC):
         """Default movement behavior for enemies"""
         from src.helpers import calculate_angle
         angle = math.radians(calculate_angle(self.x, self.y, target_x, target_y))
-        self.x += self.speed * math.cos(angle)
-        self.y += self.speed * math.sin(angle)
+        self.x += self.speed * math.cos(angle) * ui_scaling_factor
+        self.y += self.speed * math.sin(angle) * ui_scaling_factor
         # Restrict to screen boundaries, accounting for the experience bar
         self._restrict_to_boundaries(game_state)
-    
 
+    
     def update(self, target_x, target_y, game_state):
         """Default update behavior for enemies"""
         # Only perform movement and shooting if not dying.
@@ -101,8 +106,8 @@ class BaseEnemy(ABC):
         
     def _restrict_to_boundaries(self, game_state):
         """Helper method to keep enemies within screen boundaries"""
-        self.x = max(20, min(self.x, game_state.screen_width - 20))
-        self.y = max(20, min(self.y, game_state.screen_height - 20 - constants.experience_bar_height))
+        self.x = max(20, min(self.x, game_state.DESIGN_WIDTH - 20))
+        self.y = max(20, min(self.y, game_state.DESIGN_HEIGHT - 20 - constants.experience_bar_height))
     
     def draw(self):
         import pygame
@@ -110,7 +115,7 @@ class BaseEnemy(ABC):
         import src.constants as constants
         from src.drawing import draw_health_bar
         
-        screen = game_state.screen
+        screen = game_state.dummy_surface
 
         # Determine alpha and death progress if dying
         alpha = 255

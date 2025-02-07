@@ -4,6 +4,9 @@ import src.constants as constants
 from src.projectiles import SniperEnemyBullet
 import random
 import src.game_state as game_state
+from src.helpers import get_ui_scaling_factor
+
+ui_scaling_factor = get_ui_scaling_factor()
 
 class SniperEnemy(BaseEnemy):
     def __init__(self, x, y, scaling):
@@ -17,7 +20,7 @@ class SniperEnemy(BaseEnemy):
         self.last_volley_shot_tick = self.last_shot_tick
         self.shots_fired_in_volley = 69
         
-        self.speed = constants.sniper_move_speed
+        self.speed = constants.sniper_move_speed * ui_scaling_factor
         self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE
         self.inner_size = constants.SNIPER_ENEMY_INNER_SIZE
         self.outline_color = constants.SNIPER_ENEMY_OUTLINE_COLOR
@@ -52,14 +55,14 @@ class SniperEnemy(BaseEnemy):
         move_x, move_y = 0, 0    # Initialize movement deltas
 
         # 1. If the player is too close, retreat directly (with increased speed):
-        if distance < constants.sniper_keep_distance:
+        if distance < constants.sniper_keep_distance * ui_scaling_factor:
             retreat_angle = math.atan2(self.y - target_y, self.x - target_x)
-            move_x = math.cos(retreat_angle) * base_speed * constants.sniper_retreat_multiplier
-            move_y = math.sin(retreat_angle) * base_speed * constants.sniper_retreat_multiplier
+            move_x = math.cos(retreat_angle) * base_speed * constants.sniper_retreat_multiplier * ui_scaling_factor
+            move_y = math.sin(retreat_angle) * base_speed * constants.sniper_retreat_multiplier * ui_scaling_factor
             self.strafe_timer = 0  # Reset strafe timer
 
         # 2. If the player is too far, approach the player:
-        elif distance > constants.sniper_approach_distance:
+        elif distance > constants.sniper_approach_distance * ui_scaling_factor:
             approach_angle = math.atan2(dy, dx)
             move_x = math.cos(approach_angle) * base_speed
             move_y = math.sin(approach_angle) * base_speed
@@ -75,8 +78,8 @@ class SniperEnemy(BaseEnemy):
             self.strafe_timer -= 1
 
             # Add a small component to gradually increase the distance from the player.
-            move_x += -norm_dx * constants.sniper_strafe_retreat_factor
-            move_y += -norm_dy * constants.sniper_strafe_retreat_factor
+            move_x += -norm_dx * constants.sniper_strafe_retreat_factor * ui_scaling_factor
+            move_y += -norm_dy * constants.sniper_strafe_retreat_factor * ui_scaling_factor
 
         # --- Boundary-Aware Adjustment ---
         # We assume the game boundaries are from 0 to game_state.screen_width (x)
@@ -88,7 +91,7 @@ class SniperEnemy(BaseEnemy):
         if self.x <= 0 and move_x < 0:
             blocked_x = True
             move_x = 0
-        elif self.x >= game_state.screen_width and move_x > 0:
+        elif self.x >= game_state.DESIGN_WIDTH and move_x > 0:
             blocked_x = True
             move_x = 0
 
@@ -96,7 +99,7 @@ class SniperEnemy(BaseEnemy):
         if self.y <= 0 and move_y < 0:
             blocked_y = True
             move_y = 0
-        elif self.y >= game_state.screen_height and move_y > 0:
+        elif self.y >= game_state.DESIGN_HEIGHT and move_y > 0:
             blocked_y = True
             move_y = 0
 
@@ -121,8 +124,8 @@ class SniperEnemy(BaseEnemy):
         if abs(move_x) < 0.001 and abs(move_y) < 0.001:
             # Use a fallback direction away from the player.
             fallback_angle = math.atan2(self.y - target_y, self.x - target_x)
-            move_x = math.cos(fallback_angle) * base_speed * constants.sniper_retreat_multiplier
-            move_y = math.sin(fallback_angle) * base_speed * constants.sniper_retreat_multiplier
+            move_x = math.cos(fallback_angle) * base_speed * constants.sniper_retreat_multiplier * ui_scaling_factor
+            move_y = math.sin(fallback_angle) * base_speed * constants.sniper_retreat_multiplier * ui_scaling_factor
 
         # Update sniper position
         self.x += move_x
@@ -158,7 +161,7 @@ class SniperEnemy(BaseEnemy):
                 x=self.x,
                 y=self.y,
                 angle=aim_angle,
-                speed=constants.sniper_bullet_speed,
+                speed=constants.sniper_bullet_speed * ui_scaling_factor,
             )
             game_state.projectiles.append(bullet)
             

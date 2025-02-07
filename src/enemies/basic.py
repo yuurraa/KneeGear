@@ -6,6 +6,9 @@ import math
 import random
 import src.game_state as game_state
 
+from src.helpers import get_ui_scaling_factor
+
+ui_scaling_factor = get_ui_scaling_factor()
 class BasicEnemy(BaseEnemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
@@ -20,7 +23,7 @@ class BasicEnemy(BaseEnemy):
         self.last_aoe_tick = self.current_tick - constants.basic_enemy_bullet_interval * constants.FPS + self.initial_delay_aoe_ticks
         
         self.score_reward = math.floor(constants.base_basic_enemy_xp_reward * self.scaling)
-        self.speed = constants.basic_enemy_speed
+        self.speed = constants.basic_enemy_speed * ui_scaling_factor
         self.outline_size = constants.REGULAR_ENEMY_OUTLINE_SIZE
         self.inner_size = constants.REGULAR_ENEMY_INNER_SIZE
         self.outline_color = constants.REGULAR_ENEMY_OUTLINE_COLOR

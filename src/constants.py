@@ -45,7 +45,7 @@ enemy_stat_doubling_time = 80 # seconds
 base_tank_health = 120
 base_tank_damage = 2
 base_tank_xp_reward = 25
-tank_speed = 1.5
+tank_speed = 1.2
 tank_shotgun_interval = 4
 tank_shotgun_spread = 20
 tank_shotgun_pellet_count = 20
@@ -56,7 +56,7 @@ tank_pellet_speed_range = (7, 12)
 base_basic_enemy_health = 25
 base_basic_enemy_damage = 5
 base_basic_enemy_xp_reward = 12
-basic_enemy_speed = 3
+basic_enemy_speed = 2
 basic_enemy_homing_bullet_speed = 7
 basic_enemy_bullet_speed = 9
 basic_enemy_homing_interval = 1
@@ -82,15 +82,15 @@ sniper_keep_distance = 500             # If player is closer than this, retreat.
 sniper_approach_distance = 750         # If player is farther than this, approach.
 sniper_strafe_duration = 40            # Duration (in ticks) before choosing a new strafe angle.
 sniper_strafe_retreat_factor = 0.5     # Additional movement away from the player during strafing.
-sniper_move_speed = 1.5                # Base movement speed.      
-sniper_retreat_multiplier = 2.0        # Multiplier for retreat speed when player is too close.
+sniper_move_speed = 1.6                # Base movement speed.      
+sniper_retreat_multiplier = 1.7        # Multiplier for retreat speed when player is too close.
 
 # Charger Enemy Constants
 base_charger_health = 60        # Moderate health since it's a kamikaze-style enemy
 base_charger_xp_reward = 20     # Good reward since it's risky to deal with
 CHARGER_ACCELERATION = 0.8      # Gradual acceleration for some challenge
-CHARGER_MAX_SPEED = 22        # Fast max speed since charging is its main threat
-CHARGER_NORMAL_SPEED = 10
+CHARGER_MAX_SPEED = 19        # Fast max speed since charging is its main threat
+CHARGER_NORMAL_SPEED = 9
 
 
 # Enemy drawing constants

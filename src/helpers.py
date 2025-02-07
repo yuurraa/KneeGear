@@ -51,3 +51,16 @@ def save_music_settings(volume):
     except Exception as e:
         print(f"Error saving settings: {e}")
     
+def get_design_mouse_pos(mouse_pos):
+    """
+    Convert a mouse position from screen coordinates to design coordinates.
+    """
+    scale_x = game_state.DESIGN_WIDTH / game_state.screen_width
+    scale_y = game_state.DESIGN_HEIGHT / game_state.screen_height
+    return (int(mouse_pos[0] * scale_x), int(mouse_pos[1] * scale_y))
+
+def get_ui_scaling_factor():
+    return game_state.DESIGN_WIDTH / game_state.screen_width
+
+def get_text_scaling_factor(font_size):
+    return round(font_size * game_state.DESIGN_WIDTH / game_state.screen_width * 0.8)

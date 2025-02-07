@@ -63,8 +63,8 @@ class BaseBullet:
         return (self.x, self.y)
 
     def is_out_of_bounds(self) -> bool:
-        return (self.x < 0 or self.x > game_state.screen_width or
-                self.y < 0 or self.y > game_state.screen_height - constants.experience_bar_height - 3)
+        return (self.x < 0 or self.x > game_state.DESIGN_WIDTH or
+                self.y < 0 or self.y > game_state.DESIGN_HEIGHT - constants.experience_bar_height - 3)
 
     def check_and_apply_collision(self, target) -> bool:
         raise NotImplementedError("check_collision method must be implemented in subclasses")

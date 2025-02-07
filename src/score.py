@@ -1,7 +1,7 @@
 import pygame
 import os
 import hashlib
-
+from src.helpers import get_text_scaling_factor
 import src.game_state as game_state
 import src.constants as constants
 
@@ -10,6 +10,7 @@ score = 0
 high_score = 0
 
 # Define the directory and file for storing the high score.
+
 DATA_DIR = "data"
 HIGH_SCORE_FILE = os.path.join(DATA_DIR, "high_score.txt")
 SECRET_KEY = "my_secret_key"  # Used for hashing
@@ -71,7 +72,7 @@ def update_high_score():
         save_high_score()
 
 def draw_score(screen):
-    font = pygame.font.Font(None, 36)
+    font = pygame.font.Font(None, get_text_scaling_factor(36))
     score_text = font.render(f"Score: {score}", True, constants.BLACK)
     high_score_text = font.render(f"High Score: {high_score}", True, constants.BLACK)
     screen.blit(score_text, (20, 50))

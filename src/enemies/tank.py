@@ -4,13 +4,15 @@ from src.enemies.base import BaseEnemy
 from src.projectiles import TankEnemyBullet
 import src.constants as constants
 import src.game_state as game_state
+from src.helpers import get_ui_scaling_factor
 
+ui_scaling_factor = get_ui_scaling_factor()
 class TankEnemy(BaseEnemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_tank_xp_reward * self.scaling)
-        self.speed = constants.tank_speed
+        self.speed = constants.tank_speed * ui_scaling_factor
         self.outline_size = constants.TANK_ENEMY_OUTLINE_SIZE
         self.inner_size = constants.TANK_ENEMY_INNER_SIZE
         self.outline_color = constants.TANK_ENEMY_OUTLINE_COLOR
@@ -34,7 +36,7 @@ class TankEnemy(BaseEnemy):
             for _ in range(constants.tank_shotgun_pellet_count):
                 angle = base_angle + random.uniform(-constants.tank_shotgun_spread, 
                                                   constants.tank_shotgun_spread)
-                speed = random.uniform(*constants.tank_pellet_speed_range)
+                speed = random.uniform(*constants.tank_pellet_speed_range) * ui_scaling_factor
                 pellet = TankEnemyBullet(
                     x=self.x,
                     y=self.y,

@@ -15,9 +15,9 @@ def move_enemy(enemy, target_x, target_y):
     enemy.y += speed * math.sin(angle)
 
     # Restrict enemies to screen boundaries, accounting for experience bar
-    enemy.x = max(20, min(enemy.x, game_state.screen_width - 20))
+    enemy.x = max(20, min(enemy.x, game_state.DESIGN_WIDTH - 20))
     # Add padding above experience bar
-    enemy.y = max(20, min(enemy.y, game_state.screen_height - 20 - constants.experience_bar_height))
+    enemy.y = max(20, min(enemy.y, game_state.DESIGN_HEIGHT - 20 - constants.experience_bar_height))
 
 
 def update_projectiles():
@@ -29,17 +29,17 @@ def update_projectiles():
 def spawn_enemy():
     side = random.choice(["top", "bottom", "left", "right"])
     if side == "top":
-        x = random.randint(0, game_state.screen_width)
+        x = random.randint(0, game_state.DESIGN_WIDTH)
         y = -20
     elif side == "bottom":
-        x = random.randint(0, game_state.screen_width)
-        y = game_state.screen_height + 20
+        x = random.randint(0, game_state.DESIGN_WIDTH)
+        y = game_state.DESIGN_HEIGHT + 20
     elif side == "left":
         x = -20
-        y = random.randint(0, game_state.screen_height)
+        y = random.randint(0, game_state.DESIGN_HEIGHT)
     else:  # "right"
-        x = game_state.screen_width + 20
-        y = random.randint(0, game_state.screen_height)
+        x = game_state.DESIGN_WIDTH + 20
+        y = random.randint(0, game_state.DESIGN_HEIGHT)
 
     # Use weighted random selection for enemy type
     enemy_types = [
@@ -62,8 +62,8 @@ def spawn_enemy():
 def spawn_heart():
     if len(game_state.hearts) < game_state.player.max_pickups_on_screen:
         game_state.hearts.append([
-            random.randint(20, game_state.screen_width - 20),
-            random.randint(20, game_state.screen_height - 20)
+            random.randint(20, game_state.DESIGN_WIDTH - 20),
+            random.randint(20, game_state.DESIGN_HEIGHT - 20)
         ])
 
 

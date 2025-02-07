@@ -41,9 +41,12 @@ running = True
 first_enemy_spawned = False
 
 # Screen-related (filled in after pygame.init in main.py)
-screen_width = 0
-screen_height = 0
+screen_width = 1920
+screen_height = 1080
 screen = None
+dummy_surface = None
+DESIGN_WIDTH = 2560
+DESIGN_HEIGHT = 1440
 
 damage_numbers = []
 

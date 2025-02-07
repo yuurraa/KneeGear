@@ -5,13 +5,14 @@ import random
 from src.helpers import calculate_angle
 import src.game_state as game_state
 import src.constants as constants
+from src.helpers import get_text_scaling_factor
     
 def draw_experience_bar():
-    screen = game_state.screen
-    bar_width = game_state.screen_width
+    screen = game_state.dummy_surface
+    bar_width = game_state.DESIGN_WIDTH
     bar_height = 10
     bar_x = 0
-    bar_y = game_state.screen_height - bar_height
+    bar_y = game_state.DESIGN_HEIGHT - bar_height
 
     # Draw the background of the experience bar
     pygame.draw.rect(screen, constants.BLACK, (bar_x, bar_y, bar_width, bar_height))
@@ -21,16 +22,16 @@ def draw_experience_bar():
     pygame.draw.rect(screen, (0, 0, 255, 128), (bar_x, bar_y, filled_width, bar_height))  # Translucent blue
     
 def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):
-    screen = game_state.screen
+    screen = game_state.dummy_surface
     icon_size = 50  # Size of each icon
     padding = 10  # Space between icons
-    x = game_state.screen_width - icon_size - padding  # Position at top-right corner
+    x = game_state.DESIGN_WIDTH - icon_size - padding  # Position at top-right corner
     y = padding + 60
 
     # Draw left click icon
     left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
     pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white
-    font = pygame.font.Font(None, 36)
+    font = pygame.font.Font(None, get_text_scaling_factor(36))
     text = font.render("L", True, (0, 0, 0))  # Black "L"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     left_icon_surface.blit(text, text_rect)
@@ -58,7 +59,7 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     screen.blit(right_icon_surface, (x, y))
 
 def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=10):
-    screen = game_state.screen
+    screen = game_state.dummy_surface
     filled_width = int((health / max_health) * bar_width)
     surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
     pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height))
@@ -66,15 +67,15 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=1
     screen.blit(surface, (x, y))
 
 def draw_fade_overlay():
-    screen = game_state.screen
+    screen = game_state.dummy_surface
     fade_surface = pygame.Surface((game_state.screen_width, game_state.screen_height))
     fade_surface.set_alpha(game_state.fade_alpha)
     fade_surface.fill(constants.BLACK)
     screen.blit(fade_surface, (0, 0))
 
 def draw_player_state_value_updates():
-    screen = game_state.screen
-    font = pygame.font.SysFont(None, 24)  # Adjust font size as needed
+    screen = game_state.dummy_surface
+    font = pygame.font.SysFont(None, get_text_scaling_factor(24))  # Adjust font size as needed
 
     # Draw damage numbers
     for update in game_state.damage_numbers[:]:
@@ -146,27 +147,27 @@ def draw_notification():
         game_state.notification_current_y = y
 
         # Render the notification text
-        font = pygame.font.SysFont(None, 32)
+        font = pygame.font.SysFont(None, get_text_scaling_factor(32))
         text_surface = font.render(game_state.notification_message, True, constants.WHITE)
-        text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 21))  # Adjust y for alignment
+        text_rect = text_surface.get_rect(center=(game_state.DESIGN_WIDTH // 2, y + 21))  # Adjust y for alignment
         
         # Define box dimensions
         padding = 20
         box_width = text_rect.width + padding
         box_height = text_rect.height + padding
         box_rect = pygame.Rect(
-            (game_state.screen_width - box_width) // 2,
+            (game_state.DESIGN_WIDTH - box_width) // 2,
             y,
             box_width,
             box_height
         )
         
         # Draw the background box
-        pygame.draw.rect(game_state.screen, (50, 50, 50), box_rect)  # Dark grey box for visibility
-        pygame.draw.rect(game_state.screen, constants.WHITE, box_rect, 2)  # White border
+        pygame.draw.rect(game_state.dummy_surface, (50, 50, 50), box_rect)  # Dark grey box for visibility
+        pygame.draw.rect(game_state.dummy_surface, constants.WHITE, box_rect, 2)  # White border
         
         # Draw the text
-        game_state.screen.blit(text_surface, text_rect)
+        game_state.dummy_surface.blit(text_surface, text_rect)
         
         # Decrement the timer
         game_state.notification_timer -= 1

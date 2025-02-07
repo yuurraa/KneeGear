@@ -4,7 +4,7 @@ import math
 import random
 
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.helpers import calculate_angle
+from src.helpers import calculate_angle, get_design_mouse_pos
 import src.constants as constants
 
 class PlayerState(Enum):
@@ -174,7 +174,8 @@ class Player:
         screen.blit(surface, (x, y))
 
     def update_angle(self, mouse_pos):
-        mx, my = mouse_pos
+        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        mx, my = design_mouse_pos
         self.angle = calculate_angle(self.x, self.y, mx, my)
         
     def move(self, keys):
@@ -256,7 +257,8 @@ class Player:
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_shot_time) < (self.shoot_cooldown * constants.FPS):
             return None
 
-        mx, my = mouse_pos
+        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        mx, my = design_mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         # Update last shot tick to current tick count
         self.last_shot_time = game_state.in_game_ticks_elapsed
@@ -303,7 +305,8 @@ class Player:
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_special_shot_time) < (self.special_shot_cooldown * constants.FPS):
             return None
 
-        mx, my = mouse_pos
+        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        mx, my = design_mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         # Update last special shot tick to current tick count
         self.last_special_shot_time = game_state.in_game_ticks_elapsed
