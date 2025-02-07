@@ -63,4 +63,4 @@ def get_ui_scaling_factor():
     return game_state.DESIGN_WIDTH / game_state.screen_width
 
 def get_text_scaling_factor(font_size):
-    return round(font_size * game_state.DESIGN_WIDTH / game_state.screen_width * 0.75)
+    return round(font_size * (game_state.screen_width / game_state.DESIGN_WIDTH) * 2)
