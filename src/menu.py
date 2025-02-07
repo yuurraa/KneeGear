@@ -1,12 +1,13 @@
 import pygame
 import numpy as np
-from src.helpers import save_music_settings, get_design_mouse_pos, get_text_scaling_factor
+from src.helpers import save_music_settings, get_design_mouse_pos, get_text_scaling_factor, get_ui_scaling_factor
 import src.constants as constants
 import src.game_state as game_state
 from src.player import PlayerState
 from src.upgrades import UpgradePool
 import math
 
+ui_scaling_factor = get_ui_scaling_factor()
 class Button:
     def __init__(self, x, y, width, height, text, color):
         self.rect = pygame.Rect(x, y, width, height)
@@ -355,8 +356,8 @@ def draw_pause_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Create menu panel with proportional sizes
-    panel_width = int(game_state.DESIGN_WIDTH * 0.28)  # ~26% of screen width
-    panel_height = int(game_state.DESIGN_HEIGHT * 0.35)  # ~32% of screen height
+    panel_width = int(game_state.DESIGN_WIDTH * 0.26)  # ~26% of screen width
+    panel_height = int(game_state.DESIGN_HEIGHT * 0.30)  # ~32% of screen height
     panel_x = (game_state.DESIGN_WIDTH - panel_width) // 2
     panel_y = (game_state.DESIGN_HEIGHT - panel_height) // 2
     
@@ -366,7 +367,7 @@ def draw_pause_menu(screen):
     # Pause menu text
     font = pygame.font.Font(None, get_text_scaling_factor(48))
     text = font.render("Paused", True, constants.BLACK)
-    text_rect = text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 50))
+    text_rect = text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 50 * ui_scaling_factor))
     screen.blit(text, text_rect)
 
     # Initialize UI elements once
@@ -380,7 +381,8 @@ def draw_pause_menu(screen):
         button_y = panel_y + int(panel_height * 0.74)  # ~74% down the panel
 
         # Quit button
-        quit_button = Button(button_x + button_width + 20, button_y, button_width, button_height, "Quit", constants.RED)
+        buttons_spacing = 20 * ui_scaling_factor  # spacing between buttons
+        quit_button = Button(button_x + button_width + buttons_spacing, button_y, button_width, button_height, "Quit", constants.RED)
 
         # Resume button
         resume_button = Button(button_x, button_y, button_width, button_height, "Resume", constants.GREEN)
@@ -393,7 +395,6 @@ def draw_pause_menu(screen):
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
         # Calculate positions for Upgrades and Stats buttons (side by side)
-        buttons_spacing = 20  # spacing between buttons
         total_width = button_width * 2 + buttons_spacing
         start_x = (game_state.DESIGN_WIDTH - total_width) // 2
         upgrades_button = Button(start_x, slider_y + 50, button_width, button_height, "Upgrades", constants.BLUE)
@@ -417,7 +418,7 @@ def draw_pause_menu(screen):
     # Draw "Volume" label above the slider
     small_font = pygame.font.Font(None, get_text_scaling_factor(30))
     volume_text = small_font.render("Volume", True, constants.BLACK)
-    volume_text_rect = volume_text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 100))
+    volume_text_rect = volume_text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 90 * ui_scaling_factor))
     screen.blit(volume_text, volume_text_rect)
 
     return (game_state.pause_ui['quit_button'],
@@ -439,7 +440,7 @@ def draw_upgrades_tab(screen):
     button_height = int(game_state.DESIGN_HEIGHT * 0.046)
     button_spacing = int(game_state.DESIGN_WIDTH * 0.01)  # Horizontal spacing
 
-    # Use 70% of the screen height for the icon area
+    # Use 75% of the screen height for the icon area
     max_column_height = int(game_state.DESIGN_HEIGHT * 0.75)
     title_height = int(game_state.DESIGN_HEIGHT * 0.037)
     close_button_height = int(game_state.DESIGN_HEIGHT * 0.046)
@@ -533,54 +534,54 @@ def draw_stats_tab(screen):
     # Define groups of stats with headers
     groups = [
         ("Basic Stats", [
-            ("Level", game_state.player.player_level),
-            ("Experience", game_state.player.player_experience),
-            ("XP Gain Multiplier", game_state.player.xp_gain_multiplier),
-            ("Passive XP Gain (%)", game_state.player.passive_xp_gain_percent_bonus),
-            ("Speed", game_state.player.speed),
-            ("Damage Reduction (%)", game_state.player.damage_reduction_percent_bonus),
+            ("Level", f"{game_state.player.player_level:.1f}"),
+            ("Experience", f"{game_state.player.player_experience:.1f}"),
+            ("XP Gain Multiplier", f"{game_state.player.xp_gain_multiplier:.1f}"),
+            ("Passive XP Gain (%)", f"{game_state.player.passive_xp_gain_percent_bonus:.1f}"),
+            ("Speed", f"{game_state.player.speed:.1f}"),
+            ("Damage Reduction (%)", f"{game_state.player.damage_reduction_percent_bonus:.1f}"),
         ]),
         ("Health Stats", [
-            ("Health", game_state.player.health),
-            ("Max Health", game_state.player.max_health),
-            ("Health Regen (%)", game_state.player.hp_regen),
-            ("Health Regen Bonus (%)", game_state.player.hp_regen_percent_bonus),
-            ("Lifesteal (%)", game_state.player.hp_steal),
+            ("Health", f"{game_state.player.health:.1f}"),
+            ("Max Health", f"{game_state.player.max_health:.1f}"),
+            ("Health Regen (%)", f"{game_state.player.hp_regen:.1f}"),
+            ("Health Regen Bonus (%)", f"{game_state.player.hp_regen_percent_bonus:.1f}"),
+            ("Lifesteal (%)", f"{game_state.player.hp_steal:.1f}"),
         ]),
         ("Basic Bullet Stats", [
-            ("Damage Multiplier", game_state.player.base_damage_multiplier),
-            ("Basic Bullet Damage Multiplier", game_state.player.basic_bullet_damage_multiplier),
-            ("Basic Bullet Speed Multiplier", game_state.player.basic_bullet_speed_multiplier),
-            ("Basic Bullet Piercing Multiplier", game_state.player.basic_bullet_piercing_multiplier),
-            ("Basic Bullet Scales w/ Distance", game_state.player.basic_bullet_scales_with_distance_travelled),
-            ("Extra Projs/Shot", game_state.player.basic_bullet_extra_projectiles_per_shot_bonus),
+            ("Damage Multiplier", f"{game_state.player.base_damage_multiplier:.1f}"),
+            ("Basic Bullet Damage Multiplier", f"{game_state.player.basic_bullet_damage_multiplier:.1f}"),
+            ("Basic Bullet Speed Multiplier", f"{game_state.player.basic_bullet_speed_multiplier:.1f}"),
+            ("Basic Bullet Piercing Multiplier", f"{game_state.player.basic_bullet_piercing_multiplier:.1f}"),
+            ("Basic Bullet Scales w/ Distance", f"{game_state.player.basic_bullet_scales_with_distance_travelled:.1f}"),
+            ("Extra Projs/Shot", f"{game_state.player.basic_bullet_extra_projectiles_per_shot_bonus:.1f}"),
         ]),
         ("Random", [
-            ("Roll the Dice Chance (%)", game_state.player.random_upgrade_chance * 100),
+            ("Roll the Dice Chance (%)", f"{game_state.player.random_upgrade_chance * 100:.1f}"),
         ]),
         ("Special Bullet Stats", [
-            ("Special Bullet Damage Multiplier", game_state.player.special_bullet_damage_multiplier),
-            ("Special Bullet Speed Multiplier", game_state.player.special_bullet_speed_multiplier),
-            ("Special Bullet Piercing Multiplier", game_state.player.special_bullet_piercing_multiplier),
-            ("Special Bullet Radius Multiplier", game_state.player.special_bullet_radius_multiplier),
-            ("Special Bullet Can Repierce", game_state.player.special_bullet_can_repierce),
-            ("Special Bullet Scales w/ Dist", game_state.player.special_bullet_scales_with_distance_travelled),
+            ("Special Bullet Damage Multiplier", f"{game_state.player.special_bullet_damage_multiplier:.1f}"),
+            ("Special Bullet Speed Multiplier", f"{game_state.player.special_bullet_speed_multiplier:.1f}"),
+            ("Special Bullet Piercing Multiplier", f"{game_state.player.special_bullet_piercing_multiplier:.1f}"),
+            ("Special Bullet Radius Multiplier", f"{game_state.player.special_bullet_radius_multiplier:.1f}"),
+            ("Special Bullet Can Repierce", f"{game_state.player.special_bullet_can_repierce:.1f}"),
+            ("Special Bullet Scales w/ Dist", f"{game_state.player.special_bullet_scales_with_distance_travelled:.1f}"),
         ]),
         ("Pickup Stats", [
-            ("Maximum Pickups", game_state.player.max_pickups_on_screen),
-            ("Pickup Heal Bonus (%)", game_state.player.hp_pickup_healing_percent_bonus),
-            ("Pickup Temp Damage Boost Duration (s)", game_state.player.hp_pickup_damage_boost_duration_s),
-            ("Pickup Temp Damage Boost (%)", game_state.player.hp_pickup_damage_boost_percent_bonus),
-            ("Pickup Permanent Health Boost (%)", game_state.player.hp_pickup_permanent_hp_boost_percent_bonus),
-            ("Pickup Permanent Damage Boost (%)", game_state.player.hp_pickup_permanent_damage_boost_percent_bonus),
+            ("Maximum Pickups", f"{game_state.player.max_pickups_on_screen:.1f}"),
+            ("Pickup Heal Bonus (%)", f"{game_state.player.hp_pickup_healing_percent_bonus:.1f}"),
+            ("Pickup Temp Damage Boost Duration (s)", f"{game_state.player.hp_pickup_damage_boost_duration_s:.1f}"),
+            ("Pickup Temp Damage Boost (%)", f"{game_state.player.hp_pickup_damage_boost_percent_bonus:.1f}"),
+            ("Pickup Permanent Health Boost (%)", f"{game_state.player.hp_pickup_permanent_hp_boost_percent_bonus:.1f}"),
+            ("Pickup Permanent Damage Boost (%)", f"{game_state.player.hp_pickup_permanent_damage_boost_percent_bonus:.1f}"),
         ]),
         ("Special Bonus Stats", [
-            ("Vengeful Special Bullet Dmg Bonus (%)", game_state.player.percent_damage_taken_special_attack_bonus),
-            ("Rage Bonus (%)", game_state.player.rage_percent_bonus),
-            ("Frenzy Bonus (%)", game_state.player.frenzy_percent_bonus),
-            ("Fear Bonus (%)", game_state.player.fear_percent_bonus),
-            ("Pride (No Damage Buff Req) (s)", game_state.player.no_damage_buff_req_duration),
-            ("Pride (No Damage Buff Mult)", game_state.player.no_damage_buff_damage_bonus_multiplier),
+            ("Vengeful Special Bullet Dmg Bonus (%)", f"{game_state.player.percent_damage_taken_special_attack_bonus:.1f}"),
+            ("Rage Bonus (%)", f"{game_state.player.rage_percent_bonus:.1f}"),
+            ("Frenzy Bonus (%)", f"{game_state.player.frenzy_percent_bonus:.1f}"),
+            ("Fear Bonus (%)", f"{game_state.player.fear_percent_bonus:.1f}"),
+            ("Pride (No Damage Buff Req) (s)", f"{game_state.player.no_damage_buff_req_duration:.1f}"),
+            ("Pride (No Damage Buff Mult)", f"{game_state.player.no_damage_buff_damage_bonus_multiplier:.1f}"),
         ]),
     ]
 

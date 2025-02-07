@@ -4,9 +4,10 @@ import math
 import random
 
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.helpers import calculate_angle, get_design_mouse_pos
+from src.helpers import calculate_angle, get_design_mouse_pos, get_ui_scaling_factor
 import src.constants as constants
 
+ui_scaling_factor = get_ui_scaling_factor()
 class PlayerState(Enum):
     ALIVE = "alive"
     DEAD = "dead"
@@ -28,7 +29,7 @@ class Player:
 
     def reset(self):
         # Stats
-        self.size = 25  # Base size of the player square
+        self.size = 35 * ui_scaling_factor  # Base size of the player square
         self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
@@ -100,22 +101,6 @@ class Player:
         import random
         import pygame
 
-        def dissolve_surface(surface, death_progress):
-            """
-            Returns a new surface where a fraction of the pixels (determined by death_progress)
-            have been set fully transparent. death_progress should be between 0 (no dissolve)
-            and 1 (fully dissolved).
-            """
-            new_surface = surface.copy()
-            new_surface = new_surface.convert_alpha()
-
-            width, height = new_surface.get_size()
-            for x in range(width):
-                for y in range(height):
-                    if random.random() < death_progress:
-                        new_surface.set_at((x, y), (0, 0, 0, 0))  # Fully transparent pixel
-            return new_surface
-
         # Check if the player is in a "dying" state
         max_death_timer = 60  # Example: 60 ticks for the death animation
         death_progress = 0.0  # No dissolve by default
@@ -133,10 +118,6 @@ class Player:
         body_surface.fill((*constants.BLACK, alpha))
         body_inner_surface.fill((*constants.GREEN, alpha))
 
-        # If the player is dying, apply the dissolve effect
-        if self.dying:
-            body_surface = dissolve_surface(body_surface, death_progress)
-            body_inner_surface = dissolve_surface(body_inner_surface, death_progress)
 
         # Blit the body (outline and inner rectangle)
         screen.blit(body_surface, (self.x - self.size / 2 - 1, self.y - self.size / 2 - 1))
@@ -144,7 +125,6 @@ class Player:
 
         # Direction arrow
         if not self.dying:  # Optionally, you can hide the arrow during the dissolve
-            outline_offset = 1
             arc_radius = self.size  # Distance from the center where the line starts
             arrow_length = self.size / 2  # Length of the line beyond that point
             angle_rad = math.radians(self.angle)
@@ -164,7 +144,7 @@ class Player:
         # Draw health bar with fade effect during death
         self.draw_health_bar(screen)
 
-    def draw_health_bar(self, screen, bar_width=100, bar_height=10):
+    def draw_health_bar(self, screen, bar_width=300, bar_height=20):
         x = 20  # Fixed position for health bar
         y = 20
         filled_width = int((self.health / self.max_health) * bar_width)

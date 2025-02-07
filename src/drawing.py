@@ -10,7 +10,7 @@ from src.helpers import get_text_scaling_factor
 def draw_experience_bar():
     screen = game_state.dummy_surface
     bar_width = game_state.DESIGN_WIDTH
-    bar_height = 10
+    bar_height = 15
     bar_x = 0
     bar_y = game_state.DESIGN_HEIGHT - bar_height
 
@@ -23,7 +23,7 @@ def draw_experience_bar():
     
 def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):
     screen = game_state.dummy_surface
-    icon_size = 50  # Size of each icon
+    icon_size = 70  # Size of each icon
     padding = 10  # Space between icons
     x = game_state.DESIGN_WIDTH - icon_size - padding  # Position at top-right corner
     y = padding + 60
@@ -58,7 +58,7 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
 
     screen.blit(right_icon_surface, (x, y))
 
-def draw_health_bar(x, y, health, max_health, color, bar_width=100, bar_height=10):
+def draw_health_bar(x, y, health, max_health, color, bar_width=200, bar_height=10):
     screen = game_state.dummy_surface
     filled_width = int((health / max_health) * bar_width)
     surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
@@ -149,10 +149,10 @@ def draw_notification():
         # Render the notification text
         font = pygame.font.SysFont(None, get_text_scaling_factor(32))
         text_surface = font.render(game_state.notification_message, True, constants.WHITE)
-        text_rect = text_surface.get_rect(center=(game_state.DESIGN_WIDTH // 2, y + 21))  # Adjust y for alignment
+        text_rect = text_surface.get_rect(center=(game_state.DESIGN_WIDTH // 2, y + 22))  # Adjust y for alignment
         
         # Define box dimensions
-        padding = 20
+        padding = 30
         box_width = text_rect.width + padding
         box_height = text_rect.height + padding
         box_rect = pygame.Rect(

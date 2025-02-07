@@ -5,6 +5,10 @@ import math
 import src.game_state as game_state
 import src.constants as constants
 import src.score as score
+from src.helpers import get_ui_scaling_factor
+
+ui_scaling_factor = get_ui_scaling_factor()
+
 from typing import Tuple
 
 class Alignment(Enum):
@@ -22,8 +26,8 @@ class BaseBullet:
     colour: Tuple[int, int, int]
     pierce: int = 1
     can_repierce: bool = False #whether the bullet can hit the same target multiple times
-    size: float = 5.0
-    scaling: float = 1.0
+    size: float = 5.0 * ui_scaling_factor
+    scaling: float = 1.0 * ui_scaling_factor
     initial_x: float = 0
     initial_y: float = 0
     
@@ -126,11 +130,11 @@ class PlayerBaseBullet(BaseBullet):
 class PlayerBasicBullet(PlayerBaseBullet):
     def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
         super().__init__(x, y, angle, 
-                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier,
+                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier * ui_scaling_factor,
                          constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
                          math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
                          can_repierce,
-                         constants.player_basic_bullet_size,
+                         constants.player_basic_bullet_size * ui_scaling_factor,
                          constants.BLUE)
         self.scales_with_distance_travelled = scales_with_distance_travelled
         if scales_with_distance_travelled:
@@ -141,11 +145,11 @@ class PlayerBasicBullet(PlayerBaseBullet):
 class PlayerSpecialBullet(PlayerBaseBullet):
     def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_damage_bonus: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, special_bullet_radius_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
         super().__init__(x, y, angle,
-                         constants.player_special_bullet_speed * special_bullet_speed_multiplier,
+                         constants.player_special_bullet_speed * special_bullet_speed_multiplier * ui_scaling_factor,
                          constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier + special_bullet_damage_bonus,
                          math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
                          can_repierce,
-                         constants.player_special_bullet_size * special_bullet_radius_multiplier,
+                         constants.player_special_bullet_size * special_bullet_radius_multiplier * ui_scaling_factor,
                          constants.PURPLE)
         self.scales_with_distance_travelled = scales_with_distance_travelled
         if scales_with_distance_travelled:
@@ -188,9 +192,9 @@ class TankEnemyBullet(BaseEnemyBullet):
             x=x,
             y=y,
             angle=angle,
-            speed=speed,
+            speed=speed * ui_scaling_factor,
             base_damage=constants.base_tank_damage,
-            size=3,
+            size=3 * ui_scaling_factor,
             colour=constants.BROWN
         )
 
@@ -201,9 +205,9 @@ class BasicEnemyBullet(BaseEnemyBullet):
             x=x,
             y=y,
             angle=angle,
-            speed=constants.basic_enemy_bullet_speed,
+            speed=constants.basic_enemy_bullet_speed * ui_scaling_factor,
             base_damage=constants.base_basic_enemy_damage,
-            size=5,
+            size=5 * ui_scaling_factor,
             colour=constants.RED,
         )
 
@@ -213,9 +217,9 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
             x=x,
             y=y,
             angle=angle,
-            speed=constants.basic_enemy_homing_bullet_speed,
+            speed=constants.basic_enemy_homing_bullet_speed * ui_scaling_factor,
             base_damage=constants.base_basic_enemy_damage,
-            size=5,
+            size=5 * ui_scaling_factor,
             colour=constants.RED
         )
         self.spawn_time: float = pygame.time.get_ticks() / 1000.0
@@ -250,8 +254,8 @@ class SniperEnemyBullet(BaseEnemyBullet):
             x=x,
             y=y,
             angle=angle,
-            speed=speed,
+            speed=speed * ui_scaling_factor,
             base_damage=constants.sniper_bullet_damage,
-            size=5,
+            size=5 * ui_scaling_factor,
             colour=constants.PURPLE
         )

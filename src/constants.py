@@ -22,16 +22,16 @@ music_path = "assets/audio/music.mp3"
 # Speeds, angles, and cooldowns
 base_player_health = 100
 base_player_hp_regen_percent = 0.5
-player_speed = 4.5
-player_basic_bullet_speed = 10
+player_speed = 5
+player_basic_bullet_speed = 11
 player_basic_bullet_damage = 10
 player_basic_bullet_size = 5
 player_basic_bullet_pierce = 1
 player_basic_bullet_cooldown = 1
 
-player_special_bullet_speed = 15
+player_special_bullet_speed = 16
 player_special_bullet_damage = 40
-player_special_bullet_size = 20
+player_special_bullet_size = 23
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
@@ -52,11 +52,10 @@ tank_shotgun_pellet_count = 20
 tank_pellet_speed_range = (7, 12)
 
 
-
 base_basic_enemy_health = 25
 base_basic_enemy_damage = 5
 base_basic_enemy_xp_reward = 12
-basic_enemy_speed = 2
+basic_enemy_speed = 1.9
 basic_enemy_homing_bullet_speed = 7
 basic_enemy_bullet_speed = 9
 basic_enemy_homing_interval = 1
@@ -68,22 +67,22 @@ base_wave_interval = 30
 wave_spawn_rate_doubling_time_seconds = 300
 
 # Add this with the other constants
-experience_bar_height = 10  # Match the height used in draw_experience_bar
+experience_bar_height = 15  # Match the height used in draw_experience_bar
 
 # Sniper Enemy Constants
-base_sniper_health = 20         # Base health for a sniper enemy (scaled by enemy scaling)
-base_sniper_xp_reward = 12      # XP reward when a sniper enemy is defeated
-sniper_volley_interval = 4      # Seconds between sniper volleys
-sniper_shot_delay = 0.05         # Seconds between shots in a volley
-sniper_bullet_speed = 17        # Speed of sniper bullet (very fast)
+base_sniper_health = 21         # Base health for a sniper enemy (scaled by enemy scaling)
+base_sniper_xp_reward = 14      # XP reward when a sniper enemy is defeated
+sniper_volley_interval = 3.5      # Seconds between sniper volleys
+sniper_shot_delay = 0.04         # Seconds between shots in a volley
+sniper_bullet_speed = 16        # Speed of sniper bullet (very fast)
 sniper_bullet_damage = 13       # High damage per sniper bullet
 sniper_bullet_spread = 0.4   # sniper bullet spread in radians
 sniper_keep_distance = 500             # If player is closer than this, retreat.
 sniper_approach_distance = 750         # If player is farther than this, approach.
 sniper_strafe_duration = 40            # Duration (in ticks) before choosing a new strafe angle.
-sniper_strafe_retreat_factor = 0.5     # Additional movement away from the player during strafing.
-sniper_move_speed = 1.6                # Base movement speed.      
-sniper_retreat_multiplier = 1.7        # Multiplier for retreat speed when player is too close.
+sniper_strafe_retreat_factor = 0.6     # Additional movement away from the player during strafing.
+sniper_move_speed = 1.4                # Base movement speed.      
+sniper_retreat_multiplier = 1.1        # Multiplier for retreat speed when player is too close.
 
 # Charger Enemy Constants
 base_charger_health = 60        # Moderate health since it's a kamikaze-style enemy
@@ -94,25 +93,25 @@ CHARGER_NORMAL_SPEED = 9
 
 
 # Enemy drawing constants
-REGULAR_ENEMY_OUTLINE_SIZE = 42
-REGULAR_ENEMY_INNER_SIZE = 40
+REGULAR_ENEMY_OUTLINE_SIZE = 57
+REGULAR_ENEMY_INNER_SIZE = 55
 REGULAR_ENEMY_OUTLINE_COLOR = BLACK
 REGULAR_ENEMY_INNER_COLOR = RED
 
-TANK_ENEMY_OUTLINE_SIZE = 52
-TANK_ENEMY_INNER_SIZE = 50
+TANK_ENEMY_OUTLINE_SIZE = 67
+TANK_ENEMY_INNER_SIZE = 65
 TANK_ENEMY_OUTLINE_COLOR = BLACK
 TANK_ENEMY_INNER_COLOR = BROWN
 
-SNIPER_ENEMY_OUTLINE_SIZE = 42  # Adjust as needed
-SNIPER_ENEMY_INNER_SIZE = 40
+SNIPER_ENEMY_OUTLINE_SIZE = 50  # Adjust as needed
+SNIPER_ENEMY_INNER_SIZE = 48
 SNIPER_ENEMY_OUTLINE_COLOR = BLACK
 SNIPER_ENEMY_INNER_COLOR = PURPLE
 
 
 # Charger appearance
-CHARGER_ENEMY_OUTLINE_SIZE = 38  # Slightly smaller than regular enemies
-CHARGER_ENEMY_INNER_SIZE = 36
+CHARGER_ENEMY_OUTLINE_SIZE = 53  # Slightly smaller than regular enemies
+CHARGER_ENEMY_INNER_SIZE = 51
 CHARGER_ENEMY_OUTLINE_COLOR = BLACK
 CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies
 
