@@ -74,9 +74,9 @@ base_sniper_health = 21         # Base health for a sniper enemy (scaled by enem
 base_sniper_xp_reward = 14      # XP reward when a sniper enemy is defeated
 sniper_volley_interval = 3.5      # Seconds between sniper volleys
 sniper_shot_delay = 0.04         # Seconds between shots in a volley
-sniper_bullet_speed = 16        # Speed of sniper bullet (very fast)
+sniper_bullet_speed = 15        # Speed of sniper bullet (very fast)
 sniper_bullet_damage = 13       # High damage per sniper bullet
-sniper_bullet_spread = 0.4   # sniper bullet spread in radians
+sniper_bullet_spread = 0.5   # sniper bullet spread in radians
 sniper_keep_distance = 500             # If player is closer than this, retreat.
 sniper_approach_distance = 750         # If player is farther than this, approach.
 sniper_strafe_duration = 40            # Duration (in ticks) before choosing a new strafe angle.
@@ -93,13 +93,13 @@ CHARGER_NORMAL_SPEED = 9
 
 
 # Enemy drawing constants
-REGULAR_ENEMY_OUTLINE_SIZE = 57
-REGULAR_ENEMY_INNER_SIZE = 55
+REGULAR_ENEMY_OUTLINE_SIZE = 55
+REGULAR_ENEMY_INNER_SIZE = 53
 REGULAR_ENEMY_OUTLINE_COLOR = BLACK
 REGULAR_ENEMY_INNER_COLOR = RED
 
-TANK_ENEMY_OUTLINE_SIZE = 67
-TANK_ENEMY_INNER_SIZE = 65
+TANK_ENEMY_OUTLINE_SIZE = 63
+TANK_ENEMY_INNER_SIZE = 61
 TANK_ENEMY_OUTLINE_COLOR = BLACK
 TANK_ENEMY_INNER_COLOR = BROWN
 
@@ -114,5 +114,3 @@ CHARGER_ENEMY_OUTLINE_SIZE = 53  # Slightly smaller than regular enemies
 CHARGER_ENEMY_INNER_SIZE = 51
 CHARGER_ENEMY_OUTLINE_COLOR = BLACK
 CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies
-
-

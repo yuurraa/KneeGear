@@ -29,7 +29,7 @@ class Player:
 
     def reset(self):
         # Stats
-        self.size = 35 * ui_scaling_factor  # Base size of the player square
+        self.size = 27 * ui_scaling_factor  # Base size of the player square
         self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
