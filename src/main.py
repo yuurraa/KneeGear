@@ -245,8 +245,14 @@ def main():
                     reset_game()
                     score.reset_score()
                     # game_state.fade_alpha = 255
+                    
                     game_state.player.x = game_state.DESIGN_WIDTH // 2
                     game_state.player.y = game_state.DESIGN_HEIGHT // 2
+                    # Fill the dummy surface with the game background or initial game state
+                    game_state.dummy_surface.fill(constants.BLACK)  # Or your game background
+
+                    # Fade in the game screen
+                    fade_from_black(game_state.dummy_surface, 5, 5)
                     continue
             
             # Convert in_game_ticks to seconds for enemy spawning
