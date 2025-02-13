@@ -584,9 +584,9 @@ def draw_stats_tab(screen):
     ]
 
     # Set up fonts
-    header_font = pygame.font.Font(None, get_text_scaling_factor(22))
+    header_font = pygame.font.Font(None, get_text_scaling_factor(25 * ui_scaling_factor))
     header_font.set_underline(True)
-    stat_font = pygame.font.Font(None, get_text_scaling_factor(17))
+    stat_font = pygame.font.Font(None, get_text_scaling_factor(20 * ui_scaling_factor))
 
     # Spacing and margin settings
     top_margin = panel_y + 70  # space reserved at top (below title)

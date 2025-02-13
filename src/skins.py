@@ -50,7 +50,9 @@ class Skin:
         else:
             # No frames available – fallback drawing based on shape
             if self.shape == "square":
-                pygame.draw.rect(screen, self.color, (x - size / 2, y - size / 2, size, size))
+                rect = pygame.Rect(x - size / 2, y - size / 2, size, size)
+                pygame.draw.rect(screen, self.color, rect)
+                pygame.draw.rect(screen, (0, 0, 0), rect, 1)  # Draw black border with a width of 2 pixels
             else:
                 # Fallback: draw a static pentagon
                 points = []
