@@ -23,7 +23,7 @@ music_path = "assets/audio/music.mp3"
 base_player_health = 100
 base_player_hp_regen_percent = 0.5
 player_speed = 5
-player_size = 32
+player_size = 24
 player_basic_bullet_speed = 11
 player_basic_bullet_damage = 10
 player_basic_bullet_size = 4
@@ -32,7 +32,7 @@ player_basic_bullet_cooldown = 1
 
 player_special_bullet_speed = 16
 player_special_bullet_damage = 40
-player_special_bullet_size = 15
+player_special_bullet_size = 12
 player_special_bullet_pierce = 2
 player_special_bullet_cooldown = 10
 
@@ -100,24 +100,24 @@ CHARGER_NORMAL_SPEED = 9
 
 
 # Enemy drawing constants
-REGULAR_ENEMY_OUTLINE_SIZE = 42
-REGULAR_ENEMY_INNER_SIZE = 40
+REGULAR_ENEMY_OUTLINE_SIZE = 32
+REGULAR_ENEMY_INNER_SIZE = 30
 REGULAR_ENEMY_OUTLINE_COLOR = BLACK
 REGULAR_ENEMY_INNER_COLOR = RED
 
-TANK_ENEMY_OUTLINE_SIZE = 52
-TANK_ENEMY_INNER_SIZE = 50
+TANK_ENEMY_OUTLINE_SIZE = 42
+TANK_ENEMY_INNER_SIZE = 40
 TANK_ENEMY_OUTLINE_COLOR = BLACK
 TANK_ENEMY_INNER_COLOR = BROWN
 
-SNIPER_ENEMY_OUTLINE_SIZE = 42  # Adjust as needed
-SNIPER_ENEMY_INNER_SIZE = 40
+SNIPER_ENEMY_OUTLINE_SIZE = 32  # Adjust as needed
+SNIPER_ENEMY_INNER_SIZE = 30
 SNIPER_ENEMY_OUTLINE_COLOR = BLACK
 SNIPER_ENEMY_INNER_COLOR = PURPLE
 
 
 # Charger appearance
-CHARGER_ENEMY_OUTLINE_SIZE = 42  # Slightly smaller than regular enemies
-CHARGER_ENEMY_INNER_SIZE = 40
+CHARGER_ENEMY_OUTLINE_SIZE = 30  # Slightly smaller than regular enemies
+CHARGER_ENEMY_INNER_SIZE = 28
 CHARGER_ENEMY_OUTLINE_COLOR = BLACK
 CHARGER_ENEMY_INNER_COLOR = PINK  # Makes it distinct from other enemies

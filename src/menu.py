@@ -391,14 +391,12 @@ def draw_pause_menu(screen):
         slider_width = int(game_state.screen_width * 0.156)  # ~15.6% of screen width
         slider_height = int(game_state.screen_height * 0.019)  # ~1.9% of screen height
         slider_x = (game_state.screen_width - slider_width) // 2
-        slider_y = panel_y + int(panel_height * 0.34)  # ~34% down the panel
+        slider_y = panel_y + int(100 * ui_scaling_factor)  # ~34% down the panel
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
         # Calculate positions for Upgrades and Stats buttons (side by side)
-        total_width = button_width * 2 + buttons_spacing
-        start_x = (game_state.screen_width - total_width) // 2
-        upgrades_button = Button(start_x, slider_y + 50, button_width, button_height, "Upgrades", constants.BLUE)
-        stats_button = Button(start_x + button_width + buttons_spacing, slider_y + 50, button_width, button_height, "Stats", constants.ORANGE)
+        upgrades_button = Button(button_x, slider_y + 40 * ui_scaling_factor, button_width, button_height, "Upgrades", constants.BLUE)
+        stats_button = Button(button_x + button_width + buttons_spacing, slider_y + 40 * ui_scaling_factor, button_width, button_height, "Stats", constants.ORANGE)
 
         game_state.pause_ui = {
             'quit_button': quit_button,
@@ -418,7 +416,7 @@ def draw_pause_menu(screen):
     # Draw "Volume" label above the slider
     small_font = pygame.font.Font(None, get_text_scaling_factor(30))
     volume_text = small_font.render("Volume", True, constants.BLACK)
-    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 90 * ui_scaling_factor))
+    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + int(85 * ui_scaling_factor)))
     screen.blit(volume_text, volume_text_rect)
 
     return (game_state.pause_ui['quit_button'],
@@ -586,9 +584,9 @@ def draw_stats_tab(screen):
     ]
 
     # Set up fonts
-    header_font = pygame.font.Font(None, get_text_scaling_factor(32))
+    header_font = pygame.font.Font(None, get_text_scaling_factor(22))
     header_font.set_underline(True)
-    stat_font = pygame.font.Font(None, get_text_scaling_factor(27))
+    stat_font = pygame.font.Font(None, get_text_scaling_factor(17))
 
     # Spacing and margin settings
     top_margin = panel_y + 70  # space reserved at top (below title)
