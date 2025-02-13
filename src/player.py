@@ -6,6 +6,7 @@ import random
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
 from src.helpers import calculate_angle, get_design_mouse_pos
 import src.constants as constants
+from src.skins import Skin
 
 class PlayerState(Enum):
     ALIVE = "alive"
@@ -25,6 +26,13 @@ class Player:
         self.death_timer = 30  # Timer for death animation (in ticks)
         
         self.reset()
+
+        # Initialize skins
+        self.skins = [
+            Skin(name="Default", color=constants.GREEN, shape="square", rarity="Common"),
+            Skin(name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimati", frames_folder="./assets/skins/hoshimati", rarity="Legendary", scale_factor_x=4.8, scale_factor_y=3),
+        ]
+        self.current_skin_index = 0  # Default to the first skin
 
     def reset(self):
         # Stats
@@ -100,6 +108,13 @@ class Player:
         import random
         import pygame
 
+        design_mouse_pos = get_design_mouse_pos(pygame.mouse.get_pos())
+        mx, my = design_mouse_pos
+        import src.game_state as game_state
+        flip = False
+        if not game_state.paused and not game_state.game_over and not game_state.showing_upgrades and not game_state.showing_stats and game_state.player.state != PlayerState.LEVELING_UP:
+            flip = mx > self.x
+        
         # Check if the player is in a "dying" state
         max_death_timer = 60  # Example: 60 ticks for the death animation
         death_progress = 0.0  # No dissolve by default
@@ -109,36 +124,20 @@ class Player:
             death_progress = (max_death_timer - self.death_timer) / max_death_timer
             alpha = int(255 * (1 - death_progress))
 
-        # Create the player body with per-pixel alpha
-        body_surface = pygame.Surface((self.size + 2, self.size + 2), pygame.SRCALPHA)
-        body_inner_surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-
-        # Fill the outline and body colors
-        body_surface.fill((*constants.BLACK, alpha))
-        body_inner_surface.fill((*constants.GREEN, alpha))
-
-
-        # Blit the body (outline and inner rectangle)
-        screen.blit(body_surface, (self.x - self.size / 2 - 1, self.y - self.size / 2 - 1))
-        screen.blit(body_inner_surface, (self.x - self.size / 2, self.y - self.size / 2))
-
+        # Draw the current skin
+        current_skin = self.skins[self.current_skin_index]
+        current_skin.draw(screen, self.x, self.y, self.size, flip=flip)
+        
         # Direction arrow
-        if not self.dying:  # Optionally, you can hide the arrow during the dissolve
-            arc_radius = self.size  # Distance from the center where the line starts
-            arrow_length = self.size / 2  # Length of the line beyond that point
+        if not self.dying:  # Optionally, you can hide the arrow during the dissolve                
+            arrow_start_offset = self.size * 0.8  # e.g., 60% of player size from center
+            arrow_length = self.size * 0.8        # e.g., arrow extends 50% of player size beyond that
             angle_rad = math.radians(self.angle)
-
-            # Starting point: on the circle (arc) boundary relative to the player's center
-            start_line_x = self.x + arc_radius * math.cos(angle_rad)
-            start_line_y = self.y + arc_radius * math.sin(angle_rad)
-
-            # End point: further out by arrow_length pixels
-            end_line_x = self.x + (arc_radius + arrow_length) * math.cos(angle_rad)
-            end_line_y = self.y + (arc_radius + arrow_length) * math.sin(angle_rad)
-
-            pygame.draw.line(screen, constants.BLUE,
-                            (start_line_x, start_line_y),
-                            (end_line_x, end_line_y), 3)
+            start_x = self.x + arrow_start_offset * math.cos(angle_rad)
+            start_y = self.y + arrow_start_offset * math.sin(angle_rad)
+            end_x = self.x + (arrow_start_offset + arrow_length) * math.cos(angle_rad)
+            end_y = self.y + (arrow_start_offset + arrow_length) * math.sin(angle_rad)
+            pygame.draw.line(screen, constants.BLUE, (start_x, start_y), (end_x, end_y), 3)
 
         # Draw health bar with fade effect during death
         self.draw_health_bar(screen)
@@ -431,3 +430,7 @@ class Player:
             if self.current_tick % constants.FPS == 0:
                 xp_gain = self.experience_to_next_level * (self.passive_xp_gain_percent_bonus / 100)
                 self.gain_experience(xp_gain)
+
+    def change_skin(self, index):
+        if 0 <= index < len(self.skins):
+            self.current_skin_index = index

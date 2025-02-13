@@ -1,6 +1,7 @@
 import math
 import pygame
 import os
+import json
 
 import src.game_state as game_state
 import src.constants as constants
@@ -105,3 +106,13 @@ def fade_from_black_step(surface, step=5):
     surface.blit(overlay, (0, 0))
     
     return game_state.fade_alpha
+
+def save_skin_selection():
+    with open("data/skin_selection.json", "w") as f:
+        json.dump({"current_skin_index": game_state.player.current_skin_index}, f)
+
+def load_skin_selection():
+    if os.path.exists("data/skin_selection.json"):
+        with open("data/skin_selection.json", "r") as f:
+            data = json.load(f)
+            game_state.player.change_skin(data.get("current_skin_index", 0))

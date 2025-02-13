@@ -10,8 +10,8 @@ import src.logic as logic
 import src.drawing as drawing
 import src.score as score
 from src.player import Player, PlayerState
-from src.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step
-from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu
+from src.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
+from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
 import random
 
 def show_intro_screen(dummy_surface, design_width, design_height):
@@ -92,7 +92,7 @@ def show_game_over_screen(dummy_surface, screen_width, screen_height, alpha):
     
     # Add the version text at the bottom
     version_font = pygame.font.Font(None, get_text_scaling_factor(24))  # Smaller font size
-    version_text = version_font.render("Gooner Game v0.1.2", True, constants.WHITE)
+    version_text = version_font.render("Gooner Game v0.1.3", True, constants.WHITE)
     version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))  # Position at the bottom
     game_over_surface.blit(version_text, version_text_rect)
     
@@ -165,6 +165,9 @@ def main():
     # Show the intro screen
     show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
     
+    # Load skin selection at the start
+    load_skin_selection()
+
     while True:
         if not pygame.font.get_init() or not pygame.mixer.get_init():
             pygame.font.init()
@@ -179,11 +182,11 @@ def main():
         # Main menu event loop:
         while game_state.in_main_menu:
             game_state.dummy_surface.fill(constants.WHITE)
-            start_button, quit_button = draw_main_menu(game_state.dummy_surface)
+            start_button, quit_button, skin_button = draw_main_menu(game_state.dummy_surface)
             
             if not main_menu_faded_in:
                 if game_state.fade_alpha > 0:
-                    fade_from_black_step(game_state.dummy_surface, step=20)
+                    fade_from_black_step(game_state.dummy_surface, step=30)
                 else:
                     main_menu_faded_in = True
                 
@@ -203,6 +206,14 @@ def main():
                         game_state.dummy_surface.fill(constants.BLACK)
                         game_state.fade_alpha = 255
                         break
+                    elif skin_button.rect.collidepoint(design_mouse_pos):
+                        game_state.skin_menu = True
+                        game_state.in_main_menu = False
+                        game_state.running = False
+                        fade_to_black(game_state.dummy_surface, 5, 10)
+                        game_state.dummy_surface.fill(constants.BLACK)
+                        game_state.fade_alpha = 255
+                        break
                     elif quit_button.rect.collidepoint(design_mouse_pos):
                         pygame.quit()
                         exit()  # Immediately exit
@@ -210,6 +221,33 @@ def main():
             game_state.screen.blit(scaled_surface, (0, 0))
             pygame.display.flip()
 
+        
+        # ---- SKIN SELECTION MENU ----
+        while game_state.skin_menu:
+            game_state.dummy_surface.fill(constants.WHITE)
+            skin_buttons, close_button = draw_skin_selection_menu(game_state.dummy_surface)
+            if game_state.fade_alpha > 0:
+                fade_from_black_step(game_state.dummy_surface, step=30)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    design_mouse_pos = get_design_mouse_pos(event.pos)
+                    if close_button.rect.collidepoint(design_mouse_pos):
+                        game_state.skin_menu = False
+                        game_state.in_main_menu = True
+                        game_state.running = False
+                        fade_to_black(game_state.dummy_surface, 5, 10)
+                        game_state.dummy_surface.fill(constants.BLACK)
+                        break
+                    else:
+                        for i, btn in enumerate(skin_buttons):
+                            if btn.rect.collidepoint(design_mouse_pos):
+                                game_state.player.change_skin(i)
+                                save_skin_selection()
+
+            scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
+            game_state.screen.blit(scaled_surface, (0, 0))
+            pygame.display.flip()
 
         # ---- GAME LOOP ----
         # Start playing music in a separate thread:
@@ -221,7 +259,6 @@ def main():
         game_state.start_time_ms = pygame.time.get_ticks()
 
         # Main game loop
-        game_state.running = True
         game_loop_faded_in = False
         # Load volume at the start
         constants.music_volume = load_music_settings()
@@ -431,9 +468,6 @@ def main():
                 continue
 
             # ---- GAME LOGIC & DRAWING ----
-
-
-
             # Spawn new waves or enemies if appropriate
             if not game_state.wave_active:
                 if (in_game_seconds - game_state.last_wave_time >= game_state.wave_interval or 

@@ -80,7 +80,13 @@ def handle_input():
     # Handle movement
     game_state.player.update(keys)
 
-    # Handle shooting: use the new shooting methods (which use the in-game tick counter)
+    # Handle skin change (for example, pressing '1' for default and '2' for pentagon)
+    if keys[pygame.K_1]:
+        game_state.player.change_skin(0)  # Change to square skin
+    elif keys[pygame.K_2]:
+        game_state.player.change_skin(1)  # Change to pentagon skin
+
+    # Handle shooting
     if mouse_pressed[0] and not game_state.game_over:
         bullets = game_state.player.shoot_regular(pygame.mouse.get_pos())
         if bullets:

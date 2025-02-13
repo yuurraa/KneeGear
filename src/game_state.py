@@ -35,6 +35,9 @@ restart_fade_out = False
 is_fading_out = False 
 
 paused = False
+showing_upgrades = False
+showing_stats = False
+
 game_over = False
 running = True
 in_main_menu = True
@@ -56,3 +59,6 @@ from src.player import Player
 player:Player = None  # Will be initialized in main.py after screen dimensions are known
 
 scroll_offset = 0  # Initialize scroll offset for upgrades tab
+
+# Add this line to define the new game state
+skin_menu = False  # Flag to indicate if the skin selection menu is active

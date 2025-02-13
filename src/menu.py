@@ -599,7 +599,7 @@ def draw_stats_tab(screen):
     # Calculate the maximum available vertical space for the columns
     available_height = panel_y + panel_height - bottom_margin - top_margin
 
-    # First, compute each group’s height (header + each stat + intra-group spacing)
+    # First, compute each group's height (header + each stat + intra-group spacing)
     group_heights = []
     group_spacing = 15  # extra space after each group
     for header, stat_list in groups:
@@ -675,8 +675,8 @@ def draw_main_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Draw menu title
-    font = pygame.font.Font(None, get_text_scaling_factor(74))
-    title_text = font.render("Main Menu", True, constants.BLACK)
+    font = pygame.font.Font(None, get_text_scaling_factor(100))
+    title_text = font.render("Gooner Game", True, constants.BLACK)
     title_rect = title_text.get_rect(center=(game_state.DESIGN_WIDTH // 2, game_state.DESIGN_HEIGHT // 2 - 100))
     screen.blit(title_text, title_rect)
 
@@ -684,8 +684,67 @@ def draw_main_menu(screen):
     start_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2, 200, 50, "Start Game", constants.GREEN)
     start_button.draw(screen)
 
+    # Draw Skin Selection button
+    skin_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2 + 60, 200, 50, "Select Skin", constants.BLUE)
+    skin_button.draw(screen)
+
     # Draw Quit button
-    quit_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2 + 60, 200, 50, "Quit", constants.RED)
+    quit_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2 + 120, 200, 50, "Quit", constants.RED)
     quit_button.draw(screen)
 
-    return start_button, quit_button
+    return start_button, quit_button, skin_button
+
+def draw_skin_selection_menu(screen):
+    # Create semi-transparent overlay
+    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay.fill(constants.WHITE)
+    overlay.set_alpha(255)
+    screen.blit(overlay, (0, 0))
+
+    # Draw title
+    title_font = pygame.font.Font(None, get_text_scaling_factor(72))
+    title_surface = title_font.render("Select Your Skin", True, constants.BLACK)
+    title_rect = title_surface.get_rect(center=(game_state.DESIGN_WIDTH // 2, 50))
+    screen.blit(title_surface, title_rect)
+
+    # Button dimensions
+    button_width = int(game_state.DESIGN_WIDTH * 0.2)
+    button_height = int(game_state.DESIGN_HEIGHT * 0.1)
+    button_spacing = 20
+
+    # Calculate the phase for the shimmer effect based on time
+    phase = ((pygame.time.get_ticks() / 5) % 360) / 360.0
+
+    # Draw available skins as buttons with shimmer effect
+    skin_buttons = []
+    for i, skin in enumerate(game_state.player.skins):
+        button_x = (game_state.DESIGN_WIDTH - button_width) // 2
+        button_y = 100 + (button_height + button_spacing) * i
+
+        # Get the rarity color and compute the shimmer surface
+        rarity_color = UpgradeButton.RARITY_COLORS.get(skin.rarity, constants.LIGHT_GREY)
+        shimmer_surface = compute_shimmer_surface_for_tab_icon(rarity_color, skin.rarity, button_width, button_height, phase)
+        
+        # Draw the shimmer background first
+        screen.blit(shimmer_surface, (button_x, button_y))
+        
+        # Then draw the black border
+        pygame.draw.rect(screen, constants.BLACK, (button_x, button_y, button_width, button_height), 2)
+        
+        # And draw the skin name text on top
+        text_font = pygame.font.Font(None, get_text_scaling_factor(36))
+        text_surface = text_font.render(skin.name, True, constants.BLACK)
+        text_rect = text_surface.get_rect(center=(button_x + button_width // 2, button_y + button_height // 2))
+        screen.blit(text_surface, text_rect)
+        
+        # Optionally, store the button rect for later interaction
+        skin_button = Button(button_x, button_y, button_width, button_height, skin.name, skin.color)
+        skin_buttons.append(skin_button)
+
+    # Draw close button (without shimmer)
+    close_button_y = 100 + (button_height + button_spacing) * len(game_state.player.skins)
+    close_button = Button(button_x, close_button_y, button_width, button_height, "Close", constants.RED)
+    close_button.draw(screen)
+
+    return skin_buttons, close_button
+
