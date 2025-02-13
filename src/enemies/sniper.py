@@ -91,7 +91,7 @@ class SniperEnemy(BaseEnemy):
         if self.x <= 0 and move_x < 0:
             blocked_x = True
             move_x = 0
-        elif self.x >= game_state.DESIGN_WIDTH and move_x > 0:
+        elif self.x >= game_state.screen_width and move_x > 0:
             blocked_x = True
             move_x = 0
 
@@ -99,7 +99,7 @@ class SniperEnemy(BaseEnemy):
         if self.y <= 0 and move_y < 0:
             blocked_y = True
             move_y = 0
-        elif self.y >= game_state.DESIGN_HEIGHT and move_y > 0:
+        elif self.y >= game_state.screen_height and move_y > 0:
             blocked_y = True
             move_y = 0
 

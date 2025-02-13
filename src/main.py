@@ -14,43 +14,39 @@ from src.helpers import reset_game, load_music_settings, get_design_mouse_pos, g
 from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
 import random
 
-def show_intro_screen(dummy_surface, design_width, design_height):
+def show_intro_screen(screen, screen_width, screen_height):
     # Create text surface using design resolution
     font = pygame.font.Font(None, get_text_scaling_factor(74))
     text = font.render("GOONER INC.", True, constants.WHITE)
-    text_rect = text.get_rect(center=(design_width // 2, design_height // 2))
+    text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
     
     # Fade-in text on the dummy surface
     for alpha in range(0, 256, 5):
-        dummy_surface.fill(constants.BLACK)
+        screen.fill(constants.BLACK)
         text.set_alpha(alpha)
-        dummy_surface.blit(text, text_rect)
+        screen.blit(text, text_rect)
         
         # Scale and update display
-        scaled_surface = pygame.transform.smoothscale(dummy_surface, pygame.display.get_surface().get_size())
-        pygame.display.get_surface().blit(scaled_surface, (0, 0))
         pygame.display.flip()
         pygame.time.wait(10)
     
-    # Display text for 2 seconds (you can still wait on the dummy_surface if needed)
+    # Display text for 2 seconds (you can still wait on the screen if needed)
     pygame.time.wait(2000)
     
     # Fade-out to black using an overlay on the dummy surface
-    fade_surface = pygame.Surface((design_width, design_height))
+    fade_surface = pygame.Surface((screen_width, screen_height))
     fade_surface.fill(constants.BLACK)
     for alpha in range(0, 256, 5):
         fade_surface.set_alpha(alpha)
-        # Draw the fade overlay onto the dummy_surface
-        dummy_surface.blit(fade_surface, (0, 0))
+        # Draw the fade overlay onto the screen
+        screen.blit(fade_surface, (0, 0))
         
         # Scale and update display
-        scaled_surface = pygame.transform.smoothscale(dummy_surface, pygame.display.get_surface().get_size())
-        pygame.display.get_surface().blit(scaled_surface, (0, 0))
         pygame.display.flip()
         pygame.time.wait(10)
 
 
-def show_game_over_screen(dummy_surface, screen_width, screen_height, alpha):
+def show_game_over_screen(screen, screen_width, screen_height, alpha):
     # Create a surface with per-pixel alpha for fading
     game_over_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
     # Fill with black background using the provided alpha for transparency
@@ -97,7 +93,7 @@ def show_game_over_screen(dummy_surface, screen_width, screen_height, alpha):
     game_over_surface.blit(version_text, version_text_rect)
     
     # Draw the entire game over surface onto the main screen
-    dummy_surface.blit(game_over_surface, (0, 0))
+    screen.blit(game_over_surface, (0, 0))
 
 def calculate_enemy_scaling(elapsed_seconds):
     # Double stats every 200 seconds
@@ -150,16 +146,16 @@ def main():
     # Set up the display first
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
-    game_state.dummy_surface = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    # Replace your display setup with:
     game_state.screen = pygame.display.set_mode(
-        (game_state.screen_width, game_state.screen_height)
+        (game_state.screen_width, game_state.screen_height), pygame.SCALED, pygame.FULLSCREEN
     )
     # Create the player after screen dimensions are known
     game_state.player = Player(
-        game_state.DESIGN_WIDTH // 2,
-        game_state.DESIGN_HEIGHT // 2,
-        game_state.DESIGN_WIDTH,
-        game_state.DESIGN_HEIGHT
+        game_state.screen_width // 2,
+        game_state.screen_height // 2,
+        game_state.screen_width,
+        game_state.screen_height
     )
 
     # Show the intro screen
@@ -181,12 +177,12 @@ def main():
         
         # Main menu event loop:
         while game_state.in_main_menu:
-            game_state.dummy_surface.fill(constants.WHITE)
-            start_button, quit_button, skin_button = draw_main_menu(game_state.dummy_surface)
+            game_state.screen.fill(constants.WHITE)
+            start_button, quit_button, skin_button = draw_main_menu(game_state.screen)
             
             if not main_menu_faded_in:
                 if game_state.fade_alpha > 0:
-                    fade_from_black_step(game_state.dummy_surface, step=30)
+                    fade_from_black_step(game_state.screen, step=30)
                 else:
                     main_menu_faded_in = True
                 
@@ -202,32 +198,30 @@ def main():
                         main_menu_faded_in = False
                         game_state.in_main_menu = False
                         game_state.running = True
-                        fade_to_black(game_state.dummy_surface, 5, 10)
-                        game_state.dummy_surface.fill(constants.BLACK)
+                        fade_to_black(game_state.screen, 5, 10)
+                        game_state.screen.fill(constants.BLACK)
                         game_state.fade_alpha = 255
                         break
                     elif skin_button.rect.collidepoint(design_mouse_pos):
                         game_state.skin_menu = True
                         game_state.in_main_menu = False
                         game_state.running = False
-                        fade_to_black(game_state.dummy_surface, 5, 10)
-                        game_state.dummy_surface.fill(constants.BLACK)
+                        fade_to_black(game_state.screen, 5, 10)
+                        game_state.screen.fill(constants.BLACK)
                         game_state.fade_alpha = 255
                         break
                     elif quit_button.rect.collidepoint(design_mouse_pos):
                         pygame.quit()
                         exit()  # Immediately exit
-            scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-            game_state.screen.blit(scaled_surface, (0, 0))
             pygame.display.flip()
 
         
         # ---- SKIN SELECTION MENU ----
         while game_state.skin_menu:
-            game_state.dummy_surface.fill(constants.WHITE)
-            skin_buttons, close_button = draw_skin_selection_menu(game_state.dummy_surface)
+            game_state.screen.fill(constants.WHITE)
+            skin_buttons, close_button = draw_skin_selection_menu(game_state.screen)
             if game_state.fade_alpha > 0:
-                fade_from_black_step(game_state.dummy_surface, step=30)
+                fade_from_black_step(game_state.screen, step=30)
 
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -236,8 +230,8 @@ def main():
                         game_state.skin_menu = False
                         game_state.in_main_menu = True
                         game_state.running = False
-                        fade_to_black(game_state.dummy_surface, 5, 10)
-                        game_state.dummy_surface.fill(constants.BLACK)
+                        fade_to_black(game_state.screen, 5, 10)
+                        game_state.screen.fill(constants.BLACK)
                         break
                     else:
                         for i, btn in enumerate(skin_buttons):
@@ -245,8 +239,6 @@ def main():
                                 game_state.player.change_skin(i)
                                 save_skin_selection()
 
-            scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-            game_state.screen.blit(scaled_surface, (0, 0))
             pygame.display.flip()
 
         # ---- GAME LOOP ----
@@ -265,7 +257,7 @@ def main():
 
         while game_state.running:
             # Fill the background:
-            game_state.dummy_surface.fill(constants.LIGHT_GREY)
+            game_state.screen.fill(constants.LIGHT_GREY)
             
             # POLL EVENTS ONCE PER FRAME:
             all_events = pygame.event.get()
@@ -302,9 +294,9 @@ def main():
                         game_state.projectiles.clear()
                         game_state.hearts.clear()
 
-                        game_state.player.x = game_state.DESIGN_WIDTH // 2
-                        game_state.player.y = game_state.DESIGN_HEIGHT // 2
-                        game_state.dummy_surface.fill(constants.LIGHT_GREY)
+                        game_state.player.x = game_state.screen_width // 2
+                        game_state.player.y = game_state.screen_height // 2
+                        game_state.screen.fill(constants.LIGHT_GREY)
                         game_loop_faded_in = False
                         game_state.fade_alpha = 255
                         reset_triggered = True
@@ -325,13 +317,13 @@ def main():
                 enemy.draw()
 
             for projectile in game_state.projectiles:
-                projectile.draw(game_state.dummy_surface)
+                projectile.draw(game_state.screen)
 
             for heart in game_state.hearts:
-                pygame.draw.circle(game_state.dummy_surface, constants.PINK, (heart[0], heart[1]), 10)
+                pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)
 
-            score.draw_score(game_state.dummy_surface)
-            game_state.player.draw(game_state.dummy_surface)
+            score.draw_score(game_state.screen)
+            game_state.player.draw(game_state.screen)
             
             # Update enemy scaling and wave spawning based on elapsed time
             in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
@@ -349,14 +341,14 @@ def main():
             seconds = elapsed_seconds % 60
             font = pygame.font.Font(None, get_text_scaling_factor(36))
             time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
-            time_rect = time_text.get_rect(topright=(game_state.DESIGN_WIDTH - 20, 20))
+            time_rect = time_text.get_rect(topright=(game_state.screen_width - 20, 20))
             bg_rect = time_rect.copy()
             bg_rect.inflate_ip(20, 10)
             bg_surface = pygame.Surface((bg_rect.width, bg_rect.height))
             bg_surface.fill(constants.BLACK)
             bg_surface.set_alpha(128)
-            game_state.dummy_surface.blit(bg_surface, bg_rect)
-            game_state.dummy_surface.blit(time_text, time_rect)
+            game_state.screen.blit(bg_surface, bg_rect)
+            game_state.screen.blit(time_text, time_rect)
             
             # ---- PAUSE MENU ----
             if getattr(game_state, 'paused', False):
@@ -375,7 +367,7 @@ def main():
                 game_state.screen.blit(pause_bg, (0, 0))
                 
                 # Now draw the pause menu UI on top.
-                quit_button, resume_button, volume_slider, upgrades_button, stats_button = draw_pause_menu(game_state.dummy_surface)
+                quit_button, resume_button, volume_slider, upgrades_button, stats_button = draw_pause_menu(game_state.screen)
                 for event in events:
                     volume_slider.handle_event(event)
                     quit_button.handle_event(event)
@@ -387,14 +379,14 @@ def main():
                                 delattr(game_state, 'final_time')
                             reset_game()
                             score.reset_score()
-                            game_state.player.x = game_state.DESIGN_WIDTH // 2
-                            game_state.player.y = game_state.DESIGN_HEIGHT // 2
+                            game_state.player.x = game_state.screen_width // 2
+                            game_state.player.y = game_state.screen_height // 2
                             game_state.paused = False
                             game_state.in_main_menu = True
                             game_loop_faded_in = False
                             game_state.running = False  # Exit game loop to return to main menu
-                            fade_to_black(game_state.dummy_surface, 5, 10)
-                            game_state.dummy_surface.fill(constants.BLACK)
+                            fade_to_black(game_state.screen, 5, 10)
+                            game_state.screen.fill(constants.BLACK)
                             break
                         elif resume_button.rect.collidepoint(design_mouse_pos):
                             game_state.paused = False  # Close the pause menu
@@ -404,14 +396,12 @@ def main():
                         elif stats_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_stats = True
                             game_state.paused = False
-                scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-                game_state.screen.blit(scaled_surface, (0, 0))
                 pygame.display.flip()
                 continue  # Skip the rest of this frame
 
             # ---- UPGRADES TAB ----
             if getattr(game_state, 'showing_upgrades', False):
-                close_button = draw_upgrades_tab(game_state.dummy_surface)
+                close_button = draw_upgrades_tab(game_state.screen)
                 for event in events:
                     if event.type == pygame.QUIT:
                         game_state.running = False
@@ -423,14 +413,12 @@ def main():
                         if close_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_upgrades = False
                             game_state.paused = True
-                scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-                game_state.screen.blit(scaled_surface, (0, 0))
                 pygame.display.flip()
                 continue
 
             # ---- STATS TAB ----
             if getattr(game_state, 'showing_stats', False):
-                close_button = draw_stats_tab(game_state.dummy_surface)
+                close_button = draw_stats_tab(game_state.screen)
                 for event in events:
                     if event.type == pygame.QUIT:
                         game_state.running = False
@@ -442,14 +430,12 @@ def main():
                         if close_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_stats = False
                             game_state.paused = True
-                scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-                game_state.screen.blit(scaled_surface, (0, 0))
                 pygame.display.flip()
                 continue
 
             # ---- LEVEL-UP MENU ----
             if game_state.player.state == PlayerState.LEVELING_UP:
-                upgrade_buttons = draw_level_up_menu(game_state.dummy_surface)
+                upgrade_buttons = draw_level_up_menu(game_state.screen)
                 for event in events:
                     if event.type == pygame.QUIT:
                         game_state.running = False
@@ -461,8 +447,6 @@ def main():
                             if hasattr(game_state, 'current_upgrade_buttons'):
                                 delattr(game_state, 'current_upgrade_buttons')
                             break
-                scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-                game_state.screen.blit(scaled_surface, (0, 0))
                 pygame.display.flip()
                 clock.tick(constants.FPS)
                 continue
@@ -505,24 +489,22 @@ def main():
 
             if game_state.game_over:
                 game_state.fade_alpha = min(game_state.fade_alpha + 10, 255)
-                game_state.player.x = game_state.DESIGN_WIDTH // 2
-                game_state.player.y = game_state.DESIGN_HEIGHT // 2
+                game_state.player.x = game_state.screen_width // 2
+                game_state.player.y = game_state.screen_height // 2
                 game_state.enemies.clear()  # Remove all enemies
                 score.update_high_score()
-                show_game_over_screen(game_state.dummy_surface, game_state.DESIGN_WIDTH, 
-                                        game_state.DESIGN_HEIGHT, game_state.fade_alpha)
+                show_game_over_screen(game_state.screen, game_state.screen_width, 
+                                        game_state.screen_height, game_state.fade_alpha)
 
             game_state.in_game_ticks_elapsed += 1
             clock.tick(constants.FPS)
 
             if not game_loop_faded_in:
                 if game_state.fade_alpha > 0:
-                    fade_from_black_step(game_state.dummy_surface, step=20)
+                    fade_from_black_step(game_state.screen, step=20)
                 else:
                     game_loop_faded_in = True
 
-            scaled_surface = pygame.transform.smoothscale(game_state.dummy_surface, (game_state.screen_width, game_state.screen_height))
-            game_state.screen.blit(scaled_surface, (0, 0))
             pygame.display.flip()
 
         # End of the game loop.

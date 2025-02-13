@@ -293,7 +293,7 @@ class UpgradeButton(Button):
 
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.BLACK)
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
@@ -304,10 +304,10 @@ def draw_level_up_menu(screen):
         num_choices = 4
 
     # Create menu panel - using proportional sizes and adjusting width based on number of choices
-    panel_width = int(game_state.DESIGN_WIDTH * (0.65 if num_choices == 3 else 0.85))  # Wider panel for 4 choices
-    panel_height = int(game_state.DESIGN_HEIGHT * 0.4)
-    panel_x = (game_state.DESIGN_WIDTH - panel_width) // 2
-    panel_y = (game_state.DESIGN_HEIGHT - panel_height) // 2
+    panel_width = int(game_state.screen_width * (0.65 if num_choices == 3 else 0.85))  # Wider panel for 4 choices
+    panel_height = int(game_state.screen_height * 0.4)
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
     
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
@@ -315,7 +315,7 @@ def draw_level_up_menu(screen):
     # Level up text
     font = pygame.font.Font(None, get_text_scaling_factor(48))
     text = font.render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
-    text_rect = text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 50))
+    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
     screen.blit(text, text_rect)
 
     # Create buttons if they don't exist
@@ -325,13 +325,13 @@ def draw_level_up_menu(screen):
         upgrades = upgrade_pool.get_random_upgrades(num_choices, game_state.player)
         
         # Create buttons with proportional sizes
-        button_width = int(game_state.DESIGN_WIDTH * 0.18)  # ~16% of screen width
-        button_height = int(game_state.DESIGN_HEIGHT * 0.2)  # ~15% of screen height
-        button_spacing = int(game_state.DESIGN_WIDTH * 0.023)  # ~2.6% of screen width
+        button_width = int(game_state.screen_width * 0.18)  # ~16% of screen width
+        button_height = int(game_state.screen_height * 0.2)  # ~15% of screen height
+        button_spacing = int(game_state.screen_width * 0.023)  # ~2.6% of screen width
         
         # Calculate total width of all buttons and spacing
         total_width = (button_width * num_choices) + (button_spacing * (num_choices - 1))
-        start_x = (game_state.DESIGN_WIDTH - total_width) // 2
+        start_x = (game_state.screen_width - total_width) // 2
 
         game_state.current_upgrade_buttons = []
         for i, upgrade in enumerate(upgrades):
@@ -350,16 +350,16 @@ def draw_level_up_menu(screen):
 
 def draw_pause_menu(screen):
     # Create semi-transparent overlay
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.BLACK)
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
     # Create menu panel with proportional sizes
-    panel_width = int(game_state.DESIGN_WIDTH * 0.26)  # ~26% of screen width
-    panel_height = int(game_state.DESIGN_HEIGHT * 0.30)  # ~32% of screen height
-    panel_x = (game_state.DESIGN_WIDTH - panel_width) // 2
-    panel_y = (game_state.DESIGN_HEIGHT - panel_height) // 2
+    panel_width = int(game_state.screen_width * 0.26)  # ~26% of screen width
+    panel_height = int(game_state.screen_height * 0.30)  # ~32% of screen height
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
     
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
@@ -367,17 +367,17 @@ def draw_pause_menu(screen):
     # Pause menu text
     font = pygame.font.Font(None, get_text_scaling_factor(48))
     text = font.render("Paused", True, constants.BLACK)
-    text_rect = text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 50 * ui_scaling_factor))
+    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50 * ui_scaling_factor))
     screen.blit(text, text_rect)
 
     # Initialize UI elements once
     if not hasattr(game_state, 'pause_ui'):
         # Button dimensions - proportional
-        button_width = int(game_state.DESIGN_WIDTH * 0.104)  # ~10.4% of screen width
-        button_height = int(game_state.DESIGN_HEIGHT * 0.056)  # ~5.6% of screen height
+        button_width = int(game_state.screen_width * 0.104)  # ~10.4% of screen width
+        button_height = int(game_state.screen_height * 0.056)  # ~5.6% of screen height
 
         # Calculate positions for resume and quit buttons (already side by side)
-        button_x = (game_state.DESIGN_WIDTH - (button_width * 2 + int(game_state.DESIGN_WIDTH * 0.01))) // 2
+        button_x = (game_state.screen_width - (button_width * 2 + int(game_state.screen_width * 0.01))) // 2
         button_y = panel_y + int(panel_height * 0.74)  # ~74% down the panel
 
         # Quit button
@@ -388,15 +388,15 @@ def draw_pause_menu(screen):
         resume_button = Button(button_x, button_y, button_width, button_height, "Resume", constants.GREEN)
 
         # Volume Slider - proportional
-        slider_width = int(game_state.DESIGN_WIDTH * 0.156)  # ~15.6% of screen width
-        slider_height = int(game_state.DESIGN_HEIGHT * 0.019)  # ~1.9% of screen height
-        slider_x = (game_state.DESIGN_WIDTH - slider_width) // 2
+        slider_width = int(game_state.screen_width * 0.156)  # ~15.6% of screen width
+        slider_height = int(game_state.screen_height * 0.019)  # ~1.9% of screen height
+        slider_x = (game_state.screen_width - slider_width) // 2
         slider_y = panel_y + int(panel_height * 0.34)  # ~34% down the panel
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
         # Calculate positions for Upgrades and Stats buttons (side by side)
         total_width = button_width * 2 + buttons_spacing
-        start_x = (game_state.DESIGN_WIDTH - total_width) // 2
+        start_x = (game_state.screen_width - total_width) // 2
         upgrades_button = Button(start_x, slider_y + 50, button_width, button_height, "Upgrades", constants.BLUE)
         stats_button = Button(start_x + button_width + buttons_spacing, slider_y + 50, button_width, button_height, "Stats", constants.ORANGE)
 
@@ -418,7 +418,7 @@ def draw_pause_menu(screen):
     # Draw "Volume" label above the slider
     small_font = pygame.font.Font(None, get_text_scaling_factor(30))
     volume_text = small_font.render("Volume", True, constants.BLACK)
-    volume_text_rect = volume_text.get_rect(center=(game_state.DESIGN_WIDTH // 2, panel_y + 90 * ui_scaling_factor))
+    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + 90 * ui_scaling_factor))
     screen.blit(volume_text, volume_text_rect)
 
     return (game_state.pause_ui['quit_button'],
@@ -430,20 +430,20 @@ def draw_pause_menu(screen):
 
 def draw_upgrades_tab(screen):
     # Create semi-transparent overlay
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.BLACK)
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
     # Constants for button dimensions
-    button_width = int(game_state.DESIGN_WIDTH * 0.22)
-    button_height = int(game_state.DESIGN_HEIGHT * 0.046)
-    button_spacing = int(game_state.DESIGN_WIDTH * 0.01)  # Horizontal spacing
+    button_width = int(game_state.screen_width * 0.22)
+    button_height = int(game_state.screen_height * 0.046)
+    button_spacing = int(game_state.screen_width * 0.01)  # Horizontal spacing
 
     # Use 75% of the screen height for the icon area
-    max_column_height = int(game_state.DESIGN_HEIGHT * 0.75)
-    title_height = int(game_state.DESIGN_HEIGHT * 0.037)
-    close_button_height = int(game_state.DESIGN_HEIGHT * 0.046)
+    max_column_height = int(game_state.screen_height * 0.75)
+    title_height = int(game_state.screen_height * 0.037)
+    close_button_height = int(game_state.screen_height * 0.046)
 
     # Calculate the number of upgrades
     num_upgrades = len(game_state.player.applied_upgrades)
@@ -462,8 +462,8 @@ def draw_upgrades_tab(screen):
     panel_width = num_columns * (button_width + button_spacing)
 
     # Center the panel
-    panel_x = (game_state.DESIGN_WIDTH - panel_width) // 2
-    panel_y = (game_state.DESIGN_HEIGHT - panel_height) // 2
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
 
     # Draw the panel
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
@@ -510,16 +510,16 @@ def draw_upgrades_tab(screen):
 
 def draw_stats_tab(screen):
     # Create semi-transparent overlay
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.BLACK)
     overlay.set_alpha(128)
     screen.blit(overlay, (0, 0))
 
     # Panel dimensions and positioning
-    panel_width = int(game_state.DESIGN_WIDTH * 0.44)
-    panel_height = int(game_state.DESIGN_HEIGHT * 0.7)
-    panel_x = (game_state.DESIGN_WIDTH - panel_width) // 2
-    panel_y = (game_state.DESIGN_HEIGHT - panel_height) // 2
+    panel_width = int(game_state.screen_width * 0.44)
+    panel_height = int(game_state.screen_height * 0.7)
+    panel_x = (game_state.screen_width - panel_width) // 2
+    panel_y = (game_state.screen_height - panel_height) // 2
 
     # Draw the panel background and border
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
@@ -659,7 +659,7 @@ def draw_stats_tab(screen):
 
     # Draw the close button at the bottom center of the panel
     close_button_width = 100
-    close_button_height = int(game_state.DESIGN_HEIGHT * 0.046)
+    close_button_height = int(game_state.screen_height * 0.046)
     close_button_x = panel_x + (panel_width - close_button_width) // 2
     close_button_y = panel_y + panel_height - close_button_height - 20
     close_button = Button(close_button_x, close_button_y, close_button_width, close_button_height, "Close", constants.RED)
@@ -669,7 +669,7 @@ def draw_stats_tab(screen):
 
 def draw_main_menu(screen):
     # Create a semi-transparent overlay for the menu
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.WHITE)
     overlay.set_alpha(255)
     screen.blit(overlay, (0, 0))
@@ -677,26 +677,26 @@ def draw_main_menu(screen):
     # Draw menu title
     font = pygame.font.Font(None, get_text_scaling_factor(100))
     title_text = font.render("Gooner Game", True, constants.BLACK)
-    title_rect = title_text.get_rect(center=(game_state.DESIGN_WIDTH // 2, game_state.DESIGN_HEIGHT // 2 - 100))
+    title_rect = title_text.get_rect(center=(game_state.screen_width // 2, game_state.screen_height // 2 - 100))
     screen.blit(title_text, title_rect)
 
     # Draw Start Game button
-    start_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2, 200, 50, "Start Game", constants.GREEN)
+    start_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2, 200, 50, "Start Game", constants.GREEN)
     start_button.draw(screen)
 
     # Draw Skin Selection button
-    skin_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2 + 60, 200, 50, "Select Skin", constants.BLUE)
+    skin_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2 + 60, 200, 50, "Select Skin", constants.BLUE)
     skin_button.draw(screen)
 
     # Draw Quit button
-    quit_button = Button(game_state.DESIGN_WIDTH // 2 - 100, game_state.DESIGN_HEIGHT // 2 + 120, 200, 50, "Quit", constants.RED)
+    quit_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2 + 120, 200, 50, "Quit", constants.RED)
     quit_button.draw(screen)
 
     return start_button, quit_button, skin_button
 
 def draw_skin_selection_menu(screen):
     # Create semi-transparent overlay
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.WHITE)
     overlay.set_alpha(255)
     screen.blit(overlay, (0, 0))
@@ -704,12 +704,12 @@ def draw_skin_selection_menu(screen):
     # Draw title
     title_font = pygame.font.Font(None, get_text_scaling_factor(72))
     title_surface = title_font.render("Select Your Skin", True, constants.BLACK)
-    title_rect = title_surface.get_rect(center=(game_state.DESIGN_WIDTH // 2, 50))
+    title_rect = title_surface.get_rect(center=(game_state.screen_width // 2, 50))
     screen.blit(title_surface, title_rect)
 
     # Button dimensions
-    button_width = int(game_state.DESIGN_WIDTH * 0.2)
-    button_height = int(game_state.DESIGN_HEIGHT * 0.1)
+    button_width = int(game_state.screen_width * 0.2)
+    button_height = int(game_state.screen_height * 0.1)
     button_spacing = 20
 
     # Calculate the phase for the shimmer effect based on time
@@ -718,7 +718,7 @@ def draw_skin_selection_menu(screen):
     # Draw available skins as buttons with shimmer effect
     skin_buttons = []
     for i, skin in enumerate(game_state.player.skins):
-        button_x = (game_state.DESIGN_WIDTH - button_width) // 2
+        button_x = (game_state.screen_width - button_width) // 2
         button_y = 100 + (button_height + button_spacing) * i
 
         # Get the rarity color and compute the shimmer surface

@@ -18,17 +18,17 @@ def update_projectiles():
 def spawn_enemy():
     side = random.choice(["top", "bottom", "left", "right"])
     if side == "top":
-        x = random.randint(0, game_state.DESIGN_WIDTH)
+        x = random.randint(0, game_state.screen_width)
         y = -20
     elif side == "bottom":
-        x = random.randint(0, game_state.DESIGN_WIDTH)
-        y = game_state.DESIGN_HEIGHT + 20
+        x = random.randint(0, game_state.screen_width)
+        y = game_state.screen_height + 20
     elif side == "left":
         x = -20
-        y = random.randint(0, game_state.DESIGN_HEIGHT)
+        y = random.randint(0, game_state.screen_height)
     else:  # "right"
-        x = game_state.DESIGN_WIDTH + 20
-        y = random.randint(0, game_state.DESIGN_HEIGHT)
+        x = game_state.screen_width + 20
+        y = random.randint(0, game_state.screen_height)
 
     # Use weighted random selection for enemy type
     enemy_types = [
@@ -51,8 +51,8 @@ def spawn_enemy():
 def spawn_heart():
     if len(game_state.hearts) < game_state.player.max_pickups_on_screen:
         game_state.hearts.append([
-            random.randint(25, game_state.DESIGN_WIDTH - 25),
-            random.randint(25, game_state.DESIGN_HEIGHT - 25)
+            random.randint(25, game_state.screen_width - 25),
+            random.randint(25, game_state.screen_height - 25)
         ])
 
 

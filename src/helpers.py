@@ -56,15 +56,15 @@ def get_design_mouse_pos(mouse_pos):
     """
     Convert a mouse position from screen coordinates to design coordinates.
     """
-    scale_x = game_state.DESIGN_WIDTH / game_state.screen_width
-    scale_y = game_state.DESIGN_HEIGHT / game_state.screen_height
+    scale_x = game_state.screen_width / game_state.screen_width
+    scale_y = game_state.screen_height / game_state.screen_height
     return (int(mouse_pos[0] * scale_x), int(mouse_pos[1] * scale_y))
 
 def get_ui_scaling_factor():
-    return game_state.DESIGN_WIDTH / game_state.screen_width
+    return game_state.screen_width / game_state.screen_width
 
 def get_text_scaling_factor(font_size):
-    return round(font_size * (game_state.screen_width / game_state.DESIGN_WIDTH) * 1.4)
+    return round(font_size * (game_state.screen_width / game_state.screen_width))
       
 def fade_to_black(surface, wait_time=5, step=20):
     """
@@ -72,21 +72,17 @@ def fade_to_black(surface, wait_time=5, step=20):
     Gradually overlays a black surface (alpha increases from 0 to 255)
     to fade the scene out.
     """
-    overlay = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill((0, 0, 0))
     for alpha in range(0, 256, step):
         overlay.set_alpha(alpha)
         temp_surface = surface.copy()
         temp_surface.blit(overlay, (0, 0))
-        scaled = pygame.transform.smoothscale(temp_surface, (game_state.screen_width, game_state.screen_height))
-        game_state.screen.blit(scaled, (0, 0))
         pygame.display.flip()
         # pygame.time.wait(wait_time)
     # Final update: ensure the screen is completely black.
-    black_surface = pygame.Surface((game_state.DESIGN_WIDTH, game_state.DESIGN_HEIGHT))
+    black_surface = pygame.Surface((game_state.screen_width, game_state.screen_height))
     black_surface.fill((0, 0, 0))
-    scaled = pygame.transform.smoothscale(black_surface, (game_state.screen_width, game_state.screen_height))
-    game_state.screen.blit(scaled, (0, 0))
     pygame.display.flip()
 
 def fade_from_black_step(surface, step=5):
