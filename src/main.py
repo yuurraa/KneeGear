@@ -351,22 +351,8 @@ def main():
             game_state.screen.blit(time_text, time_rect)
             
             # ---- PAUSE MENU ----
-            if getattr(game_state, 'paused', False):
-                # Instead of re-filling with LIGHT_GREY, start with the captured snapshot.
-                if hasattr(game_state, 'pause_background'):
-                    pause_bg = game_state.pause_background.copy()
-                else:
-                    # Fallback if for some reason there's no captured image.
-                    pause_bg = pygame.Surface((game_state.screen_width, game_state.screen_height))
-                    pause_bg.fill(constants.BLACK)
-                # Create a semi-transparent overlay to darken the background
-                overlay = pygame.Surface((game_state.screen_width, game_state.screen_height), pygame.SRCALPHA)
-                overlay.fill((0, 0, 0, 100))  # Adjust alpha (here, 100) for desired darkness
-                pause_bg.blit(overlay, (0, 0))
-                # Blit the darkened background back to the screen.
-                game_state.screen.blit(pause_bg, (0, 0))
-                
-                # Now draw the pause menu UI on top.
+            if getattr(game_state, 'paused', False):                
+                # Draw the pause menu UI on top.
                 quit_button, resume_button, volume_slider, upgrades_button, stats_button = draw_pause_menu(game_state.screen)
                 for event in events:
                     volume_slider.handle_event(event)

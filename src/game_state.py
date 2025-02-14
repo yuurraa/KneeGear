@@ -43,6 +43,7 @@ running = True
 in_main_menu = True
 quit = False
 first_enemy_spawned = False
+pause_background = None
 
 # Screen-related (filled in after pygame.init in main.py)
 screen_width = 1920
