@@ -16,14 +16,14 @@ class ChargerEnemy(BaseEnemy):
         # Score reward based on a constant multiplier (make sure to define this in your constants)
         self.score_reward = math.floor(constants.base_charger_xp_reward * self.scaling)
         
-        self.damage_multiplier = 0.45
+        self.damage_multiplier = 0.43
         
         # For acceleration-based physics:
         self.vx = 0.0
         self.vy = 0.0
         # Already scaled:
-        self.acceleration = constants.CHARGER_ACCELERATION * ui_scaling_factor  # ← Good
-        self.max_speed = constants.CHARGER_MAX_SPEED * ui_scaling_factor          # ← Good
+        self.acceleration = constants.CHARGER_ACCELERATION * ui_scaling_factor 
+        self.max_speed = constants.CHARGER_MAX_SPEED * ui_scaling_factor       
         
         # Appearance attributes (if you want to scale these, multiply them too):
         self.outline_size = constants.CHARGER_ENEMY_OUTLINE_SIZE  
