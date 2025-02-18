@@ -263,6 +263,7 @@ def main():
         constants.music_volume = load_music_settings()
 
         while game_state.running:
+            clock.tick(constants.FPS)
             # Fill the background:
             game_state.screen.fill(constants.LIGHT_GREY)
             
@@ -365,6 +366,7 @@ def main():
             if getattr(game_state, 'paused', False):                
                 # Draw the pause menu UI on top.
                 quit_button, resume_button, volume_slider, upgrades_button, stats_button = draw_pause_menu(game_state.screen)
+
                 for event in events:
                     volume_slider.handle_event(event)
                     quit_button.handle_event(event)
@@ -376,12 +378,19 @@ def main():
                                 delattr(game_state, 'final_time')
                             reset_game()
                             score.reset_score()
+                            
                             game_state.player.x = game_state.screen_width // 2
                             game_state.player.y = game_state.screen_height // 2
                             game_state.paused = False
                             game_state.in_main_menu = True
                             game_loop_faded_in = False
                             game_state.running = False  # Exit game loop to return to main menu
+                            game_state.notification_visible = False
+                            game_state.notification_message = ""
+                            game_state.notification_queue = []
+                            game_state.damage_numbers.clear()
+                            game_state.experience_updates.clear()
+                            
                             fade_to_black(game_state.screen, 5, 10)
                             game_state.screen.fill(constants.BLACK)
                             break
@@ -445,7 +454,6 @@ def main():
                                 delattr(game_state, 'current_upgrade_buttons')
                             break
                 pygame.display.flip()
-                clock.tick(constants.FPS)
                 continue
 
             # ---- GAME LOGIC & DRAWING ----
@@ -488,7 +496,6 @@ def main():
                                         game_state.screen_height, game_state.fade_alpha)
 
             game_state.in_game_ticks_elapsed += 1
-            clock.tick(constants.FPS)
 
             if not game_loop_faded_in:
                 if game_state.fade_alpha > 0:

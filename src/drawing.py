@@ -156,6 +156,11 @@ def draw_player_state_value_updates():
                 game_state.experience_updates.remove(exp_update)
             
 def draw_notification():
+    if not game_state.running:
+        game_state.notification_visible = False
+        game_state.notification_message = ""
+        game_state.notification_queue = []
+    
     # Check if a notification is currently active.
     if not game_state.notification_visible:
         # print("DEBUG: No active notification. Checking queue...")

@@ -3,6 +3,7 @@ import src.constants as constants
 experience_updates = []
 start_time_ms = 0
 in_game_ticks_elapsed = 0 #doesnt include menus
+elapsed_time = 0.0
 
 notification_queue = []  # List to hold notification dicts.
 notification_message = ""

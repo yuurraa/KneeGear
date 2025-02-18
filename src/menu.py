@@ -115,40 +115,46 @@ class Slider:
             pygame.mixer.music.set_volume(self.value)
             save_music_settings(self.value)  # Save the new volume
 
-# Helper function to compute a shimmer effect surface for a rectangle.
-def compute_shimmer_surface_for_tab_icon(rarity_color, rarity, width, height, phase):
-    """
-    Given a base color (tuple) and rarity (string), compute a shimmer surface
-    of the specified width and height. 'phase' should be a float in [0,1].
-    """
-    # Convert the base color to a NumPy array
-    base_color = np.array(rarity_color, dtype=np.float32)
-    # Compute the "bright" color based on rarity.
-    if rarity == "Exclusive":
-        bright_color = np.minimum(base_color + 30, 255)
-    else:
-        bright_color = np.minimum(base_color + 70, 255)
+# Global cache for grids, keyed by (width, height)
+_grid_cache = {}
+LOW_RES_FACTOR = 2
+
+def get_coordinate_grids(width, height):
+    key = (width, height)
+    if key not in _grid_cache:
+        x_grid, y_grid = np.meshgrid(np.arange(width), np.arange(height))
+        _grid_cache[key] = (x_grid, y_grid)
+    return _grid_cache[key]
+
+def compute_shimmer_surface_for_tab_icon(rarity_color, rarity, width, height, phase, surface=None):
+    low_width, low_height = width // LOW_RES_FACTOR, height // LOW_RES_FACTOR
     
-    # Create coordinate grids for the given width/height.
-    x_grid, y_grid = np.meshgrid(np.arange(width), np.arange(height))
-    # Compute a diagonal coordinate between 0 and 1.
-    diag = (x_grid / width + y_grid / height) / 2.0
-    # Add phase (wrap around modulo 1)
+    # Retrieve cached coordinate grids for low resolution
+    x_grid, y_grid = get_coordinate_grids(low_width, low_height)
+    
+    # Compute shimmer at lower resolution
+    diag = (x_grid / low_width + y_grid / low_height) / 2.0
     diag = (diag + phase) % 1.0
-    # Compute blend: we want maximum brightness when diag is near 0.5.
-    blend = np.abs(diag - 0.5) * 2  # 0 at center, 1 at edges.
-    shimmer_width = 0.3  # Controls how narrow the bright band is.
-    blend = 1 - np.clip(blend / shimmer_width, 0, 1)  # Now 1 means fully bright.
-    blend = blend[:, :, None]  # Make it (height, width, 1) for broadcasting.
     
-    # Compute final color at each pixel.
+    blend = np.abs(diag - 0.5) * 2  
+    shimmer_width = 0.3  
+    blend = 1 - np.clip(blend / shimmer_width, 0, 1)
+    blend = blend[:, :, None]  
+
+    base_color = np.array(rarity_color, dtype=np.float32)
+    bright_color = np.minimum(base_color + (30 if rarity == "Exclusive" else 70), 255)
+
     pixel_array = base_color * (1 - blend) + bright_color * blend
     pixel_array = np.clip(pixel_array, 0, 255).astype(np.uint8)
+
+    # Create a low-res surface
+    if surface is None:
+        surface = pygame.Surface((low_width, low_height))
     
-    # Create a surface from the array.
-    # Pygame expects shape (width, height, channels) so transpose axes.
-    surface = pygame.surfarray.make_surface(np.transpose(pixel_array, (1, 0, 2)))
-    return surface
+    pygame.surfarray.blit_array(surface, np.transpose(pixel_array, (1, 0, 2)))
+
+    # Scale up to full size
+    return pygame.transform.smoothscale(surface, (width, height))
 
 class UpgradeButton(Button):
     RARITY_COLORS = {
