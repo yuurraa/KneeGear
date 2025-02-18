@@ -4,15 +4,16 @@ experience_updates = []
 start_time_ms = 0
 in_game_ticks_elapsed = 0 #doesnt include menus
 
+notification_queue = []  # List to hold notification dicts.
 notification_message = ""
-notification_timer = 0  # Timer for how long the notification should be displayed
+notification_timer = 126  # Timer for how long the notification should be displayed
 notification_visible = False  # Flag to check if the notification is visible
 
 # New attributes for notification animation
-notification_total_duration = 300  # Total frames (0.5s in, 4s visible, 0.5s out at 60 FPS)
-notification_slide_in_duration = 30    # Frames for sliding in (0.5 seconds)
-notification_visible_duration = 240    # Frames for being fully visible (4 seconds)
-notification_slide_out_duration = 30   # Frames for sliding out (0.5 seconds)
+notification_total_duration = 126  # Total frames (0.5s in, 2s visible, 0.3s out at 60 FPS)
+notification_slide_in_duration = 18    # Frames for sliding in (0.3 seconds)
+notification_visible_duration = 90    # Frames for being fully visible (1.5 seconds)
+notification_slide_out_duration = 18   # Frames for sliding out (0.3 seconds)
 notification_current_y = -60           # Initial Y position (above the screen)
 
 last_special_shot_time = 0

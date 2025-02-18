@@ -322,8 +322,8 @@ def main():
             for heart in game_state.hearts:
                 pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)
 
-            score.draw_score(game_state.screen)
             game_state.player.draw(game_state.screen)
+            score.draw_score(game_state.screen)
             
             # Update enemy scaling and wave spawning based on elapsed time
             in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
@@ -348,7 +348,10 @@ def main():
             bg_surface.fill(constants.BLACK)
             bg_surface.set_alpha(128)
             game_state.screen.blit(bg_surface, bg_rect)
+            pygame.draw.rect(game_state.screen, (0, 0, 0), bg_rect, 2)
             game_state.screen.blit(time_text, time_rect)
+            
+            drawing.draw_notification()
             
             # ---- PAUSE MENU ----
             if getattr(game_state, 'paused', False):                
@@ -454,11 +457,6 @@ def main():
                     game_state.wave_active = False
                     game_state.last_wave_time = in_game_seconds
 
-
-
-            # (Optional) draw any notification (if an upgrade is applied)
-            if game_state.notification_message != '' and any("Roll the Dice" in upgrade.name for upgrade in game_state.player.applied_upgrades):
-                drawing.draw_notification()
 
             # Update game objects
             logic.update_enemies()

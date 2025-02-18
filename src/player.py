@@ -4,7 +4,7 @@ import math
 import random
 
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.helpers import calculate_angle, get_design_mouse_pos
+from src.helpers import calculate_angle, get_design_mouse_pos, queue_notification
 import src.constants as constants
 from src.skins import Skin
 
@@ -147,8 +147,8 @@ class Player:
         y = 20
         filled_width = int((self.health / self.max_health) * bar_width)
         surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
-        pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height))
         pygame.draw.rect(surface, constants.TRANSLUCENT_GREEN, (0, 0, filled_width, bar_height))
+        pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height), 2)
         screen.blit(surface, (x, y))
 
     def update_angle(self, mouse_pos):
@@ -301,7 +301,6 @@ class Player:
             can_repierce=self.special_bullet_can_repierce,
             scales_with_distance_travelled=self.special_bullet_scales_with_distance_travelled
         )]
-        self.special_attack_bonus_damage = 0
 
     def take_damage(self, amount):
         import src.game_state as game_state
@@ -368,51 +367,49 @@ class Player:
         print(f"Player leveled up to level {self.player_level}")
 
     def gain_random_upgrade(self):
-        import src.game_state as game_state
         from src.upgrades import UpgradePool
+        
         upgrade_pool = UpgradePool()
         upgrades = upgrade_pool.get_random_upgrades(1, self)
         
         if upgrades:
             random_upgrade = upgrades[0]
-            self.apply_upgrade(random_upgrade, source="random")
-            self.random_upgrade_chance = 0.02
-            
-            # Notification is already handled in apply_upgrade with source="random"
-            print(f"Gained random upgrade: {random_upgrade.name}")  # Debugging output
+            self.upgrade_levels[random_upgrade.name] = self.upgrade_levels.get(random_upgrade.name, 0) + 1
+            self.applied_upgrades.add(random_upgrade)
 
     def apply_upgrade(self, upgrade, source="manual"):
         upgrade.apply(self)
-        # Increment the upgrade level
         self.upgrade_levels[upgrade.name] = self.upgrade_levels.get(upgrade.name, 0) + 1
         self.applied_upgrades.add(upgrade)
         print(f"Applied upgrade: {upgrade.name}")  # Debugging output
-        
-        # Set notification message based on the source
+
         import src.game_state as game_state
-        if source == "random":
-            game_state.notification_message = f"Random upgrade obtained: {upgrade.name}!"
-        else:
-            game_state.notification_message = f"Roll the Dice chances increases to {self.random_upgrade_chance * 100}%!"
-        
-        game_state.notification_visible = True  # Make the notification visible
-        game_state.notification_timer = game_state.notification_total_duration  # Reset timer
-        
-        # # Prevent recursive gain_random_upgrade calls
-        # if upgrade.name == "Roll the Dice":
-        #     # Do not perform Roll the Dice logic when the upgrade itself is Roll the Dice
-        #     return
-        
-        # Check if "Roll the Dice" upgrade is active
-        if self.random_upgrade_chance > 0:
-            if random.random() < self.random_upgrade_chance:
-                self.gain_random_upgrade()
-                self.random_upgrade_chance = 0.02
-                print(f"Roll the Dice chances resets to 2%!")
-            else:
-                # Double the chance for the next level-up
-                self.random_upgrade_chance = min(self.random_upgrade_chance * 2, 1.0)  # Cap at 100%
-                print(f"Roll the Dice chances increases to {self.random_upgrade_chance}!")
+
+        # Ensure notification queue exists
+        if not hasattr(game_state, "notification_queue"):
+            game_state.notification_queue = []
+
+        # 1. **Obtained Upgrade Message** (always added)
+        game_state.notification_queue.append(f"Obtained Upgrade: {upgrade.name}!")
+
+        # Check if "Roll the Dice" upgrade is in the applied upgrades
+        has_roll_the_dice = any(upg.name == "Roll the Dice" for upg in self.applied_upgrades)
+
+        # 2. **Determine if Roll the Dice triggers a random upgrade**
+        roll_triggered = self.random_upgrade_chance >= 1.0 or (self.random_upgrade_chance > 0 and random.random() < self.random_upgrade_chance)
+
+        if roll_triggered:
+            self.gain_random_upgrade()
+            game_state.notification_queue.append(f"Obtained RANDOM Upgrade: {upgrade.name}")  # This message was missing earlier
+            game_state.notification_queue.append("Roll the Dice chances reset to 2%!")
+            self.random_upgrade_chance = 0.02  # Reset after granting an upgrade
+            print("Guaranteed random upgrade! Roll the Dice chances reset to 2%!")
+
+        # 3. **If Roll the Dice did NOT trigger, only increase the chance**
+        elif has_roll_the_dice:
+            self.random_upgrade_chance = min(self.random_upgrade_chance * 2, 1.0)  # Cap at 100%
+            game_state.notification_queue.append(f"Roll the Dice chances increased to {self.random_upgrade_chance * 100}%!")
+            print(f"Roll the Dice chances increased to {self.random_upgrade_chance * 100}%!")
 
     def is_dead(self):
         return self.state == PlayerState.DEAD

@@ -112,3 +112,13 @@ def load_skin_selection():
         with open("data/skin_selection.json", "r") as f:
             data = json.load(f)
             game_state.player.change_skin(data.get("current_skin_index", 0))
+            
+def queue_notification(message):
+    import src.game_state as game_state
+    # Each notification is a dict with a message and a timer.
+    game_state.notifications.append({
+        "message": message,
+        "timer": game_state.notification_total_duration,
+        # Optionally, you can include other data like a fixed y-position
+        "y": 50  # for example, when fully visible
+    })

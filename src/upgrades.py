@@ -563,7 +563,7 @@ class UpgradePool:
                 name="Roll the Dice",
                 description="Start with a 2% chance to gain a random upgrade when leveling up. Chance doubles on failure and resets on success.",
                 Rarity="Exclusive",
-                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.02),
+                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.01), # 1% here because it gets doubled immediately
                 max_level=1,
                 icon="roll_the_dice"
             ),
