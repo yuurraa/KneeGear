@@ -35,44 +35,61 @@ def draw_experience_bar():
     screen.blit(filled_surf, (bar_x, bar_y))
 
     
-def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):
+def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress, fps):
     screen = game_state.screen
     icon_size = 70  # Size of each icon
-    padding = 10  # Space between icons
+    padding = 10    # Space between icons
     x = game_state.screen_width - icon_size - padding  # Position at top-right corner
     y = padding + 60
 
-    # Draw left click icon
+    # --- Draw FPS Counter ---
+    font = pygame.font.Font(None, get_text_scaling_factor(24))
+    fps_text = f"FPS: {fps:.0f}"
+    
+    # Render FPS text with a black border (outline effect)
+    text_surface = font.render(fps_text, True, constants.WHITE)
+    text_outline = font.render(fps_text, True, constants.BLACK)
+
+    # FPS position (below the timer, aligned along the same X-axis)
+    fps_x = x - 73
+    fps_y = y + icon_size + padding - 90  # Adjust the value to fine-tune the placement
+
+    # Draw black outline for better visibility (offset slightly in multiple directions)
+    screen.blit(text_outline, (fps_x - 1, fps_y - 1))
+    screen.blit(text_outline, (fps_x + 1, fps_y - 1))
+    screen.blit(text_outline, (fps_x - 1, fps_y + 1))
+    screen.blit(text_outline, (fps_x + 1, fps_y + 1))
+    screen.blit(text_surface, (fps_x, fps_y))
+
+    # --- Draw Left Click Icon ---
     left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
-    pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white
-    font = pygame.font.Font(None, get_text_scaling_factor(36))
-    text = font.render("L", True, (0, 0, 0))  # Black "L"
+    pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white background
+    font_large = pygame.font.Font(None, get_text_scaling_factor(36))
+    text = font_large.render("L", True, (0, 0, 0))  # Black "L"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     left_icon_surface.blit(text, text_rect)
 
-    # Apply cooldown effect
+    # Apply cooldown effect (draw overlay if not ready)
     if left_click_cooldown_progress < 1:
         cooldown_height = int((1 - left_click_cooldown_progress) * icon_size)
-        pygame.draw.rect(left_icon_surface, (0, 0, 0, 128), (0, icon_size - cooldown_height, icon_size, cooldown_height))  # Grey overlay
-
+        pygame.draw.rect(left_icon_surface, (0, 0, 0, 128),
+                         (0, icon_size - cooldown_height, icon_size, cooldown_height))
     pygame.draw.rect(left_icon_surface, constants.BLACK, (0, 0, icon_size, icon_size), 2)
-    screen.blit(left_icon_surface, (x, y))
+    screen.blit(left_icon_surface, (x, y - 10))
 
-    # Draw right click icon
+    # --- Draw Right Click Icon ---
     y += icon_size + padding  # Position below the left icon
     right_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
-    pygame.draw.rect(right_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white
-    text = font.render("R", True, (0, 0, 0))  # Black "R"
+    pygame.draw.rect(right_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))
+    text = font_large.render("R", True, (0, 0, 0))  # Black "R"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     right_icon_surface.blit(text, text_rect)
-
-    # Apply cooldown effect
     if right_click_cooldown_progress < 1:
         cooldown_height = int((1 - right_click_cooldown_progress) * icon_size)
-        pygame.draw.rect(right_icon_surface, (0, 0, 0, 128), (0, icon_size - cooldown_height, icon_size, cooldown_height))  # Grey overlay
-
+        pygame.draw.rect(right_icon_surface, (0, 0, 0, 128),
+                         (0, icon_size - cooldown_height, icon_size, cooldown_height))
     pygame.draw.rect(right_icon_surface, constants.BLACK, (0, 0, icon_size, icon_size), 2)
-    screen.blit(right_icon_surface, (x, y))
+    screen.blit(right_icon_surface, (x, y - 10))
 
 def draw_health_bar(x, y, health, max_health, color, bar_width=200, bar_height=10):
     screen = game_state.screen
@@ -91,6 +108,11 @@ def draw_fade_overlay():
     screen.blit(fade_surface, (0, 0))
 
 def draw_player_state_value_updates():
+    if not game_state.running:  # Clear all updates if the game is not running
+        game_state.damage_numbers.clear()
+        game_state.experience_updates.clear()
+        return
+    
     screen = game_state.screen
     font = pygame.font.SysFont(None, get_text_scaling_factor(18))  # Adjust font size as needed
 
@@ -106,11 +128,13 @@ def draw_player_state_value_updates():
         screen.blit(text_surface, (update["x"] - text.get_width() // 2 + update["x_offset"], 
                                  update["y"] - text.get_height() // 2 + random.randint(-1, 1)))
 
-        update["y"] -= 3
-        update["timer"] -= 1
+        from src.player import PlayerState
+        if not game_state.paused and not game_state.showing_stats and not game_state.showing_upgrades and game_state.player.state != PlayerState.LEVELING_UP:
+            update["y"] -= 3
+            update["timer"] -= 1
 
-        if update["timer"] <= 0:
-            game_state.damage_numbers.remove(update)
+            if update["timer"] <= 0:
+                game_state.damage_numbers.remove(update)
 
     # Draw experience pop-ups
     for exp_update in game_state.experience_updates[:]:
@@ -123,11 +147,13 @@ def draw_player_state_value_updates():
         screen.blit(text_surface, (exp_update["x"] - text.get_width() // 2 + exp_update["x_offset"], 
                                  exp_update["y"] - 15 - text.get_height() // 2))
 
-        exp_update["y"] -= 1  # Move up by 1 pixel per frame
-        exp_update["timer"] -= 1
+        from src.player import PlayerState
+        if not game_state.paused and not game_state.showing_stats and not game_state.showing_upgrades and game_state.player.state != PlayerState.LEVELING_UP:
+            exp_update["y"] -= 1  # Move up by 1 pixel per frame
+            exp_update["timer"] -= 1
 
-        if exp_update["timer"] <= 0:
-            game_state.experience_updates.remove(exp_update)
+            if exp_update["timer"] <= 0:
+                game_state.experience_updates.remove(exp_update)
             
 def draw_notification():
     # Check if a notification is currently active.

@@ -339,7 +339,8 @@ def main():
 
             # Draw cooldown icons and experience bar
             left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress()
-            drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress)
+            fps = clock.get_fps()
+            drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress, fps)
             drawing.draw_experience_bar()
             
             # Draw stopwatch (time survived)
@@ -359,6 +360,7 @@ def main():
             game_state.screen.blit(time_text, time_rect)
             
             drawing.draw_notification()
+            drawing.draw_player_state_value_updates()
             # ---- PAUSE MENU ----
             if getattr(game_state, 'paused', False):                
                 # Draw the pause menu UI on top.
@@ -475,7 +477,6 @@ def main():
                 game_state.game_over = True
                 if not hasattr(game_state, 'final_time'):
                     game_state.final_time = game_state.in_game_ticks_elapsed // constants.FPS
-            drawing.draw_player_state_value_updates()
 
             if game_state.game_over:
                 game_state.fade_alpha = min(game_state.fade_alpha + 10, 255)

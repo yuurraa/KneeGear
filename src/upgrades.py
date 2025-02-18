@@ -491,11 +491,11 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Size Matters",
-                description="Reduces player size by 30%, increases movement speed by 30%",
+                description="Reduces all sizes by 30%, increases player movement speed by 40%",
                 Rarity="Mythic",
                 apply=lambda player: [
                     setattr(player, 'size', floor(player.size * 0.7)),
-                    setattr(player, 'speed', player.speed * 1.3),
+                    setattr(player, 'speed', player.speed * 1.4),
                 ][-1],
                 icon="size_matters",
                 max_level=1,

@@ -102,8 +102,6 @@ class BaseEnemy(ABC):
             import src.game_state as game_state
             game_state.enemies.remove(self)
             
-            
-        
     def _restrict_to_boundaries(self, game_state):
         """Helper method to keep enemies within screen boundaries"""
         self.x = max(20, min(self.x, game_state.screen_width - self.inner_size // 2))
