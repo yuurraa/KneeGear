@@ -14,13 +14,26 @@ def draw_experience_bar():
     bar_x = 0
     bar_y = game_state.screen_height - bar_height
 
-    # Draw the background of the experience bar
-    pygame.draw.rect(screen, constants.BLACK, (bar_x, bar_y, bar_width, bar_height))
+    # Create a translucent surface for the background
+    background_surf = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
+    background_surf.fill((0, 0, 0, 128))  # Black with 50% opacity
+
+    # Blit the translucent background onto the screen
+    screen.blit(background_surf, (bar_x, bar_y))
+
+    # Draw the border
     pygame.draw.rect(screen, constants.BLACK, (bar_x - 2, bar_y - 2, bar_width + 4, bar_height + 4), 2)
 
     # Calculate the filled width based on current experience
     filled_width = int((game_state.player.player_experience / game_state.player.experience_to_next_level) * bar_width)
-    pygame.draw.rect(screen, (0, 0, 255, 128), (bar_x, bar_y, filled_width, bar_height))  # Translucent blue
+
+    # Create a translucent blue surface for the filled portion
+    filled_surf = pygame.Surface((filled_width, bar_height), pygame.SRCALPHA)
+    filled_surf.fill((0, 0, 255, 128))  # Blue with 50% opacity
+
+    # Blit the filled portion onto the screen
+    screen.blit(filled_surf, (bar_x, bar_y))
+
     
 def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress):
     screen = game_state.screen

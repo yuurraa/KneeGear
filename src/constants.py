@@ -39,7 +39,7 @@ player_special_bullet_cooldown = 10
 player_damage_reduction_percent_cap = 97 # if damage reduction is greater than this, it will max out at 97%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.47
+level_up_xp_cost_scaling_factor = 1.45
 
 enemy_stat_doubling_time = 80 # seconds
 
@@ -92,7 +92,7 @@ sniper_move_speed = 1.4                # Base movement speed.
 sniper_retreat_multiplier = 1.1        # Multiplier for retreat speed when player is too close.
 
 # Charger Enemy Constants
-base_charger_health = 60        # Moderate health since it's a kamikaze-style enemy
+base_charger_health = 50        # Moderate health since it's a kamikaze-style enemy
 base_charger_xp_reward = 20     # Good reward since it's risky to deal with
 CHARGER_ACCELERATION = 0.8      # Gradual acceleration for some challenge
 CHARGER_MAX_SPEED = 19        # Fast max speed since charging is its main threat
