@@ -238,7 +238,14 @@ def main():
                             if btn.rect.collidepoint(design_mouse_pos):
                                 game_state.player.change_skin(i)
                                 save_skin_selection()
-
+                
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    game_state.skin_menu = False
+                    game_state.in_main_menu = True
+                    game_state.running = False
+                    fade_to_black(game_state.screen, 5, 10)
+                    game_state.screen.fill(constants.BLACK)
+                    break
             pygame.display.flip()
 
         # ---- GAME LOOP ----

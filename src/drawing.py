@@ -65,8 +65,9 @@ def draw_health_bar(x, y, health, max_health, color, bar_width=200, bar_height=1
     screen = game_state.screen
     filled_width = int((health / max_health) * bar_width)
     surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
+    pygame.draw.rect(surface, (0, 0, 0, 190), (0, 0, bar_width, bar_height))
     pygame.draw.rect(surface, color, (0, 0, filled_width, bar_height))
-    pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height), 1)
+    pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height), 1) 
     screen.blit(surface, (x, y))
 
 def draw_fade_overlay():

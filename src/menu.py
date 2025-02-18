@@ -689,6 +689,11 @@ def draw_main_menu(screen):
     # Draw Quit button
     quit_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2 + 120, 200, 50, "Quit", constants.RED)
     quit_button.draw(screen)
+    
+    version_font = pygame.font.Font(None, get_text_scaling_factor(24))
+    version_text = version_font.render("v0.1.3 - (WIP)", True, constants.BLACK)
+    version_rect = version_text.get_rect(bottomright=(game_state.screen_width - 10, game_state.screen_height - 10))
+    screen.blit(version_text, version_rect)
 
     return start_button, quit_button, skin_button
 
@@ -706,8 +711,8 @@ def draw_skin_selection_menu(screen):
     screen.blit(title_surface, title_rect)
 
     # Button dimensions
-    button_width = int(game_state.screen_width * 0.2)
-    button_height = int(game_state.screen_height * 0.1)
+    button_width = int(game_state.screen_width * 0.15)
+    button_height = int(game_state.screen_height * 0.075)
     button_spacing = 20
 
     # Calculate the phase for the shimmer effect based on time
@@ -740,8 +745,11 @@ def draw_skin_selection_menu(screen):
         skin_buttons.append(skin_button)
 
     # Draw close button (without shimmer)
-    close_button_y = 100 + (button_height + button_spacing) * len(game_state.player.skins)
-    close_button = Button(button_x, close_button_y, button_width, button_height, "Close", constants.RED)
+    close_button_width = int(button_width * 0.6)
+    close_button_height = int(button_height * 0.6)
+    close_button_x = (game_state.screen_width - close_button_width) // 2
+    close_button_y = game_state.screen_height - close_button_height - 30
+    close_button = Button(close_button_x, close_button_y, close_button_width, close_button_height, "Close", constants.RED)
     close_button.draw(screen)
 
     return skin_buttons, close_button

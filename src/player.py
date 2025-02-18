@@ -147,6 +147,7 @@ class Player:
         y = 20
         filled_width = int((self.health / self.max_health) * bar_width)
         surface = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
+        pygame.draw.rect(surface, (0, 0, 0, 190), (0, 0, bar_width, bar_height))
         pygame.draw.rect(surface, constants.TRANSLUCENT_GREEN, (0, 0, filled_width, bar_height))
         pygame.draw.rect(surface, constants.BLACK, (0, 0, bar_width, bar_height), 2)
         screen.blit(surface, (x, y))
