@@ -200,4 +200,3 @@ def draw_notification():
     game_state.screen.blit(text_surface, text_rect)
 
     # print(f"DEBUG: Notification drawn: {game_state.notification_message}")
-

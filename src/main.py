@@ -157,19 +157,19 @@ def main():
         game_state.screen_width,
         game_state.screen_height
     )
-
+    
     # Show the intro screen
     show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
-    
+
+    # Start music if it isn’t already playing
+    if not pygame.mixer.music.get_busy():
+        music_thread = threading.Thread(target=load_and_play_music, daemon=True)
+        music_thread.start()
+
     # Load skin selection at the start
     load_skin_selection()
 
-    while True:
-        if not pygame.font.get_init() or not pygame.mixer.get_init():
-            pygame.font.init()
-            pygame.mixer.init()
-            
-            
+    while True:            
         # ---- MAIN MENU LOOP ----
         game_state.in_main_menu = True
         main_menu_faded_in = False
@@ -215,11 +215,14 @@ def main():
                         exit()  # Immediately exit
             pygame.display.flip()
 
-        
+        skin_buttons, close_button = draw_skin_selection_menu(game_state.screen)
         # ---- SKIN SELECTION MENU ----
         while game_state.skin_menu:
             game_state.screen.fill(constants.WHITE)
-            skin_buttons, close_button = draw_skin_selection_menu(game_state.screen)
+            draw_skin_selection_menu(game_state.screen)  
+            for btn in skin_buttons:
+                btn.draw(game_state.screen)
+            
             if game_state.fade_alpha > 0:
                 fade_from_black_step(game_state.screen, step=30)
 
@@ -236,8 +239,9 @@ def main():
                     else:
                         for i, btn in enumerate(skin_buttons):
                             if btn.rect.collidepoint(design_mouse_pos):
-                                game_state.player.change_skin(i)
                                 save_skin_selection()
+                                btn.trigger_glow()
+                                game_state.player.change_skin(i)
                 
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     game_state.skin_menu = False
@@ -249,10 +253,6 @@ def main():
             pygame.display.flip()
 
         # ---- GAME LOOP ----
-        # Start playing music in a separate thread:
-        music_thread = threading.Thread(target=load_and_play_music, daemon=True)
-        music_thread.start()
-
         clock = pygame.time.Clock()
         score.reset_score()
         game_state.start_time_ms = pygame.time.get_ticks()
@@ -359,7 +359,6 @@ def main():
             game_state.screen.blit(time_text, time_rect)
             
             drawing.draw_notification()
-            
             # ---- PAUSE MENU ----
             if getattr(game_state, 'paused', False):                
                 # Draw the pause menu UI on top.

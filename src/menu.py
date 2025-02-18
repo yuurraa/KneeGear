@@ -6,6 +6,7 @@ import src.game_state as game_state
 from src.player import PlayerState
 from src.upgrades import UpgradePool
 import math
+import random
 
 ui_scaling_factor = get_ui_scaling_factor()
 class Button:
@@ -148,6 +149,7 @@ def compute_shimmer_surface_for_tab_icon(rarity_color, rarity, width, height, ph
     # Pygame expects shape (width, height, channels) so transpose axes.
     surface = pygame.surfarray.make_surface(np.transpose(pixel_array, (1, 0, 2)))
     return surface
+
 class UpgradeButton(Button):
     RARITY_COLORS = {
         "Common": (144, 238, 144),
@@ -290,6 +292,122 @@ class UpgradeButton(Button):
     def update(self):
         if self.cooldown > 0:
             self.cooldown -= 1  # Decrease cooldown each frame
+            
+# Define a simple particle class.
+class Particle:
+    def __init__(self, pos, color):
+        self.pos = list(pos)
+        self.velocity = [random.uniform(-1, 1), random.uniform(-1, 1)]
+        self.radius = random.randint(5, 8)
+        self.lifetime = random.randint(40, 60)
+        # Create a copy of the color so we can fade its alpha over time.
+        self.color = color
+
+    def update(self):
+        # Move the particle.
+        self.pos[0] += self.velocity[0]
+        self.pos[1] += self.velocity[1]
+        # Decrease lifetime.
+        self.lifetime -= 1
+        # Gradually shrink the particle.
+        self.radius = max(0, self.radius - 0.1)
+
+    def draw(self, screen):
+        if self.lifetime > 0 and self.radius > 0:
+            # Create a small surface for the particle.
+            diameter = int(self.radius * 8)
+            particle_surf = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
+            pygame.draw.circle(particle_surf, self.color, (int(self.radius), int(self.radius)), int(self.radius))
+            screen.blit(particle_surf, (self.pos[0] - self.radius, self.pos[1] - self.radius))
+
+class SkinButton(UpgradeButton):
+    def __init__(self, x, y, width, height, skin_name, skin_rarity, icon_image=None):
+        # Create a dummy upgrade to pass to the base class.
+        class DummySkinUpgrade:
+            def __init__(self, name, rarity):
+                self.name = name
+                self.Rarity = rarity
+                self.description = ""
+        dummy_upgrade = DummySkinUpgrade(skin_name, skin_rarity)
+        super().__init__(x, y, width, height, dummy_upgrade, icon_image)
+        
+        self.glow_timer = 0  # Animates from 0 up to 500 when selected.
+        self.skin_index = None  # Set externally
+        self.pulse_phase = 0   # For the pulsing (scaling) effect.
+        self.particles = []    # List to hold particle effects.
+
+    def trigger_glow(self):
+        # Reset the glow timer and pulse phase for a fade-in and pulse effect.
+        self.glow_timer = 0
+        self.pulse_phase = 0
+
+    def draw(self, screen):
+        # Determine if this skin is currently selected.
+        selected = (hasattr(self, 'skin_index') and 
+                    game_state.player.current_skin_index == self.skin_index)
+        
+        # Base settings for the glow effect.
+        base_glow_padding = 9      # Padding around the button for the glow.
+        fade_speed = 50            # Speed for fade in/out.
+        
+        # Animate the glow timer: fade in when selected, fade out otherwise.
+        if selected:
+            if self.glow_timer < 500:
+                self.glow_timer = min(self.glow_timer + fade_speed, 500)
+            # Only pulse when fully faded in.
+            if self.glow_timer >= 500:
+                self.pulse_phase += 0.075  # Adjust the pulse speed here.
+        else:
+            if self.glow_timer > 0:
+                self.glow_timer = max(self.glow_timer - fade_speed, 0)
+        
+        # Base glow dimensions.
+        glow_width = self.rect.width + base_glow_padding * 2
+        glow_height = self.rect.height + base_glow_padding * 2
+
+        # Apply the scaling (pulsing) effect.
+        pulse_scale = 1.0
+        if selected and self.glow_timer >= 500:
+            # Oscillates between ~0.9 and 1.1.
+            pulse_scale = 1.0 + 0.023 * math.sin(self.pulse_phase)
+        scaled_glow_width = int(glow_width * pulse_scale)
+        scaled_glow_height = int(glow_height * pulse_scale)
+        
+        # Only draw the glow if there's an effect.
+        if self.glow_timer > 0:
+            # Create a surface for the glow.
+            glow_surface = pygame.Surface((scaled_glow_width, scaled_glow_height), pygame.SRCALPHA)
+            # Compute alpha proportionally (max alpha = 200).
+            alpha = int(200 * (self.glow_timer / 500))
+            glow_color = (self.color[0], self.color[1], self.color[2], alpha)
+            
+            # Draw a rounded rectangle on the glow surface.
+            pygame.draw.rect(glow_surface, glow_color, glow_surface.get_rect(), border_radius=int(12 * pulse_scale))
+            
+            # Center the glow around the button.
+            glow_rect = glow_surface.get_rect(center=self.rect.center)
+            screen.blit(glow_surface, glow_rect)
+        
+        # Particle Effects: spawn particles when the skin is selected and fully faded in.
+        if selected and self.glow_timer >= 500:
+            # Spawn a new particle with some probability each frame.
+            if random.random() < 1:  # Adjust spawn rate as needed.
+                # Randomize the spawn position near the button's center.
+                particle_pos = (
+                    self.rect.centerx + random.uniform(-self.rect.width/2, self.rect.width/2),
+                    self.rect.centery + random.uniform(-self.rect.height/2, self.rect.height/2)
+                )
+                self.particles.append(Particle(particle_pos, self.color))
+        
+        # Update and draw all active particles.
+        for particle in self.particles:
+            particle.update()
+            particle.draw(screen)
+        # Remove expired particles.
+        self.particles = [p for p in self.particles if p.lifetime > 0 and p.radius > 0]
+        
+        # Draw the base button content (shimmer, text, icon)
+        super().draw(screen)
 
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay
@@ -741,8 +859,18 @@ def draw_skin_selection_menu(screen):
         screen.blit(text_surface, text_rect)
         
         # Optionally, store the button rect for later interaction
-        skin_button = Button(button_x, button_y, button_width, button_height, skin.name, skin.color)
+        skin_button = SkinButton(button_x, button_y, button_width, button_height, skin.name, skin.rarity)
+        skin_button.skin_index = i  # Save the index for comparison later.
         skin_buttons.append(skin_button)
+
+    # Reset glow timers before selecting a new button
+    for button in skin_buttons:
+        button.glow_timer = 0  # Reset all glow timers
+
+    # Select the new skin button (the one selected in game_state.player)
+    current_skin_index = game_state.player.current_skin_index
+    selected_button = skin_buttons[current_skin_index]
+    selected_button.trigger_glow()  # Trigger glow effect for the currently selected button
 
     # Draw close button (without shimmer)
     close_button_width = int(button_width * 0.6)
@@ -753,4 +881,3 @@ def draw_skin_selection_menu(screen):
     close_button.draw(screen)
 
     return skin_buttons, close_button
-
