@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 
 import random
 
-from src.projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
+# from src.projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
 import src.constants as constants
-import src.game_state as game_state
+# import src.game_state as game_state
 from src.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()

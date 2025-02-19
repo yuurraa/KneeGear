@@ -5,7 +5,7 @@ import src.game_state as game_state
 
 from src.helpers import get_ui_scaling_factor
 
-ui_scaling_factor = get_ui_scaling_factor()# This ui_scaling_factor is calculated once and used throughout.
+ui_scaling_factor = get_ui_scaling_factor() # This ui_scaling_factor is calculated once and used throughout.
 
 
 class ChargerEnemy(BaseEnemy):
@@ -167,7 +167,7 @@ class ChargerEnemy(BaseEnemy):
         distance = math.hypot(self.x - player.x, self.y - player.y)
         if distance < (enemy_radius + player_radius):
             # Apply contact damage to the player. (nerfed damage)
-            player.take_damage(self.health * self.damage_multiplier)
+            player.take_damage((player.max_health * constants.CHARGER_MAX_HP_DAMAGE) + (constants.CHARGER_BASE_DAMAGE * self.damage_multiplier))
             # The enemy deducts the damage dealt from its own health.
             # This call to apply_damage will also handle adding damage numbers and score rewards.
             if not player.is_dead():
