@@ -4,7 +4,7 @@ import math
 import random
 
 from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.helpers import calculate_angle, get_design_mouse_pos, queue_notification
+from src.helpers import calculate_angle, get_design_mouse_pos, load_skin_selection
 import src.constants as constants
 from src.skins import Skin
 
@@ -28,11 +28,11 @@ class Player:
         self.reset()
 
         # Initialize skins
-        self.skins = [
-            Skin(name="Default", color=constants.GREEN, shape="square", rarity="Common"),
-            Skin(name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimati", frames_folder="./assets/skins/hoshimati", rarity="Legendary", scale_factor_x=4.8, scale_factor_y=3),
-        ]
-        self.current_skin_index = 0  # Default to the first skin
+        self.skins = {
+            "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
+            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimati", frames_folder="./assets/skins/hoshimati", rarity="Legendary", scale_factor_x=4.8, scale_factor_y=3),
+        }
+        self.current_skin_id = "default"
 
     def reset(self):
         # Stats
@@ -125,7 +125,7 @@ class Player:
             alpha = int(255 * (1 - death_progress))
 
         # Draw the current skin
-        current_skin = self.skins[self.current_skin_index]
+        current_skin = self.skins.get(self.current_skin_id, self.skins["default"])
         current_skin.draw(screen, self.x, self.y, self.size, flip=flip)
         
         # Direction arrow
@@ -430,6 +430,8 @@ class Player:
                 xp_gain = self.experience_to_next_level * (self.passive_xp_gain_percent_bonus / 100)
                 self.gain_experience(xp_gain)
 
-    def change_skin(self, index):
-        if 0 <= index < len(self.skins):
-            self.current_skin_index = index
+    def change_skin(self, new_skin_id):
+        if new_skin_id in self.skins:
+            self.current_skin_id = new_skin_id
+        else:
+            print(f"Error: Skin ID '{new_skin_id}' not found!")

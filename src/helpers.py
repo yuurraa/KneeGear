@@ -105,13 +105,16 @@ def fade_from_black_step(surface, step=5):
 
 def save_skin_selection():
     with open("data/skin_selection.json", "w") as f:
-        json.dump({"current_skin_index": game_state.player.current_skin_index}, f)
+        json.dump({"current_skin_id": game_state.player.current_skin_id}, f)
+    print(f"Saved skin ID: {game_state.player.current_skin_id}")  # Debug
 
 def load_skin_selection():
     if os.path.exists("data/skin_selection.json"):
         with open("data/skin_selection.json", "r") as f:
             data = json.load(f)
-            game_state.player.change_skin(data.get("current_skin_index", 0))
+            skin_id = data.get("current_skin_id", "default")
+            print(f"Loaded skin ID: {skin_id}")  # Debug
+            game_state.player.change_skin(skin_id)
             
 def queue_notification(message):
     import src.game_state as game_state

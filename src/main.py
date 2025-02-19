@@ -237,12 +237,12 @@ def main():
                         game_state.screen.fill(constants.BLACK)
                         break
                     else:
-                        for i, btn in enumerate(skin_buttons):
+                        for btn in skin_buttons:
                             if btn.rect.collidepoint(design_mouse_pos):
-                                save_skin_selection()
                                 btn.trigger_glow()
-                                game_state.player.change_skin(i)
-                
+                                game_state.player.change_skin(btn.skin_id)
+                                save_skin_selection()
+
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     game_state.skin_menu = False
                     game_state.in_main_menu = True

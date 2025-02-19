@@ -338,7 +338,7 @@ class SkinButton(UpgradeButton):
         super().__init__(x, y, width, height, dummy_upgrade, icon_image)
         
         self.glow_timer = 0  # Animates from 0 up to 500 when selected.
-        self.skin_index = None  # Set externally
+        self.skin_id = None  # Use skin_id instead of skin_index.
         self.pulse_phase = 0   # For the pulsing (scaling) effect.
         self.particles = []    # List to hold particle effects.
 
@@ -348,9 +348,8 @@ class SkinButton(UpgradeButton):
         self.pulse_phase = 0
 
     def draw(self, screen):
-        # Determine if this skin is currently selected.
-        selected = (hasattr(self, 'skin_index') and 
-                    game_state.player.current_skin_index == self.skin_index)
+        # Determine if this skin is currently selected by comparing IDs.
+        selected = (hasattr(self, 'skin_id') and game_state.player.current_skin_id == self.skin_id)
         
         # Base settings for the glow effect.
         base_glow_padding = 9      # Padding around the button for the glow.
@@ -414,6 +413,7 @@ class SkinButton(UpgradeButton):
         
         # Draw the base button content (shimmer, text, icon)
         super().draw(screen)
+
 
 def draw_level_up_menu(screen):
     # Create semi-transparent overlay
@@ -842,11 +842,12 @@ def draw_skin_selection_menu(screen):
     # Calculate the phase for the shimmer effect based on time
     phase = ((pygame.time.get_ticks() / 5) % 360) / 360.0
 
-    # Draw available skins as buttons with shimmer effect
+    # Draw available skins as buttons with shimmer effect.
+    # NOTE: If game_state.player.skins is now a dictionary, iterate over its values.
     skin_buttons = []
-    for i, skin in enumerate(game_state.player.skins):
+    for skin in game_state.player.skins.values():
         button_x = (game_state.screen_width - button_width) // 2
-        button_y = 100 + (button_height + button_spacing) * i
+        button_y = 100 + (button_height + button_spacing) * len(skin_buttons)
 
         # Get the rarity color and compute the shimmer surface
         rarity_color = UpgradeButton.RARITY_COLORS.get(skin.rarity, constants.LIGHT_GREY)
@@ -864,19 +865,21 @@ def draw_skin_selection_menu(screen):
         text_rect = text_surface.get_rect(center=(button_x + button_width // 2, button_y + button_height // 2))
         screen.blit(text_surface, text_rect)
         
-        # Optionally, store the button rect for later interaction
+        # Create a SkinButton and assign its skin_id
         skin_button = SkinButton(button_x, button_y, button_width, button_height, skin.name, skin.rarity)
-        skin_button.skin_index = i  # Save the index for comparison later.
+        skin_button.skin_id = skin.id  # Set the unique skin ID
         skin_buttons.append(skin_button)
 
     # Reset glow timers before selecting a new button
     for button in skin_buttons:
-        button.glow_timer = 0  # Reset all glow timers
+        button.glow_timer = 0
 
-    # Select the new skin button (the one selected in game_state.player)
-    current_skin_index = game_state.player.current_skin_index
-    selected_button = skin_buttons[current_skin_index]
-    selected_button.trigger_glow()  # Trigger glow effect for the currently selected button
+    # Find the currently selected skin by ID (which is now stored in game_state.player.current_skin_id)
+    current_skin_id = game_state.player.current_skin_id
+    selected_button = next((btn for btn in skin_buttons if btn.skin_id == current_skin_id), None)
+
+    if selected_button:
+        selected_button.trigger_glow()
 
     # Draw close button (without shimmer)
     close_button_width = int(button_width * 0.6)
@@ -887,3 +890,4 @@ def draw_skin_selection_menu(screen):
     close_button.draw(screen)
 
     return skin_buttons, close_button
+

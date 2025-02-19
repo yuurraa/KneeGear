@@ -4,8 +4,9 @@ import os
 import src.game_state as game_state
 
 class Skin:
-    def __init__(self, name, color, shape, rarity, frames_folder=None,
+    def __init__(self, id, name, color, shape, rarity, frames_folder=None,
                  scale_factor_x=1.0, scale_factor_y=1.0):
+        self.id = id
         self.name = name
         self.color = color
         self.shape = shape
