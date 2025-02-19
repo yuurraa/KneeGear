@@ -246,7 +246,7 @@ class UpgradeButton(Button):
             title_lines.append(' '.join(current_line))
 
         # Render wrapped title text
-        title_y = self.rect.y + 20 + (self.icon_size - 47)  # Space below the circle
+        title_y = self.rect.y + 20 + (self.icon_size - 47) + getattr(self, "title_offset", 0)
         for line in title_lines:
             title_surface = font_name.render(line, True, constants.BLACK)
             title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
@@ -294,7 +294,6 @@ class UpgradeButton(Button):
                 return True
         return False
 
-
     def update(self):
         if self.cooldown > 0:
             self.cooldown -= 1  # Decrease cooldown each frame
@@ -341,6 +340,7 @@ class SkinButton(UpgradeButton):
         self.skin_id = None  # Use skin_id instead of skin_index.
         self.pulse_phase = 0   # For the pulsing (scaling) effect.
         self.particles = []    # List to hold particle effects.
+        self.title_offset = -5
 
     def trigger_glow(self):
         # Reset the glow timer and pulse phase for a fade-in and pulse effect.
@@ -859,12 +859,6 @@ def draw_skin_selection_menu(screen):
         # Then draw the black border
         pygame.draw.rect(screen, constants.BLACK, (button_x, button_y, button_width, button_height), 2)
         
-        # And draw the skin name text on top
-        text_font = pygame.font.Font(None, get_text_scaling_factor(36))
-        text_surface = text_font.render(skin.name, True, constants.BLACK)
-        text_rect = text_surface.get_rect(center=(button_x + button_width // 2, button_y + button_height // 2))
-        screen.blit(text_surface, text_rect)
-        
         # Create a SkinButton and assign its skin_id
         skin_button = SkinButton(button_x, button_y, button_width, button_height, skin.name, skin.rarity)
         skin_button.skin_id = skin.id  # Set the unique skin ID
@@ -890,4 +884,3 @@ def draw_skin_selection_menu(screen):
     close_button.draw(screen)
 
     return skin_buttons, close_button
-
