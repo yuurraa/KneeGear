@@ -463,10 +463,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Lifesteal",
-                description=r"Adds 4% lifesteal to all attacks",
+                description=r"Adds 5% lifesteal to all attacks",
                 Rarity="Rare",
                 category=["utility", "basic", "special"],
-                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.04),
+                apply=lambda player: setattr(player, 'hp_steal', player.hp_steal + 0.05),
                 icon="lifesteal"
             ),
             Upgrade(
@@ -658,7 +658,7 @@ class UpgradePool:
             else:
                 multiplier = target / current_fraction
             # Clamp the multiplier to avoid extremes
-            multiplier = max(0.5, min(multiplier, 2.0))
+            multiplier = max(0.75, min(multiplier, 1.5))
             multipliers[cat] = multiplier
 
         # ---------------------------------------------------
@@ -676,11 +676,11 @@ class UpgradePool:
 
         # If one path is more prevalent, bias future choices to that path.
         if basic_count > special_count:
-            basic_bias = 1.35  # favor basic upgrades
-            special_bias = 0.65
+            basic_bias = 1.2  # favor basic upgrades
+            special_bias = 0.8
         elif special_count > basic_count:
-            basic_bias = 0.65
-            special_bias = 1.35
+            basic_bias = 0.8
+            special_bias = 1.2
         else:
             basic_bias = 1.0
             special_bias = 1.0

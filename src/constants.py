@@ -39,11 +39,11 @@ player_special_bullet_cooldown = 10
 player_damage_reduction_percent_cap = 97 # if damage reduction is greater than this, it will max out at 97%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.45
+level_up_xp_cost_scaling_factor = 1.46
 
 enemy_stat_doubling_time = 80 # seconds
 
-base_tank_health = 120
+base_tank_health = 115
 base_tank_damage = 2
 base_tank_xp_reward = 25
 
