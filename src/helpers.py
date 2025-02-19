@@ -18,7 +18,8 @@ def reset_game():
     game_state.projectiles.clear()
     game_state.hearts.clear()
     game_state.damage_numbers.clear()
-    
+    for bullet in game_state.bullet_pool.pool:
+        bullet.deactivate()
     game_state.enemy_scaling = 1
     game_state.fade_alpha = 0
     game_state.game_over = False

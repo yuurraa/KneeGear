@@ -291,6 +291,10 @@ def main():
             reset_triggered = False
             for event in events:
                 if event.type == pygame.QUIT:
+                    reset_game()
+                    score.reset_score()
+                    game_state.player.x = game_state.screen_width // 2
+                    game_state.player.y = game_state.screen_height // 2
                     game_state.running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE and game_state.game_over:
