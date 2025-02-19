@@ -319,13 +319,12 @@ def main():
                 not getattr(game_state, 'showing_stats', False)):
                 logic.handle_input()
                 game_state.player.update_angle(pygame.mouse.get_pos())
-                        # Draw enemies, projectiles, hearts, score and player
-            
+                
+            # Draw enemies, projectiles, hearts, score and player
             for enemy in game_state.enemies:
                 enemy.draw()
 
-            for projectile in game_state.projectiles:
-                projectile.draw(game_state.screen)
+            game_state.bullet_pool.draw(game_state.screen)
 
             for heart in game_state.hearts:
                 pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)

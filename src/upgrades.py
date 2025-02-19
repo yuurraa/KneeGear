@@ -675,8 +675,6 @@ class UpgradePool:
                     special_count += lvl
 
         # If one path is more prevalent, bias future choices to that path.
-        # In this example, upgrades with the favored tag get a multiplier of 1.6,
-        # while those with the other tag get 0.4. If counts are equal, no bias is applied.
         if basic_count > special_count:
             basic_bias = 1.35  # favor basic upgrades
             special_bias = 0.65

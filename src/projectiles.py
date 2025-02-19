@@ -25,23 +25,26 @@ class BaseBullet:
     damage: float
     colour: Tuple[int, int, int]
     pierce: int = 1
-    can_repierce: bool = False #whether the bullet can hit the same target multiple times
+    can_repierce: bool = False  # whether the bullet can hit the same target multiple times
     size: float = 5.0 * ui_scaling_factor
     scaling: float = 1.0 * ui_scaling_factor
     initial_x: float = 0
     initial_y: float = 0
-    
+    active: bool = True  # NEW: flag to indicate if bullet is in use
 
     def __post_init__(self):
         self.hit_targets = set()  # Track which targets have been hit
-    
+
     def update(self):
+        if not self.active:
+            return  # Skip update if bullet is not active
+
         self.x += self.speed * math.cos(math.radians(self.angle))
         self.y += self.speed * math.sin(math.radians(self.angle))
         
         # Check if bullet is out of bounds first
         if self.is_out_of_bounds():
-            game_state.projectiles.remove(self)
+            self.deactivate()
             return
         
         # Check for collisions based on alignment
@@ -49,16 +52,15 @@ class BaseBullet:
             for enemy in game_state.enemies[:]:  # Use slice copy to avoid modification during iteration
                 if self.check_and_apply_collision(enemy):
                     if self.pierce <= 0:
-                        game_state.projectiles.remove(self)
+                        self.deactivate()
                     break
-                
-            
         elif self.alignment == Alignment.ENEMY:
             if self.check_and_apply_collision(game_state.player):
-                game_state.projectiles.remove(self)
+                self.deactivate()
     
     def draw(self, screen):
-        pygame.draw.circle(screen, self.colour, (int(self.x), int(self.y)), int(self.size))
+        if self.active:
+            pygame.draw.circle(screen, self.colour, (int(self.x), int(self.y)), int(self.size))
     
     def get_rect(self) -> pygame.Rect:
         return pygame.Rect(self.x - self.size, self.y - self.size, self.size * 2, self.size * 2)
@@ -72,6 +74,49 @@ class BaseBullet:
 
     def check_and_apply_collision(self, target) -> bool:
         raise NotImplementedError("check_collision method must be implemented in subclasses")
+
+    def deactivate(self):
+        """Mark this bullet as inactive so it can be recycled."""
+        self.active = False
+
+    def reset(self, *args, **kwargs):
+        """
+        Reset the bullet's properties.
+        Additional keyword arguments can update bullet-specific attributes.
+        """
+        self.__init__(*args, **kwargs)
+
+class BulletPool:
+    def __init__(self):
+        self.pool = []  # Holds all bullet objects (active and inactive)
+
+    def get_bullet(self, bullet_class, *args, **kwargs):
+        """
+        Retrieve an inactive bullet of the specified class from the pool.
+        If none is available, create a new one.
+        The args/kwargs are the parameters for the bullet's constructor.
+        """
+        # Look for an inactive bullet of the same type.
+        for bullet in self.pool:
+            if isinstance(bullet, bullet_class) and not bullet.active:
+                bullet.reset(*args, **kwargs)
+                return bullet
+        # If none found, create a new bullet.
+        bullet = bullet_class(*args, **kwargs)
+        self.pool.append(bullet)
+        return bullet
+
+    def update(self):
+        """Update all active bullets."""
+        for bullet in self.pool:
+            if bullet.active:
+                bullet.update()
+
+    def draw(self, screen):
+        """Draw all active bullets."""
+        for bullet in self.pool:
+            if bullet.active:
+                bullet.draw(screen)
 
 @dataclass
 class PlayerBaseBullet(BaseBullet):

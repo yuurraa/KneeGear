@@ -61,6 +61,9 @@ damage_numbers = []
 from src.player import Player
 player:Player = None  # Will be initialized in main.py after screen dimensions are known
 
+from src.projectiles import BulletPool
+bullet_pool = BulletPool()
+
 scroll_offset = 0  # Initialize scroll offset for upgrades tab
 
 # Add this line to define the new game state

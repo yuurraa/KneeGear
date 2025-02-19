@@ -232,66 +232,63 @@ class Player:
 
     def shoot_regular(self, mouse_pos):
         import src.game_state as game_state
-        # Check if the player is dead or the cooldown (in ticks) has not elapsed
+        # Check if the player is dead or cooldown not elapsed
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_shot_time) < (self.shoot_cooldown * constants.FPS):
-            return None
+            return
 
         design_mouse_pos = get_design_mouse_pos(mouse_pos)
         mx, my = design_mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
-        # Update last shot tick to current tick count
         self.last_shot_time = game_state.in_game_ticks_elapsed
-
-        bullets = []
-        total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
         effective_multiplier = self.effective_damage_multiplier
 
+        total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
+
         if total_projectiles == 1:
-            bullets.append(PlayerBasicBullet(
+            # Request a bullet from the pool
+            game_state.bullet_pool.get_bullet(
+                PlayerBasicBullet,
                 self.x, self.y, angle, 
                 effective_multiplier,
                 self.basic_bullet_damage_multiplier, 
                 self.basic_bullet_speed_multiplier, 
                 math.ceil(self.basic_bullet_piercing_multiplier),
                 scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
-            ))
-            return bullets
-
-        # For multiple projectiles, space them out perpendicular to the shooting direction
-        spread_distance = 15  # pixels between projectiles
-        perpendicular_angle = angle + 90  # perpendicular direction in degrees
-        total_spread = spread_distance * (total_projectiles - 1)
-        start_x = self.x - (total_spread / 2) * math.cos(math.radians(perpendicular_angle))
-        start_y = self.y - (total_spread / 2) * math.sin(math.radians(perpendicular_angle))
-        
-        for i in range(total_projectiles):
-            offset_x = start_x + (spread_distance * i) * math.cos(math.radians(perpendicular_angle))
-            offset_y = start_y + (spread_distance * i) * math.sin(math.radians(perpendicular_angle))
-            bullets.append(PlayerBasicBullet(
-                offset_x, offset_y, angle,
-                effective_multiplier,
-                self.basic_bullet_damage_multiplier,
-                self.basic_bullet_speed_multiplier,
-                math.ceil(self.basic_bullet_piercing_multiplier),
-                scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
-            ))
-        
-        return bullets
+            )
+        else:
+            # For multiple projectiles, space them out perpendicular to the shooting direction.
+            spread_distance = 15  # pixels between projectiles
+            perpendicular_angle = angle + 90  # perpendicular direction in degrees
+            total_spread = spread_distance * (total_projectiles - 1)
+            start_x = self.x - (total_spread / 2) * math.cos(math.radians(perpendicular_angle))
+            start_y = self.y - (total_spread / 2) * math.sin(math.radians(perpendicular_angle))
+            
+            for i in range(total_projectiles):
+                offset_x = start_x + (spread_distance * i) * math.cos(math.radians(perpendicular_angle))
+                offset_y = start_y + (spread_distance * i) * math.sin(math.radians(perpendicular_angle))
+                game_state.bullet_pool.get_bullet(
+                    PlayerBasicBullet,
+                    offset_x, offset_y, angle,
+                    effective_multiplier,
+                    self.basic_bullet_damage_multiplier,
+                    self.basic_bullet_speed_multiplier,
+                    math.ceil(self.basic_bullet_piercing_multiplier),
+                    scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
+                )
 
     def shoot_special(self, mouse_pos):
         import src.game_state as game_state
-        # Check if the player is dead or the special cooldown (in ticks) has not elapsed
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_special_shot_time) < (self.special_shot_cooldown * constants.FPS):
-            return None
+            return
 
         design_mouse_pos = get_design_mouse_pos(mouse_pos)
         mx, my = design_mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
-        # Update last special shot tick to current tick count
         self.last_special_shot_time = game_state.in_game_ticks_elapsed
-
         effective_multiplier = self.effective_damage_multiplier
-        return [PlayerSpecialBullet(
+
+        game_state.bullet_pool.get_bullet(
+            PlayerSpecialBullet,
             self.x, self.y, angle,
             effective_multiplier,
             self.special_bullet_damage_multiplier,
@@ -301,7 +298,7 @@ class Player:
             self.special_bullet_radius_multiplier,
             can_repierce=self.special_bullet_can_repierce,
             scales_with_distance_travelled=self.special_bullet_scales_with_distance_travelled
-        )]
+        )
 
     def take_damage(self, amount):
         import src.game_state as game_state

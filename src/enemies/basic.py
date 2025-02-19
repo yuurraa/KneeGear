@@ -46,21 +46,23 @@ class BasicEnemy(BaseEnemy):
         # Homing shot using seconds
         if current_time - last_shot_time >= constants.basic_enemy_homing_interval:
             angle = calculate_angle(self.x, self.y, target_x, target_y)
-            bullet = BasicEnemyHomingBullet(
+            # Use the bullet pool to get (or create) a homing bullet:
+            game_state.bullet_pool.get_bullet(
+                BasicEnemyHomingBullet,
                 x=self.x,
                 y=self.y,
                 angle=angle,
             )
-            game_state.projectiles.append(bullet)
             self.last_shot_tick = self.current_tick
 
         # AOE shot using seconds
         if current_time - last_aoe_time >= constants.basic_enemy_bullet_interval:
             for angle in range(0, 360, 45):
-                bullet = BasicEnemyBullet(
+                # Use the bullet pool to get (or create) an AOE bullet:
+                game_state.bullet_pool.get_bullet(
+                    BasicEnemyBullet,
                     x=self.x,
                     y=self.y,
                     angle=angle,
                 )
-                game_state.projectiles.append(bullet)
             self.last_aoe_tick = self.current_tick

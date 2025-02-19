@@ -29,19 +29,19 @@ class TankEnemy(BaseEnemy):
         return constants.base_tank_health
 
     def shoot(self, target_x, target_y, game_state):
-        # Convert ticks to seconds
         if self.current_tick - self.last_shotgun_tick >= constants.tank_shotgun_interval * constants.FPS:
             from src.helpers import calculate_angle
             base_angle = calculate_angle(self.x, self.y, target_x, target_y)
             for _ in range(constants.tank_shotgun_bullet_count):
                 angle = base_angle + random.uniform(-constants.tank_shotgun_spread, 
-                                                  constants.tank_shotgun_spread)
+                                                    constants.tank_shotgun_spread)
                 speed = random.uniform(*constants.tank_bullet_speed_range) * ui_scaling_factor
-                pellet = TankEnemyBullet(
+                # Use the bullet pool to get (or create) a tank bullet:
+                game_state.bullet_pool.get_bullet(
+                    TankEnemyBullet,
                     x=self.x,
                     y=self.y,
                     angle=angle,
                     speed=speed,
                 )
-                game_state.projectiles.append(pellet)
             self.last_shotgun_tick = self.current_tick

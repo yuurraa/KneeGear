@@ -51,9 +51,12 @@ class BaseEnemy(ABC):
     def health(self, value):
         self._health = value
 
+    # UPDATED ABSTRACT METHOD: We now expect a single tuple `target` = (target_x, target_y)
     @abstractmethod
     def shoot(self, target_x, target_y, game_state):
-        """Handle shooting logic for the enemy using in-game ticks"""
+        """Handle shooting logic for the enemy using in-game ticks.
+        `target` is expected to be a tuple: (target_x, target_y)
+        """
         pass
         
     def apply_damage(self, damage, game_state):

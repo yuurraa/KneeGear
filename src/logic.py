@@ -10,10 +10,8 @@ import src.constants as constants
 
 
 def update_projectiles():
-    # Update all projectiles
-    for bullet in game_state.projectiles[:]:
-        # Update special bullet behaviors
-        bullet.update()
+    # Let the bullet pool handle updating all bullets
+    game_state.bullet_pool.update()
 
 def spawn_enemy():
     side = random.choice(["top", "bottom", "left", "right"])
@@ -88,14 +86,10 @@ def handle_input():
 
     # Handle shooting
     if mouse_pressed[0] and not game_state.game_over:
-        bullets = game_state.player.shoot_regular(pygame.mouse.get_pos())
-        if bullets:
-            game_state.projectiles.extend(bullets)
+        game_state.player.shoot_regular(pygame.mouse.get_pos())
 
     if mouse_pressed[2] and not game_state.game_over:
-        bullets = game_state.player.shoot_special(pygame.mouse.get_pos())
-        if bullets:
-            game_state.projectiles.extend(bullets)
+        game_state.player.shoot_special(pygame.mouse.get_pos())
 
     return keys
 

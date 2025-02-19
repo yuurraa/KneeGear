@@ -3,7 +3,7 @@ from src.enemies.base import BaseEnemy
 import src.constants as constants
 from src.projectiles import SniperEnemyBullet
 import random
-import src.game_state as game_state
+# import src.game_state as game_state
 from src.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()
@@ -150,21 +150,19 @@ class SniperEnemy(BaseEnemy):
             current_time - last_volley_shot_time >= constants.sniper_shot_delay):
             from src.helpers import calculate_angle
             aim_angle = calculate_angle(self.x, self.y, target_x, target_y)
-            
-            # Add a small random spread to the aim angle.
-            # Ensure you define constants.sniper_bullet_spread in your constants file, e.g. 0.0873 for ±5°.
+            # Add random spread to the aim angle.
             spread = constants.sniper_bullet_spread  
             angle_offset = random.uniform(-spread, spread)
             aim_angle += angle_offset
-            
-            bullet = SniperEnemyBullet(
+
+            # Use the bullet pool to get (or create) a sniper bullet:
+            game_state.bullet_pool.get_bullet(
+                SniperEnemyBullet,
                 x=self.x,
                 y=self.y,
                 angle=aim_angle,
                 speed=constants.sniper_bullet_speed * ui_scaling_factor,
             )
-            game_state.projectiles.append(bullet)
-            
+
             self.shots_fired_in_volley += 1
             self.last_volley_shot_tick = self.current_tick
-
