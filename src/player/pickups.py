@@ -19,10 +19,15 @@ class HeartParticle:
         self.color = generate_shades(base_color)  # Assign a dynamically generated shade
 
     def update(self):
-        self.pos[0] += self.velocity[0]
-        self.pos[1] += self.velocity[1]
-        self.lifetime -= 1
-        self.radius = max(0, self.radius - 0.1)
+        import src.engine.game_state as game_state
+        from src.player.player import PlayerState
+        if (not game_state.paused and not game_state.game_over and 
+            not game_state.showing_upgrades and not game_state.showing_stats and 
+            game_state.player.state != PlayerState.LEVELING_UP):
+            self.pos[0] += self.velocity[0]
+            self.pos[1] += self.velocity[1]
+            self.lifetime -= 1
+            self.radius = max(0, self.radius - 0.1)
 
     def draw(self, screen):
         if self.lifetime > 0 and self.radius > 0:

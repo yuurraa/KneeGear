@@ -30,7 +30,7 @@ class Player:
         # Initialize skins
         self.skins = {
             "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
-            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimati", frames_folder="./assets/skins/hoshimati", rarity="Legendary", scale_factor_x=4.8, scale_factor_y=3),
+            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimati", frames_folder="./assets/skins/hoshimati", rarity="Legendary", scale_factor_x=2.75, scale_factor_y=2.75, base_rotation=90),
         }
         self.current_skin_id = "default"
 
@@ -130,8 +130,8 @@ class Player:
         
         # Direction arrow
         if not self.dying:  # Optionally, you can hide the arrow during the dissolve                
-            arrow_start_offset = self.size * 0.8  # e.g., 60% of player size from center
-            arrow_length = self.size * 0.8        # e.g., arrow extends 50% of player size beyond that
+            arrow_start_offset = self.size * 1  # e.g., 60% of player size from center
+            arrow_length = self.size * 0.6        # e.g., arrow extends 50% of player size beyond that
             angle_rad = math.radians(self.angle)
             start_x = self.x + arrow_start_offset * math.cos(angle_rad)
             start_y = self.y + arrow_start_offset * math.sin(angle_rad)
