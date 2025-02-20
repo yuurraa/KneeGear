@@ -39,7 +39,7 @@ player_special_bullet_cooldown = 10
 player_damage_reduction_percent_cap = 97 # if damage reduction is greater than this, it will max out at 97%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
 initial_experience_to_next_level = 20
-level_up_xp_cost_scaling_factor = 1.45
+level_up_xp_cost_scaling_factor = 1.5
 
 enemy_stat_doubling_time = 80 # seconds
 
@@ -98,7 +98,7 @@ CHARGER_ACCELERATION = 0.8      # Gradual acceleration for some challenge
 CHARGER_MAX_SPEED = 20        # Fast max speed since charging is its main threat
 CHARGER_NORMAL_SPEED = 10
 CHARGER_BASE_DAMAGE = 8
-CHARGER_MAX_HP_DAMAGE = 0.25
+CHARGER_MAX_HP_DAMAGE = 0.23
 
 # Enemy drawing constants
 REGULAR_ENEMY_OUTLINE_SIZE = 32

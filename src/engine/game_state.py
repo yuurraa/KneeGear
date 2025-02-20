@@ -23,7 +23,7 @@ last_shot_time = 0
 enemies = []
 hearts = []
 projectiles = []  # Will contain all bullets regardless of alignment
-enemy_scaling = 1.07
+enemy_scaling = 1.05
 
 wave_interval = constants.base_wave_interval
 wave_active = False
@@ -52,8 +52,8 @@ screen_width = 1920
 screen_height = 1080
 screen = None
 dummy_surface = None
-DESIGN_WIDTH = 2560
-DESIGN_HEIGHT = 1440
+DESIGN_WIDTH = 3840
+DESIGN_HEIGHT = 2160
 
 damage_numbers = []
 

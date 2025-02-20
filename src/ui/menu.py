@@ -327,15 +327,23 @@ class UpgradeButton(Button):
         if self.cooldown > 0:
             self.cooldown -= 1  # Decrease cooldown each frame
             
-# Define a simple particle class.
+def generate_shades(base_color, variation=30):
+    """Generate a random shade of the given base color with slight variation."""
+    r, g, b = base_color
+    return (
+        max(0, min(255, r + random.randint(-variation, variation))),
+        max(0, min(255, g + random.randint(-variation, variation))),
+        max(0, min(255, b + random.randint(-variation, variation)))
+    )
+
 class Particle:
-    def __init__(self, pos, color):
+    def __init__(self, pos, base_color):
         self.pos = list(pos)
         self.velocity = [random.uniform(-1, 1), random.uniform(-1, 1)]
         self.radius = random.randint(5, 8)
         self.lifetime = random.randint(40, 60)
-        # Create a copy of the color so we can fade its alpha over time.
-        self.color = color
+        # Generate a dynamic shade of the base color
+        self.color = generate_shades(base_color)
 
     def update(self):
         # Move the particle.
