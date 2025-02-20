@@ -652,18 +652,14 @@ class UpgradePool:
                 current_fraction = category_counts[cat] / total_applied
             else:
                 current_fraction = 0
-            # Give a slight bonus if none have been applied yet
             if current_fraction == 0:
                 multiplier = 1.25
             else:
                 multiplier = target / current_fraction
-            # Clamp the multiplier to avoid extremes
             multiplier = max(0.75, min(multiplier, 1.5))
             multipliers[cat] = multiplier
 
-        # ---------------------------------------------------
         # EXTRA BIAS FOR BASIC vs. SPECIAL DAMAGE PATHS
-        # ---------------------------------------------------
         basic_count = 0
         special_count = 0
         for upgrade_name, lvl in player.upgrade_levels.items():
@@ -674,7 +670,6 @@ class UpgradePool:
                 if "special" in upgrade.category:
                     special_count += lvl
 
-        # If one path is more prevalent, bias future choices to that path.
         if basic_count > special_count:
             basic_bias = 1.2  # favor basic upgrades
             special_bias = 0.8
@@ -685,29 +680,28 @@ class UpgradePool:
             basic_bias = 1.0
             special_bias = 1.0
 
-        # ---------------------------------------------------
         # COMPUTE FINAL WEIGHTS
-        # ---------------------------------------------------
         weights = []
         for upgrade in available_upgrades:
             base_weight = self.rarity_weights[upgrade.Rarity]
-            # Use the best (highest) multiplier among the main categories that this upgrade has.
-            # Only consider categories that are in our multipliers mapping.
-            main_multiplier = max(
-                (multipliers.get(cat, 1) for cat in upgrade.category if cat in multipliers),
-                default=1
-            )
-            weight = base_weight * main_multiplier
+            # Average main multipliers instead of max:
+            main_factors = [multipliers.get(cat, 1) for cat in upgrade.category if cat in multipliers]
+            if main_factors:
+                main_multiplier = sum(main_factors) / len(main_factors)
+            else:
+                main_multiplier = 1
 
-            # Now apply the extra bias if the upgrade is tagged as "basic" or "special"
-            # If it has both, we average the biases.
+            # Extra bias for basic/special:
             if "basic" in upgrade.category and "special" in upgrade.category:
-                weight *= (basic_bias + special_bias) / 2
+                extra_multiplier = 1.0  # or a slight bias if desired, like 1.05
             elif "basic" in upgrade.category:
-                weight *= basic_bias
+                extra_multiplier = basic_bias
             elif "special" in upgrade.category:
-                weight *= special_bias
+                extra_multiplier = special_bias
+            else:
+                extra_multiplier = 1.0
 
+            weight = base_weight * main_multiplier * extra_multiplier
             weights.append(weight)
 
         # Randomly choose upgrades based on the computed weights.
@@ -717,12 +711,10 @@ class UpgradePool:
                 break
             chosen_upgrade = random.choices(available_upgrades, weights=weights, k=1)[0]
             selected_upgrades.append(chosen_upgrade)
-            # Remove the chosen upgrade and its weight to prevent duplicates in this selection.
             index = available_upgrades.index(chosen_upgrade)
             available_upgrades.pop(index)
             weights.pop(index)
 
-        # Debug printout (optional)
         print("Selected random upgrade(s):")
         for upgrade in selected_upgrades:
             print(f"- {upgrade.name} (Categories: {upgrade.category})")

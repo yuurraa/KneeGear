@@ -95,10 +95,10 @@ sniper_retreat_multiplier = 1.1        # Multiplier for retreat speed when playe
 base_charger_health = 50        # Moderate health since it's a kamikaze-style enemy
 base_charger_xp_reward = 20     # Good reward since it's risky to deal with
 CHARGER_ACCELERATION = 0.8      # Gradual acceleration for some challenge
-CHARGER_MAX_SPEED = 19        # Fast max speed since charging is its main threat
-CHARGER_NORMAL_SPEED = 9
-CHARGER_BASE_DAMAGE = 5
-CHARGER_MAX_HP_DAMAGE = 0.15
+CHARGER_MAX_SPEED = 20        # Fast max speed since charging is its main threat
+CHARGER_NORMAL_SPEED = 10
+CHARGER_BASE_DAMAGE = 7
+CHARGER_MAX_HP_DAMAGE = 0.21
 
 # Enemy drawing constants
 REGULAR_ENEMY_OUTLINE_SIZE = 32
