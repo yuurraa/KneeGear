@@ -5,6 +5,7 @@ import math
 import src.engine.game_state as game_state
 import src.engine.constants as constants
 from src.engine.helpers import get_ui_scaling_factor
+from src.player.skins import ProjectileSkin
 
 ui_scaling_factor = get_ui_scaling_factor()
 
@@ -116,10 +117,14 @@ class BulletPool:
         for bullet in self.pool:
             if bullet.active:
                 bullet.draw(screen)
-
 @dataclass
 class PlayerBaseBullet(BaseBullet):
-    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, pierce: int, can_repierce: bool, size: float, colour: Tuple[int, int, int]):
+    # New attribute for projectile skin.
+    projectile_skin: 'ProjectileSkin' = None  # type: ignore
+
+    def __init__(self, x: float, y: float, angle: float, speed: float, damage: float, pierce: int,
+                 can_repierce: bool, size: float, colour: Tuple[int, int, int],
+                 projectile_skin=None):
         super().__init__(
             x=x,
             y=y,
@@ -132,22 +137,29 @@ class PlayerBaseBullet(BaseBullet):
             pierce=pierce,
             can_repierce=can_repierce
         )
+        self.projectile_skin = projectile_skin
 
+    def draw(self, screen):
+        if self.active:
+            if self.projectile_skin:
+                # Update and draw the projectile skin.
+                self.projectile_skin.update()
+                self.projectile_skin.draw(screen, int(self.x), int(self.y), int(self.size))
+            else:
+                pygame.draw.circle(screen, self.colour, (int(self.x), int(self.y)), int(self.size))
+    
     def compute_scaled_damage(self) -> float:
-        # Only modify damage if the bullet was marked to scale with distance.
         if getattr(self, "scales_with_distance_travelled", False):
             travel_distance = math.hypot(self.x - self.initial_x, self.y - self.initial_y)
             if isinstance(self, PlayerBasicBullet):
-                # For a basic bullet: bonus scales up linearly, up to +200% bonus damage at 800px.
                 bonus_multiplier = (min(travel_distance, 800) / 800) * 2
             elif isinstance(self, PlayerSpecialBullet):
-                # For a special bullet: bonus of +200% at <=50px that drops to 0 bonus past 500px.
                 if travel_distance >= 500:
                     bonus_multiplier = 0
                 elif travel_distance <= 50:
-                    bonus_multiplier = 2  # Full 200% bonus
+                    bonus_multiplier = 2
                 else:
-                    bonus_multiplier = ((500 - travel_distance) / 450 * 2)  # Linear falloff from 50px to 500px
+                    bonus_multiplier = ((500 - travel_distance) / 450 * 2)
             else:
                 bonus_multiplier = 0
             return self.damage * (1 + bonus_multiplier)
@@ -158,7 +170,6 @@ class PlayerBaseBullet(BaseBullet):
         if (enemy.health > 0 and
             pygame.Rect(enemy.x - 20, enemy.y - 20, 40, 40).colliderect(self.get_rect())):
             
-            # Check if we've already hit this enemy and can't repierce
             if not self.can_repierce and enemy in self.hit_targets:
                 return False
                 
@@ -166,38 +177,49 @@ class PlayerBaseBullet(BaseBullet):
             actual_damage = self.compute_scaled_damage()
             enemy.apply_damage(actual_damage, game_state)
             game_state.player.heal(actual_damage * game_state.player.hp_steal)
-            self.hit_targets.add(enemy)  # Track that we've hit this enemy
+            self.hit_targets.add(enemy)
             return True
 
         return False
 
 class PlayerBasicBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float, basic_bullet_piercing_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
-        super().__init__(x, y, angle, 
-                         constants.player_basic_bullet_speed * basic_bullet_speed_multiplier * ui_scaling_factor,
-                         constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
-                         math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
-                         can_repierce,
-                         constants.player_basic_bullet_size * ui_scaling_factor,
-                         constants.BLUE)
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float,
+                 basic_bullet_damage_multiplier: float, basic_bullet_speed_multiplier: float,
+                 basic_bullet_piercing_multiplier: float, scales_with_distance_travelled: bool = False,
+                 can_repierce: bool=False, projectile_skin=None):
+        super().__init__(
+            x, y, angle,
+            constants.player_basic_bullet_speed * basic_bullet_speed_multiplier * ui_scaling_factor,
+            constants.player_basic_bullet_damage * base_damage_multiplier * basic_bullet_damage_multiplier,
+            math.ceil(constants.player_basic_bullet_pierce * basic_bullet_piercing_multiplier),
+            can_repierce,
+            constants.player_basic_bullet_size * ui_scaling_factor,
+            constants.BLUE,
+            projectile_skin=projectile_skin
+        )
         self.scales_with_distance_travelled = scales_with_distance_travelled
         if scales_with_distance_travelled:
-            # Record the starting position so that future updates can compute distance travelled.
             self.initial_x = x
             self.initial_y = y
 
 class PlayerSpecialBullet(PlayerBaseBullet):
-    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float, special_bullet_damage_multiplier: float, special_bullet_damage_bonus: float, special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float, special_bullet_radius_multiplier: float, scales_with_distance_travelled: bool = False, can_repierce: bool=False):
-        super().__init__(x, y, angle,
-                         constants.player_special_bullet_speed * special_bullet_speed_multiplier * ui_scaling_factor,
-                         constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier + special_bullet_damage_bonus,
-                         math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
-                         can_repierce,
-                         constants.player_special_bullet_size * special_bullet_radius_multiplier * ui_scaling_factor,
-                         constants.PURPLE)
+    def __init__(self, x: float, y: float, angle: float, base_damage_multiplier: float,
+                 special_bullet_damage_multiplier: float, special_bullet_damage_bonus: float,
+                 special_bullet_speed_multiplier: float, special_bullet_piercing_multiplier: float,
+                 special_bullet_radius_multiplier: float, scales_with_distance_travelled: bool = False,
+                 can_repierce: bool=False, projectile_skin=None):
+        super().__init__(
+            x, y, angle,
+            constants.player_special_bullet_speed * special_bullet_speed_multiplier * ui_scaling_factor,
+            constants.player_special_bullet_damage * base_damage_multiplier * special_bullet_damage_multiplier + special_bullet_damage_bonus,
+            math.ceil(constants.player_special_bullet_pierce * special_bullet_piercing_multiplier),
+            can_repierce,
+            constants.player_special_bullet_size * special_bullet_radius_multiplier * ui_scaling_factor,
+            constants.PURPLE,
+            projectile_skin=projectile_skin
+        )
         self.scales_with_distance_travelled = scales_with_distance_travelled
         if scales_with_distance_travelled:
-            # Store the starting position to measure travel distance.
             self.initial_x = x
             self.initial_y = y
 

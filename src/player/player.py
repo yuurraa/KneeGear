@@ -4,7 +4,7 @@ import math
 import random
 
 from src.engine.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.engine.helpers import calculate_angle, get_design_mouse_pos, load_skin_selection
+from src.engine.helpers import calculate_angle, get_design_mouse_pos
 import src.engine.constants as constants
 from src.player.skins import Skin
 
@@ -30,7 +30,7 @@ class Player:
         # Initialize skins
         self.skins = {
             "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
-            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimati", frames_folder="./assets/skins/hoshimati", rarity="Legendary", scale_factor_x=2.75, scale_factor_y=2.75, base_rotation=90),
+            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=15, weapon_scale_factor_y=15, base_rotation=90, weapon_offset_distance=22),
         }
         self.current_skin_id = "default"
 
@@ -130,8 +130,8 @@ class Player:
         
         # Direction arrow
         if not self.dying:  # Optionally, you can hide the arrow during the dissolve                
-            arrow_start_offset = self.size * 1  # e.g., 60% of player size from center
-            arrow_length = self.size * 0.6        # e.g., arrow extends 50% of player size beyond that
+            arrow_start_offset = self.size * 1.5  
+            arrow_length = self.size * 0.8        
             angle_rad = math.radians(self.angle)
             start_x = self.x + arrow_start_offset * math.cos(angle_rad)
             start_y = self.y + arrow_start_offset * math.sin(angle_rad)
@@ -242,10 +242,12 @@ class Player:
         self.last_shot_time = game_state.in_game_ticks_elapsed
         effective_multiplier = self.effective_damage_multiplier
 
+        # Retrieve the current skin's basic projectile skin.
+        # (Assuming self.skin is set to your current Skin instance.)
+        projectile_skin = self.skins[self.current_skin_id].projectile_skin_basic
         total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
 
         if total_projectiles == 1:
-            # Request a bullet from the pool
             game_state.bullet_pool.get_bullet(
                 PlayerBasicBullet,
                 self.x, self.y, angle, 
@@ -253,7 +255,8 @@ class Player:
                 self.basic_bullet_damage_multiplier, 
                 self.basic_bullet_speed_multiplier, 
                 math.ceil(self.basic_bullet_piercing_multiplier),
-                scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
+                scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled,
+                projectile_skin=projectile_skin
             )
         else:
             # For multiple projectiles, space them out perpendicular to the shooting direction.
@@ -273,7 +276,8 @@ class Player:
                     self.basic_bullet_damage_multiplier,
                     self.basic_bullet_speed_multiplier,
                     math.ceil(self.basic_bullet_piercing_multiplier),
-                    scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled
+                    scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled,
+                    projectile_skin=projectile_skin
                 )
 
     def shoot_special(self, mouse_pos):
@@ -287,6 +291,8 @@ class Player:
         self.last_special_shot_time = game_state.in_game_ticks_elapsed
         effective_multiplier = self.effective_damage_multiplier
 
+        # Retrieve the current skin's special projectile skin.
+        projectile_skin = self.skins[self.current_skin_id].projectile_skin_special
         game_state.bullet_pool.get_bullet(
             PlayerSpecialBullet,
             self.x, self.y, angle,
@@ -297,7 +303,8 @@ class Player:
             self.special_bullet_piercing_multiplier,
             self.special_bullet_radius_multiplier,
             can_repierce=self.special_bullet_can_repierce,
-            scales_with_distance_travelled=self.special_bullet_scales_with_distance_travelled
+            scales_with_distance_travelled=self.special_bullet_scales_with_distance_travelled,
+            projectile_skin=projectile_skin
         )
         self.special_attack_bonus_damage = 0
 
