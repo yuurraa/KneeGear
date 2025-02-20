@@ -1,6 +1,5 @@
 import pygame
 import random
-from src.enemies import BasicEnemy, TankEnemy, SniperEnemy, ChargerEnemy
 from src.player.pickups import HeartEffect
 import src.engine.game_state as game_state
 import src.engine.constants as constants
@@ -9,39 +8,6 @@ import src.engine.constants as constants
 def update_projectiles():
     # Let the bullet pool handle updating all bullets
     game_state.bullet_pool.update()
-
-def spawn_enemy():
-    side = random.choice(["top", "bottom", "left", "right"])
-    if side == "top":
-        x = random.randint(0, game_state.screen_width)
-        y = -20
-    elif side == "bottom":
-        x = random.randint(0, game_state.screen_width)
-        y = game_state.screen_height + 20
-    elif side == "left":
-        x = -20
-        y = random.randint(0, game_state.screen_height)
-    else:  # "right"
-        x = game_state.screen_width + 20
-        y = random.randint(0, game_state.screen_height)
-
-    # Use weighted random selection for enemy type
-    enemy_types = [
-        (BasicEnemy, 0.6),  
-        (TankEnemy, 0.3),
-        (ChargerEnemy, 0.2),
-        (SniperEnemy, 0.2)    
-    ]
-    
-    EnemyClass = random.choices(
-        population=[enemy_type for enemy_type, _ in enemy_types],
-        weights=[weight for _, weight in enemy_types],
-        k=1
-    )[0]
-    
-    enemy = EnemyClass(x, y, game_state.enemy_scaling)
-    game_state.enemies.append(enemy)
-
 
 def spawn_heart():
     # Use the player's max pickups to limit hearts
@@ -94,9 +60,3 @@ def handle_input():
         game_state.player.shoot_special(pygame.mouse.get_pos())
 
     return keys
-
-
-def update_enemies():
-    # current_tick = game_state.in_game_ticks_elapsed  
-    for enemy in game_state.enemies[:]:
-        enemy.update(game_state.player.x, game_state.player.y, game_state)

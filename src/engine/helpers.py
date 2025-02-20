@@ -13,6 +13,8 @@ def calculate_angle(x1, y1, x2, y2):
 
 
 def reset_game():
+    from src.enemies.enemy_pool import EnemyPool
+    enemy_pool = EnemyPool()
     random.seed(time.time())
     game_state.player.reset()
     if hasattr(game_state, 'current_upgrade_buttons'):
@@ -23,6 +25,7 @@ def reset_game():
     game_state.projectiles.clear()
     game_state.hearts.clear()
     game_state.damage_numbers.clear()
+    game_state.experience_updates.clear()
     for bullet in game_state.bullet_pool.pool:
         bullet.deactivate()
     game_state.player.upgrade_levels = {}
@@ -40,7 +43,10 @@ def reset_game():
     score.reset_score()
     game_state.player.x = game_state.screen_width // 2
     game_state.player.y = game_state.screen_height // 2
-    game_state.running = False
+    game_state.notification_visible = False
+    game_state.notification_message = ""
+    game_state.notification_queue = []
+    game_state.paused = False
     
 def load_music_settings():
     """Load music settings from a file."""

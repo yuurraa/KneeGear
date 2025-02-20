@@ -96,11 +96,6 @@ class BaseEnemy(ABC):
         if not self.dying:
             self.move(target_x, target_y, game_state)
             self.shoot(target_x, target_y, game_state)
-        
-        #death animation finished
-        if self.dying and self.current_tick - self.death_animation_start_tick > self.death_animation_duration * constants.FPS:
-            import src.engine.game_state as game_state
-            game_state.enemies.remove(self)
             
     def _restrict_to_boundaries(self, game_state):
         """Helper method to keep enemies within screen boundaries"""

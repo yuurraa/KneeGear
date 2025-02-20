@@ -534,7 +534,7 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Size Matters",
-                description="Reduces all sizes by 30%, increases player movement speed by 40%",
+                description="Reduces player size by 30%, increases player movement speed by 40%",
                 Rarity="Mythic",
                 category=["utility"],
                 apply=lambda player: [

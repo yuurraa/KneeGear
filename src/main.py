@@ -12,6 +12,7 @@ from src.player.player import Player, PlayerState
 from src.engine.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
 from src.ui.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
 import random
+from src.enemies.enemy_pool import EnemyPool
 
 def show_intro_screen(screen, screen_width, screen_height):
     # Create text surface using design resolution
@@ -97,7 +98,7 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
 def calculate_enemy_scaling(elapsed_seconds):
     # Double stats every 200 seconds
     # Using 2^(t/200) as scaling formula
-    scaling_factor = 2 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
+    scaling_factor = 2.05 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
 def calculate_wave_spawn_interval(elapsed_seconds):
@@ -261,6 +262,7 @@ def main():
         # Load volume at the start
         constants.music_volume = load_music_settings()
 
+        enemy_pool = EnemyPool()
         while game_state.running:
             clock.tick(constants.FPS)
             # Fill the background:
@@ -311,8 +313,7 @@ def main():
                 game_state.player.update_angle(pygame.mouse.get_pos())
                 
             # Draw enemies, projectiles, hearts, score and player
-            for enemy in game_state.enemies:
-                enemy.draw()
+            enemy_pool.draw(game_state.screen)
 
             game_state.bullet_pool.draw(game_state.screen)
 
@@ -364,25 +365,12 @@ def main():
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         design_mouse_pos = get_design_mouse_pos(event.pos)
                         if quit_button.rect.collidepoint(design_mouse_pos):
-                            if hasattr(game_state, 'final_time'):
-                                delattr(game_state, 'final_time')
                             reset_game()
-                            score.reset_score()
-                            
-                            game_state.player.x = game_state.screen_width // 2
-                            game_state.player.y = game_state.screen_height // 2
-                            game_state.paused = False
                             game_state.in_main_menu = True
                             game_loop_faded_in = False
-                            game_state.running = False  # Exit game loop to return to main menu
-                            game_state.notification_visible = False
-                            game_state.notification_message = ""
-                            game_state.notification_queue = []
-                            game_state.damage_numbers.clear()
-                            game_state.experience_updates.clear()
-                            
                             fade_to_black(game_state.screen, 5, 10)
                             game_state.screen.fill(constants.BLACK)
+                            game_state.running = False
                             break
                         elif resume_button.rect.collidepoint(design_mouse_pos):
                             game_state.paused = False  # Close the pause menu
@@ -456,7 +444,7 @@ def main():
                     game_state.next_enemy_spawn_time = in_game_seconds + 0.5
             else:
                 if in_game_seconds >= game_state.next_enemy_spawn_time and game_state.wave_enemies_spawned < 5:
-                    logic.spawn_enemy()
+                    enemy_pool.spawn_enemy()  # Now handled by EnemyPool
                     game_state.wave_enemies_spawned += 1
                     game_state.next_enemy_spawn_time = in_game_seconds + 0.5
                 if game_state.wave_enemies_spawned >= 5:
@@ -465,7 +453,7 @@ def main():
 
 
             # Update game objects
-            logic.update_enemies()
+            enemy_pool.update()
             logic.update_projectiles()
             logic.spawn_heart()
             logic.update_hearts()
