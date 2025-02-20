@@ -85,7 +85,7 @@ class Skin:
                 self.projectile_skin_special = HoshimachiProjectileSkin(base_image, self.weapon_scale_factor_x - 7, self.weapon_scale_factor_y - 7)
                 
             else:
-                self.projectile_skin_special = ProjectileSkin(special_path, self.weapon_scale_factor_x - 5, self.weapon_scale_factor_y - 5)
+                self.projectile_skin_special = ProjectileSkin(special_path, self.weapon_scale_factor_x - 3, self.weapon_scale_factor_y - 3)
             print("Loaded special projectile skin:", special_path)
 
 

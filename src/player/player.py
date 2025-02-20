@@ -31,7 +31,7 @@ class Player:
         self.skins = {
             "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
             "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=15, weapon_scale_factor_y=15, base_rotation=90, weapon_offset_distance=22),
-            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=8, weapon_scale_factor_y=8, base_rotation=90, weapon_offset_distance=50),
+            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=7, weapon_scale_factor_y=7, base_rotation=90, weapon_offset_distance=50),
         }
         self.current_skin_id = "default"
 
