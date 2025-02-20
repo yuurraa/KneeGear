@@ -23,7 +23,8 @@ class HoshimachiProjectileSkin:
         scale_x = size * self.weapon_scale_factor_x
         scale_y = size * self.weapon_scale_factor_y
         scaled_image = pygame.transform.scale(self.base_image, (int(scale_x), int(scale_y)))
-        # Rotate the scaled image by the current angle
+        # Rotate only based on the projectile's own spin
         rotated_image = pygame.transform.rotate(scaled_image, self.current_angle)
+        # Draw it centered at (x, y)
         rect = rotated_image.get_rect(center=(x, y))
         screen.blit(rotated_image, rect.topleft)
