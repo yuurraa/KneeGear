@@ -97,8 +97,8 @@ base_charger_xp_reward = 21     # Good reward since it's risky to deal with
 CHARGER_ACCELERATION = 0.8      # Gradual acceleration for some challenge
 CHARGER_MAX_SPEED = 20        # Fast max speed since charging is its main threat
 CHARGER_NORMAL_SPEED = 10
-CHARGER_BASE_DAMAGE = 8
-CHARGER_MAX_HP_DAMAGE = 0.23
+CHARGER_BASE_DAMAGE = 12
+CHARGER_MAX_HP_DAMAGE = 0.15
 
 # Enemy drawing constants
 REGULAR_ENEMY_OUTLINE_SIZE = 32

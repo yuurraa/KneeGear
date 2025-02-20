@@ -11,6 +11,7 @@ ui_scaling_factor = get_ui_scaling_factor()
 class SniperEnemy(BaseEnemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
+        self.reset(x, y, scaling)
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_sniper_xp_reward * self.scaling)
         
@@ -166,3 +167,18 @@ class SniperEnemy(BaseEnemy):
 
             self.shots_fired_in_volley += 1
             self.last_volley_shot_tick = self.current_tick
+            
+    def reset(self, x, y, scaling):
+        super().reset(x, y, scaling)
+        self.score_reward = math.floor(constants.base_sniper_xp_reward * self.scaling)
+        self.initial_delay_ticks = random.uniform(2.0, constants.sniper_volley_interval) * constants.FPS
+        self.last_shot_tick = self.current_tick - constants.sniper_volley_interval * constants.FPS + self.initial_delay_ticks
+        self.last_volley_shot_tick = self.last_shot_tick
+        self.shots_fired_in_volley = 69
+        self.speed = constants.sniper_move_speed * ui_scaling_factor
+        self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE
+        self.inner_size = constants.SNIPER_ENEMY_INNER_SIZE
+        self.outline_color = constants.SNIPER_ENEMY_OUTLINE_COLOR
+        self.inner_color = constants.SNIPER_ENEMY_INNER_COLOR
+        self.strafe_timer = 0
+        self.current_strafe_angle = random.uniform(0, 2 * math.pi)

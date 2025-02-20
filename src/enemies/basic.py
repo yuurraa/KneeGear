@@ -12,6 +12,7 @@ ui_scaling_factor = get_ui_scaling_factor()
 class BasicEnemy(BaseEnemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
+        self.reset(x, y, scaling)
         self._health = self.max_health
         
         # Randomized initial delay for the homing shot:
@@ -66,3 +67,16 @@ class BasicEnemy(BaseEnemy):
                     angle=angle,
                 )
             self.last_aoe_tick = self.current_tick
+            
+    def reset(self, x, y, scaling):
+        super().reset(x, y, scaling)
+        self.initial_delay_homing_ticks = random.uniform(1.0, constants.basic_enemy_homing_interval) * constants.FPS
+        self.last_shot_tick = self.current_tick - constants.basic_enemy_homing_interval * constants.FPS + self.initial_delay_homing_ticks
+        self.initial_delay_aoe_ticks = random.uniform(1.0, constants.basic_enemy_bullet_interval) * constants.FPS
+        self.last_aoe_tick = self.current_tick - constants.basic_enemy_bullet_interval * constants.FPS + self.initial_delay_aoe_ticks
+        self.score_reward = math.floor(constants.base_basic_enemy_xp_reward * self.scaling)
+        self.speed = constants.basic_enemy_speed * ui_scaling_factor
+        self.outline_size = constants.REGULAR_ENEMY_OUTLINE_SIZE
+        self.inner_size = constants.REGULAR_ENEMY_INNER_SIZE
+        self.outline_color = constants.REGULAR_ENEMY_OUTLINE_COLOR
+        self.inner_color = constants.REGULAR_ENEMY_INNER_COLOR

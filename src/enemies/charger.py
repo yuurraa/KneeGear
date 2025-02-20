@@ -12,6 +12,7 @@ class ChargerEnemy(BaseEnemy):
     def __init__(self, x, y, scaling):
         super().__init__(x, y, scaling)
         # Set starting health based on scaling
+        self.reset(x, y, scaling)
         self._health = self.max_health
         self.damage_multiplier = 1.1
         # Score reward based on a constant multiplier (make sure to define this in your constants)
@@ -173,3 +174,22 @@ class ChargerEnemy(BaseEnemy):
                 self.apply_damage(self.health, game_state)
                 self.vx = 0
                 self.vy = 0
+                
+    def reset(self, x, y, scaling):
+        super().reset(x, y, scaling)
+        self.damage_multiplier = 1.1
+        self.score_reward = math.floor(constants.base_charger_xp_reward * self.scaling)
+        self.vx = 0.0
+        self.vy = 0.0
+        self.acceleration = constants.CHARGER_ACCELERATION * ui_scaling_factor
+        self.max_speed = constants.CHARGER_MAX_SPEED * ui_scaling_factor
+        self.outline_size = constants.CHARGER_ENEMY_OUTLINE_SIZE
+        self.inner_size = constants.CHARGER_ENEMY_INNER_SIZE
+        self.outline_color = constants.CHARGER_ENEMY_OUTLINE_COLOR
+        self.inner_color = constants.CHARGER_ENEMY_INNER_COLOR
+        self.charge_cooldown = 0
+        self.charge_distance = 250 * ui_scaling_factor
+        self.charge_speed = 20.0 * ui_scaling_factor
+        self.charge_distance_max = 900 * ui_scaling_factor
+        self.charge_distance_traveled = 0
+        self.charge_cooldown_duration = 30

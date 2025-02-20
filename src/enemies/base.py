@@ -9,7 +9,6 @@ ui_scaling_factor = get_ui_scaling_factor()
 class BaseEnemy(ABC):
     def __init__(self, x, y, scaling):
         self.x = x
-
         self.y = y
         self.scaling = scaling
         self.score_reward = 5
@@ -25,6 +24,9 @@ class BaseEnemy(ABC):
         
         self.dying = False
         self.death_animation_start_tick = 0
+        self.active = True
+        
+        self._health = self.max_health
 
     @property
     @abstractmethod
@@ -66,7 +68,7 @@ class BaseEnemy(ABC):
             "y": self.y,
             "value": damage,
             "timer": 20,
-            "color": constants.PURPLE
+            "color": constants.PURPLE   
         })
 
         if self._health <= 0:
@@ -162,3 +164,18 @@ class BaseEnemy(ABC):
                 bar_width=self.inner_size,
                 bar_height=5
             )
+            
+    def reset(self, x, y, scaling):
+        """
+        Reset common enemy properties for object pooling.
+        This method reinitializes the enemy's position, scaling, health, tick counter,
+        and resets state flags.
+        """
+        self.x = x
+        self.y = y
+        self.scaling = scaling
+        self.current_tick = 0
+        self.dying = False
+        self.death_animation_start_tick = 0
+        self._health = self.max_health
+        self.active = True  # Mark enemy as active again
