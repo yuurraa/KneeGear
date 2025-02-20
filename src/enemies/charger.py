@@ -13,6 +13,7 @@ class ChargerEnemy(BaseEnemy):
         super().__init__(x, y, scaling)
         # Set starting health based on scaling
         self._health = self.max_health
+        self.damage_multiplier = 1.1
         # Score reward based on a constant multiplier (make sure to define this in your constants)
         self.score_reward = math.floor(constants.base_charger_xp_reward * self.scaling)
         
@@ -165,7 +166,7 @@ class ChargerEnemy(BaseEnemy):
         distance = math.hypot(self.x - player.x, self.y - player.y)
         if distance < (enemy_radius + player_radius):
             # Apply contact damage to the player. (nerfed damage)
-            player.take_damage((player.max_health * constants.CHARGER_MAX_HP_DAMAGE) + (constants.CHARGER_BASE_DAMAGE))
+            player.take_damage((player.max_health * constants.CHARGER_MAX_HP_DAMAGE) + (constants.CHARGER_BASE_DAMAGE * self.damage_multiplier))
             # The enemy deducts the damage dealt from its own health.
             # This call to apply_damage will also handle adding damage numbers and score rewards.
             if not player.is_dead():

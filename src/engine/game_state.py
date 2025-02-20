@@ -23,7 +23,7 @@ last_shot_time = 0
 enemies = []
 hearts = []
 projectiles = []  # Will contain all bullets regardless of alignment
-enemy_scaling = 1.0
+enemy_scaling = 1.07
 
 wave_interval = constants.base_wave_interval
 wave_active = False
