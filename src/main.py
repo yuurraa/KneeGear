@@ -292,22 +292,9 @@ def main():
             for event in events:
                 if event.type == pygame.QUIT:
                     reset_game()
-                    score.reset_score()
-                    game_state.player.x = game_state.screen_width // 2
-                    game_state.player.y = game_state.screen_height // 2
-                    game_state.running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE and game_state.game_over:
-                        if hasattr(game_state, 'final_time'):
-                            delattr(game_state, 'final_time')
                         reset_game()
-                        score.reset_score()
-                        game_state.enemies.clear()
-                        game_state.projectiles.clear()
-                        game_state.hearts.clear()
-
-                        game_state.player.x = game_state.screen_width // 2
-                        game_state.player.y = game_state.screen_height // 2
                         game_state.screen.fill(constants.LIGHT_GREY)
                         game_loop_faded_in = False
                         game_state.fade_alpha = 255

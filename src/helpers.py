@@ -2,6 +2,8 @@ import math
 import pygame
 import os
 import json
+import random
+import time
 
 import src.game_state as game_state
 import src.constants as constants
@@ -11,15 +13,19 @@ def calculate_angle(x1, y1, x2, y2):
 
 
 def reset_game():
-    
+    random.seed(time.time())
     game_state.player.reset()
-
+    if hasattr(game_state, 'current_upgrade_buttons'):
+        delattr(game_state, 'current_upgrade_buttons')
+    if hasattr(game_state, 'final_time'):
+        delattr(game_state, 'final_time')
     game_state.enemies.clear()
     game_state.projectiles.clear()
     game_state.hearts.clear()
     game_state.damage_numbers.clear()
     for bullet in game_state.bullet_pool.pool:
         bullet.deactivate()
+    game_state.player.upgrade_levels = {}
     game_state.enemy_scaling = 1
     game_state.fade_alpha = 0
     game_state.game_over = False
@@ -30,6 +36,11 @@ def reset_game():
     game_state.wave_enemies_spawned = 0
     game_state.next_enemy_spawn_time = 0
     game_state.first_enemy_spawned = False  # Reset first enemy spawn flag
+    import src.score as score
+    score.reset_score()
+    game_state.player.x = game_state.screen_width // 2
+    game_state.player.y = game_state.screen_height // 2
+    game_state.running = False
     
 def load_music_settings():
     """Load music settings from a file."""
