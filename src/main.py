@@ -317,7 +317,8 @@ def main():
             game_state.bullet_pool.draw(game_state.screen)
 
             for heart in game_state.hearts:
-                pygame.draw.circle(game_state.screen, constants.PINK, (heart[0], heart[1]), 10)
+                heart.update()  # Update particle animation
+                heart.draw(game_state.screen)  # Draw the heart effect
 
             game_state.player.draw(game_state.screen)
             score.draw_score(game_state.screen)
