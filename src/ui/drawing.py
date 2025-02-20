@@ -1,11 +1,9 @@
 import pygame
-import math
 import random
 
-from src.helpers import calculate_angle
-import src.game_state as game_state
-import src.constants as constants
-from src.helpers import get_text_scaling_factor
+import src.engine.game_state as game_state
+import src.engine.constants as constants
+from src.engine.helpers import get_text_scaling_factor
     
 def draw_experience_bar():
     screen = game_state.screen
@@ -128,7 +126,7 @@ def draw_player_state_value_updates():
         screen.blit(text_surface, (update["x"] - text.get_width() // 2 + update["x_offset"], 
                                  update["y"] - text.get_height() // 2 + random.randint(-1, 1)))
 
-        from src.player import PlayerState
+        from src.player.player import PlayerState
         if not game_state.paused and not game_state.showing_stats and not game_state.showing_upgrades and game_state.player.state != PlayerState.LEVELING_UP:
             update["y"] -= 3
             update["timer"] -= 1
@@ -147,7 +145,7 @@ def draw_player_state_value_updates():
         screen.blit(text_surface, (exp_update["x"] - text.get_width() // 2 + exp_update["x_offset"], 
                                  exp_update["y"] - 15 - text.get_height() // 2))
 
-        from src.player import PlayerState
+        from src.player.player import PlayerState
         if not game_state.paused and not game_state.showing_stats and not game_state.showing_upgrades and game_state.player.state != PlayerState.LEVELING_UP:
             exp_update["y"] -= 1  # Move up by 1 pixel per frame
             exp_update["timer"] -= 1
@@ -178,7 +176,7 @@ def draw_notification():
     visible_duration = game_state.notification_visible_duration
     slide_out_duration = game_state.notification_slide_out_duration
 
-    from src.player import PlayerState
+    from src.player.player import PlayerState
     # Determine whether to freeze the notification (if paused or in upgrades/stats)
     freeze = game_state.paused or game_state.showing_upgrades or game_state.showing_stats or game_state.player.state == PlayerState.LEVELING_UP
 

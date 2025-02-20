@@ -1,7 +1,7 @@
 import pygame
 import math
 import os
-import src.game_state as game_state
+import src.engine.game_state as game_state
 
 class Skin:
     def __init__(self, id, name, color, shape, rarity, frames_folder=None,
@@ -42,7 +42,7 @@ class Skin:
             # Center the scaled frame on (x, y)
             screen.blit(scaled_frame, (x - scaled_width / 2, y - scaled_height / 2))
             # Update animation frame (each frame shows for frame_delay ticks)
-            from src.player import PlayerState
+            from src.player.player import PlayerState
             if not game_state.paused and not game_state.game_over and not game_state.showing_upgrades and not game_state.showing_stats and game_state.player.state != PlayerState.LEVELING_UP:
                 self.frame_counter += 1
                 if self.frame_counter >= self.frame_delay:

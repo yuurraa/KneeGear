@@ -1,12 +1,12 @@
 from src.enemies.base import BaseEnemy
-from src.projectiles import BasicEnemyHomingBullet, BasicEnemyBullet
-import src.constants as constants
-from src.helpers import calculate_angle
+from src.engine.projectiles import BasicEnemyHomingBullet, BasicEnemyBullet
+import src.engine.constants as constants
+from src.engine.helpers import calculate_angle
 import math
 import random
-import src.game_state as game_state
+import src.engine.game_state as game_state
 
-from src.helpers import get_ui_scaling_factor
+from src.engine.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()
 class BasicEnemy(BaseEnemy):

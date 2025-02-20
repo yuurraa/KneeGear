@@ -1,10 +1,10 @@
 import math
 from src.enemies.base import BaseEnemy
-import src.constants as constants
-from src.projectiles import SniperEnemyBullet
+import src.engine.constants as constants
+from src.engine.projectiles import SniperEnemyBullet
 import random
 # import src.game_state as game_state
-from src.helpers import get_ui_scaling_factor
+from src.engine.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()
 
@@ -148,7 +148,7 @@ class SniperEnemy(BaseEnemy):
 
         if (self.shots_fired_in_volley < 3 and 
             current_time - last_volley_shot_time >= constants.sniper_shot_delay):
-            from src.helpers import calculate_angle
+            from src.engine.helpers import calculate_angle
             aim_angle = calculate_angle(self.x, self.y, target_x, target_y)
             # Add random spread to the aim angle.
             spread = constants.sniper_bullet_spread  

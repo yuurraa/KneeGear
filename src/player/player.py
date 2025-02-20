@@ -3,10 +3,10 @@ import pygame
 import math
 import random
 
-from src.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.helpers import calculate_angle, get_design_mouse_pos, load_skin_selection
-import src.constants as constants
-from src.skins import Skin
+from src.engine.projectiles import PlayerBasicBullet, PlayerSpecialBullet
+from src.engine.helpers import calculate_angle, get_design_mouse_pos, load_skin_selection
+import src.engine.constants as constants
+from src.player.skins import Skin
 
 class PlayerState(Enum):
     ALIVE = "alive"
@@ -110,7 +110,7 @@ class Player:
 
         design_mouse_pos = get_design_mouse_pos(pygame.mouse.get_pos())
         mx, my = design_mouse_pos
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         flip = False
         if not game_state.paused and not game_state.game_over and not game_state.showing_upgrades and not game_state.showing_stats and game_state.player.state != PlayerState.LEVELING_UP:
             flip = mx > self.x
@@ -212,7 +212,7 @@ class Player:
     @property
     def effective_damage_multiplier(self):
         # Import game_state locally to avoid potential circular dependencies.
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         # For each enemy on screen, add 20% extra damage.
         enemy_bonus = 1 + self.rage_percent_bonus/100 * len(game_state.enemies)
         projectile_bonus = 1 + self.frenzy_percent_bonus/100 * len(game_state.projectiles)
@@ -231,7 +231,7 @@ class Player:
         return self.base_damage_multiplier * enemy_bonus * projectile_bonus * fear_bonus * buff_bonus * no_damage_multiplier
 
     def shoot_regular(self, mouse_pos):
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         # Check if the player is dead or cooldown not elapsed
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_shot_time) < (self.shoot_cooldown * constants.FPS):
             return
@@ -277,7 +277,7 @@ class Player:
                 )
 
     def shoot_special(self, mouse_pos):
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_special_shot_time) < (self.special_shot_cooldown * constants.FPS):
             return
 
@@ -301,7 +301,7 @@ class Player:
         )
 
     def take_damage(self, amount):
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         # New: Reset the damage bonus timer because the player just took damage.
         self.last_damage_tick = self.current_tick
         
@@ -334,7 +334,7 @@ class Player:
         
 
     def get_cooldown_progress(self):
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         current_tick = game_state.in_game_ticks_elapsed
         regular_progress = (current_tick - self.last_shot_time) / (self.shoot_cooldown * constants.FPS)
         special_progress = (current_tick - self.last_special_shot_time) / (self.special_shot_cooldown * constants.FPS)
@@ -343,7 +343,7 @@ class Player:
     
     def gain_experience(self, amount):
         # Apply XP gain bonus as a percentage increase
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
         modified_amount = amount * self.xp_gain_multiplier
         self.player_experience += modified_amount
         if self.player_experience >= self.experience_to_next_level:
@@ -365,8 +365,8 @@ class Player:
         print(f"Player leveled up to level {self.player_level}")
 
     def gain_random_upgrade(self):
-        from src.upgrades import UpgradePool
-        import src.game_state as game_state
+        from src.player.upgrades import UpgradePool
+        import src.engine.game_state as game_state
         
         upgrade_pool = UpgradePool()
         upgrades = upgrade_pool.get_random_upgrades(1, self)
@@ -384,7 +384,7 @@ class Player:
         self.applied_upgrades.add(upgrade)
         print(f"Applied upgrade: {upgrade.name}")  # Debugging output
 
-        import src.game_state as game_state
+        import src.engine.game_state as game_state
 
         # Ensure notification queue exists
         if not hasattr(game_state, "notification_queue"):

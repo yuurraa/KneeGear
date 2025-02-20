@@ -1,12 +1,9 @@
 import math
 from abc import ABC, abstractmethod
-
-import random
-
 # from src.projectiles import BasicEnemyHomingBullet, BaseBullet, Alignment, TankEnemyBullet, BasicEnemyBullet, SniperEnemyBullet
-import src.constants as constants
+import src.engine.constants as constants
 # import src.game_state as game_state
-from src.helpers import get_ui_scaling_factor
+from src.engine.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()
 class BaseEnemy(ABC):
@@ -78,13 +75,13 @@ class BaseEnemy(ABC):
                 self.dying = True
                 self.death_animation_start_tick = self.current_tick
                 # Reward the player only once at the start of the death animation.
-                from src.score import increase_score
+                from src.engine.score import increase_score
                 increase_score(self.score_reward)
                 game_state.player.gain_experience(self.score_reward)
 
     def move(self, target_x, target_y, game_state):
         """Default movement behavior for enemies"""
-        from src.helpers import calculate_angle
+        from src.engine.helpers import calculate_angle
         angle = math.radians(calculate_angle(self.x, self.y, target_x, target_y))
         self.x += self.speed * math.cos(angle) * ui_scaling_factor
         self.y += self.speed * math.sin(angle) * ui_scaling_factor
@@ -102,7 +99,7 @@ class BaseEnemy(ABC):
         
         #death animation finished
         if self.dying and self.current_tick - self.death_animation_start_tick > self.death_animation_duration * constants.FPS:
-            import src.game_state as game_state
+            import src.engine.game_state as game_state
             game_state.enemies.remove(self)
             
     def _restrict_to_boundaries(self, game_state):
@@ -112,9 +109,9 @@ class BaseEnemy(ABC):
     
     def draw(self):
         import pygame
-        import src.game_state as game_state
-        import src.constants as constants
-        from src.drawing import draw_health_bar
+        import src.engine.game_state as game_state
+        import src.engine.constants as constants
+        from src.ui.drawing import draw_health_bar
         
         screen = game_state.screen
 

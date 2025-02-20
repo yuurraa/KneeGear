@@ -1,10 +1,9 @@
 import pygame
 import numpy as np
-from src.helpers import save_music_settings, get_design_mouse_pos, get_text_scaling_factor, get_ui_scaling_factor
-import src.constants as constants
-import src.game_state as game_state
-from src.player import PlayerState
-from src.upgrades import UpgradePool
+from src.engine.helpers import save_music_settings, get_design_mouse_pos, get_text_scaling_factor, get_ui_scaling_factor
+import src.engine.constants as constants
+import src.engine.game_state as game_state
+from src.player.upgrades import UpgradePool
 import math
 import random
 

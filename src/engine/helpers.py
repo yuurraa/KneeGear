@@ -5,8 +5,8 @@ import json
 import random
 import time
 
-import src.game_state as game_state
-import src.constants as constants
+import src.engine.game_state as game_state
+import src.engine.constants as constants
 
 def calculate_angle(x1, y1, x2, y2):
     return math.degrees(math.atan2(y2 - y1, x2 - x1))
@@ -36,7 +36,7 @@ def reset_game():
     game_state.wave_enemies_spawned = 0
     game_state.next_enemy_spawn_time = 0
     game_state.first_enemy_spawned = False  # Reset first enemy spawn flag
-    import src.score as score
+    import src.engine.score as score
     score.reset_score()
     game_state.player.x = game_state.screen_width // 2
     game_state.player.y = game_state.screen_height // 2
@@ -129,7 +129,7 @@ def load_skin_selection():
             game_state.player.change_skin(skin_id)
             
 def queue_notification(message):
-    import src.game_state as game_state
+    import src.engine.game_state as game_state
     # Each notification is a dict with a message and a timer.
     game_state.notifications.append({
         "message": message,

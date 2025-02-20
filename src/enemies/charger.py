@@ -1,9 +1,9 @@
 import math
 from src.enemies.base import BaseEnemy
-import src.constants as constants
-import src.game_state as game_state
+import src.engine.constants as constants
+import src.engine.game_state as game_state
 
-from src.helpers import get_ui_scaling_factor
+from src.engine.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor() # This ui_scaling_factor is calculated once and used throughout.
 

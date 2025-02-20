@@ -1,17 +1,16 @@
-import time
 import pygame
 from mutagen import File
 import threading
 import os  # Import os module to check for file existence
 
-import src.constants as constants
-import src.game_state as game_state
-import src.logic as logic
-import src.drawing as drawing
-import src.score as score
-from src.player import Player, PlayerState
-from src.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
-from src.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
+import src.engine.constants as constants
+import src.engine.game_state as game_state
+import src.engine.logic as logic
+import src.ui.drawing as drawing
+import src.engine.score as score
+from src.player.player import Player, PlayerState
+from src.engine.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
+from src.ui.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
 import random
 
 def show_intro_screen(screen, screen_width, screen_height):

@@ -1,10 +1,9 @@
 import random
 import math
 from src.enemies.base import BaseEnemy
-from src.projectiles import TankEnemyBullet
-import src.constants as constants
-import src.game_state as game_state
-from src.helpers import get_ui_scaling_factor
+from src.engine.projectiles import TankEnemyBullet
+import src.engine.constants as constants
+from src.engine.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()
 class TankEnemy(BaseEnemy):
@@ -30,7 +29,7 @@ class TankEnemy(BaseEnemy):
 
     def shoot(self, target_x, target_y, game_state):
         if self.current_tick - self.last_shotgun_tick >= constants.tank_shotgun_interval * constants.FPS:
-            from src.helpers import calculate_angle
+            from src.engine.helpers import calculate_angle
             base_angle = calculate_angle(self.x, self.y, target_x, target_y)
             for _ in range(constants.tank_shotgun_bullet_count):
                 angle = base_angle + random.uniform(-constants.tank_shotgun_spread, 

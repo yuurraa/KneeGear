@@ -1,4 +1,4 @@
-import src.constants as constants
+import src.engine.constants as constants
 
 experience_updates = []
 start_time_ms = 0
@@ -58,10 +58,10 @@ DESIGN_HEIGHT = 1440
 damage_numbers = []
 
 #type def to not get type warnings
-from src.player import Player
+from src.player.player import Player
 player:Player = None  # Will be initialized in main.py after screen dimensions are known
 
-from src.projectiles import BulletPool
+from src.engine.projectiles import BulletPool
 bullet_pool = BulletPool()
 
 scroll_offset = 0  # Initialize scroll offset for upgrades tab

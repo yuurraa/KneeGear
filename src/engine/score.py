@@ -1,9 +1,9 @@
 import pygame
 import os
 import hashlib
-from src.helpers import get_text_scaling_factor
-import src.game_state as game_state
-import src.constants as constants
+from src.engine.helpers import get_text_scaling_factor
+import src.engine.game_state as game_state
+import src.engine.constants as constants
 
 # Initialize score
 score = 0

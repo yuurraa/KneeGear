@@ -1,12 +1,9 @@
 import pygame
-import math
 import random
-from src.helpers import calculate_angle
-from src.projectiles import Alignment
 from src.enemies import BasicEnemy, TankEnemy, SniperEnemy, ChargerEnemy
 
-import src.game_state as game_state
-import src.constants as constants
+import src.engine.game_state as game_state
+import src.engine.constants as constants
 
 
 def update_projectiles():

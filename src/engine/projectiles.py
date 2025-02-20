@@ -2,10 +2,9 @@ from enum import Enum
 from dataclasses import dataclass
 import pygame
 import math
-import src.game_state as game_state
-import src.constants as constants
-import src.score as score
-from src.helpers import get_ui_scaling_factor
+import src.engine.game_state as game_state
+import src.engine.constants as constants
+from src.engine.helpers import get_ui_scaling_factor
 
 ui_scaling_factor = get_ui_scaling_factor()
 
@@ -274,7 +273,7 @@ class BasicEnemyHomingBullet(BaseEnemyBullet):
     def update(self):
         super().update()
         if self.should_home():
-            from src.helpers import calculate_angle
+            from src.engine.helpers import calculate_angle
             angle_to_player = calculate_angle(self.x, self.y, game_state.player.x, game_state.player.y)
             angle_diff = angle_to_player - self.angle
             

@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 from typing import Callable, List
 import random
-from math import ceil, floor
+from math import floor
 import pygame
-
-import src.constants as constants
-from src.player import Player
+from src.player.player import Player
 
 @dataclass
 class Upgrade:
