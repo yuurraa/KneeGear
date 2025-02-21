@@ -64,13 +64,16 @@ class Skin:
         weapon_folder = os.path.join(self.frames_folder, "weapon")
         basic_filename = f"{self.shape}_weapon_BASIC.png"
         basic_path = os.path.join(weapon_folder, basic_filename)
+            
         if os.path.exists(basic_path):
             base_image = pygame.image.load(basic_path).convert_alpha()
             
             if self.shape == "hoshimachi_suisei":
                 from src.player.special_effects import HoshimachiProjectileSkin
                 self.projectile_skin_basic = HoshimachiProjectileSkin(base_image, self.weapon_scale_factor_x, self.weapon_scale_factor_y)
-                
+            elif self.shape == "nanashi_mumei":
+                from src.player.special_effects import MumeiProjectileSkin
+                self.projectile_skin_basic = MumeiProjectileSkin(base_image, self.weapon_scale_factor_x, self.weapon_scale_factor_y, initial_rotation=67)
             else:
                 self.projectile_skin_basic = ProjectileSkin(basic_path, self.weapon_scale_factor_x, self.weapon_scale_factor_y)
             print("Loaded basic projectile skin:", basic_path)
@@ -82,12 +85,14 @@ class Skin:
             
             if self.shape == "hoshimachi_suisei":
                 from src.player.special_effects import HoshimachiProjectileSkin
-                self.projectile_skin_special = HoshimachiProjectileSkin(base_image, self.weapon_scale_factor_x - 7, self.weapon_scale_factor_y - 7)
+                self.projectile_skin_special = HoshimachiProjectileSkin(base_image, self.weapon_scale_factor_x - 8, self.weapon_scale_factor_y - 8)
+            elif self.shape == "nanashi_mumei":
+                from src.player.special_effects import MumeiProjectileSkin
+                self.projectile_skin_special = MumeiProjectileSkin(base_image, self.weapon_scale_factor_x - 10, self.weapon_scale_factor_y - 10, initial_rotation=90)
                 
             else:
-                self.projectile_skin_special = ProjectileSkin(special_path, self.weapon_scale_factor_x - 3, self.weapon_scale_factor_y - 3)
+                self.projectile_skin_special = ProjectileSkin(special_path, self.weapon_scale_factor_x, self.weapon_scale_factor_y)
             print("Loaded special projectile skin:", special_path)
-
 
     def draw(self, screen, x, y, size, flip=False):
         from src.player.player import PlayerState
@@ -105,16 +110,6 @@ class Skin:
 
         scaled_width = int(size * self.scale_factor_x)
         scaled_height = int(size * self.scale_factor_y)
-
-        if self.weapon_frame:
-            scaled_weapon = pygame.transform.scale(self.weapon_frame, (scaled_width, scaled_height))
-            rotated_weapon = pygame.transform.rotate(scaled_weapon, -self.last_rotation)
-            theta_rad = math.radians(self.last_rotation)
-            offset_x = -self.weapon_offset_distance * math.sin(theta_rad)
-            offset_y = self.weapon_offset_distance * math.cos(theta_rad)
-            weapon_center = (x + offset_x, y + offset_y)
-            weapon_rect = rotated_weapon.get_rect(center=weapon_center)
-            screen.blit(rotated_weapon, weapon_rect.topleft)
 
         if self.frames:
             frame_index = self.current_frame
@@ -140,19 +135,31 @@ class Skin:
 
             rect = rotated_frame.get_rect(center=(x, y))
             screen.blit(rotated_frame, rect.topleft)
+            
+            if self.weapon_frame:
+                scaled_weapon = pygame.transform.scale(self.weapon_frame, (scaled_width, scaled_height))
+                rotated_weapon = pygame.transform.rotate(scaled_weapon, -self.last_rotation)
+                theta_rad = math.radians(self.last_rotation)
+                offset_x = -self.weapon_offset_distance * math.sin(theta_rad)
+                offset_y = self.weapon_offset_distance * math.cos(theta_rad)
+                weapon_center = (x + offset_x, y + offset_y)
+                weapon_rect = rotated_weapon.get_rect(center=weapon_center)
+                screen.blit(rotated_weapon, weapon_rect.topleft)
+                
         else:
             if self.shape == "square":
-                rect = pygame.Rect(x - size / 2, y - size / 2, size, size)
+                rect = pygame.Rect(x - size / 1.5, y - size / 1.5, size, size)
                 pygame.draw.rect(screen, self.color, rect)
                 pygame.draw.rect(screen, (0, 0, 0), rect, 1)
             else:
                 points = []
                 for i in range(5):
                     angle_rad = math.radians(90 + 72 * i)
-                    px = x + size * math.cos(angle_rad)
-                    py = y - size * math.sin(angle_rad)
+                    px = x + size / 1.5 * math.cos(angle_rad)
+                    py = y - size / 1.5 * math.sin(angle_rad)
                     points.append((px, py))
                 pygame.draw.polygon(screen, self.color, points)
+                pygame.draw.polygon(screen, (0, 0, 0), points, 1)
                 
 class ProjectileSkin:
     def __init__(self, image_path, weapon_scale_factor_x=1.0, weapon_scale_factor_y=1.0):
@@ -165,10 +172,18 @@ class ProjectileSkin:
         self.current_angle = (self.current_angle) % 360
 
     def draw(self, screen, x, y, size):
-        # Scale the image to the desired size.
         scale_x = size * self.weapon_scale_factor_x
         scale_y = size * self.weapon_scale_factor_y
         scaled_image = pygame.transform.scale(self.base_image, (int(scale_x), int(scale_y)))
         rect = scaled_image.get_rect(center=(x, y))
-        pygame.draw.rect(screen, (255, 0, 0), rect, 1)
         screen.blit(scaled_image, rect.topleft)
+
+    def clone_with_firing_rotation(self, rotation):
+        # Create a new instance with the same parameters
+        new_instance = ProjectileSkin.__new__(ProjectileSkin)
+        new_instance.base_image = self.base_image
+        new_instance.weapon_scale_factor_x = self.weapon_scale_factor_x
+        new_instance.weapon_scale_factor_y = self.weapon_scale_factor_y
+        # Lock in the firing rotation (we use it as the current_angle)
+        new_instance.current_angle = rotation
+        return new_instance

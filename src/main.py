@@ -88,7 +88,7 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     
     # Add the version text at the bottom
     version_font = pygame.font.Font(None, get_text_scaling_factor(24))  # Smaller font size
-    version_text = version_font.render("Gooner Game v0.1.3", True, constants.WHITE)
+    version_text = version_font.render("Gooner Game v0.1.3 - (WIP)", True, constants.WHITE)
     version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))  # Position at the bottom
     game_over_surface.blit(version_text, version_text_rect)
     

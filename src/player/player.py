@@ -30,8 +30,8 @@ class Player:
         # Initialize skins
         self.skins = {
             "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
-            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=15, weapon_scale_factor_y=15, base_rotation=90, weapon_offset_distance=22),
-            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=7, weapon_scale_factor_y=7, base_rotation=90, weapon_offset_distance=50),
+            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.7, scale_factor_y=2.7, weapon_scale_factor_x=16, weapon_scale_factor_y=16, base_rotation=90, weapon_offset_distance=23),
+            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=23, weapon_scale_factor_y=23, base_rotation=90, weapon_offset_distance=20),
         }
         self.current_skin_id = "default"
 
@@ -233,7 +233,6 @@ class Player:
 
     def shoot_regular(self, mouse_pos):
         import src.engine.game_state as game_state
-        # Check if the player is dead or cooldown not elapsed
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_shot_time) < (self.shoot_cooldown * constants.FPS):
             return
 
@@ -243,12 +242,20 @@ class Player:
         self.last_shot_time = game_state.in_game_ticks_elapsed
         effective_multiplier = self.effective_damage_multiplier
 
-        # Retrieve the current skin's basic projectile skin.
-        # (Assuming self.skin is set to your current Skin instance.)
-        projectile_skin = self.skins[self.current_skin_id].projectile_skin_basic
+        # Retrieve the base projectile skin from the current skin.
+        base_skin = self.skins[self.current_skin_id].projectile_skin_basic
+
         total_projectiles = 1 + self.basic_bullet_extra_projectiles_per_shot_bonus
 
         if total_projectiles == 1:
+            # Clone the projectile skin so that the bullet gets its own instance.
+            if hasattr(base_skin, "clone_with_firing_rotation"):
+                projectile_skin = base_skin.clone_with_firing_rotation(angle)
+            elif hasattr(base_skin, "clone"):
+                projectile_skin = base_skin.clone()
+            else:
+                projectile_skin = base_skin
+
             game_state.bullet_pool.get_bullet(
                 PlayerBasicBullet,
                 self.x, self.y, angle, 
@@ -260,9 +267,8 @@ class Player:
                 projectile_skin=projectile_skin
             )
         else:
-            # For multiple projectiles, space them out perpendicular to the shooting direction.
             spread_distance = 15  # pixels between projectiles
-            perpendicular_angle = angle + 90  # perpendicular direction in degrees
+            perpendicular_angle = angle + 90
             total_spread = spread_distance * (total_projectiles - 1)
             start_x = self.x - (total_spread / 2) * math.cos(math.radians(perpendicular_angle))
             start_y = self.y - (total_spread / 2) * math.sin(math.radians(perpendicular_angle))
@@ -270,6 +276,14 @@ class Player:
             for i in range(total_projectiles):
                 offset_x = start_x + (spread_distance * i) * math.cos(math.radians(perpendicular_angle))
                 offset_y = start_y + (spread_distance * i) * math.sin(math.radians(perpendicular_angle))
+                
+                if hasattr(base_skin, "clone_with_firing_rotation"):
+                    bullet_skin = base_skin.clone_with_firing_rotation(angle)
+                elif hasattr(base_skin, "clone"):
+                    bullet_skin = base_skin.clone()
+                else:
+                    bullet_skin = base_skin
+
                 game_state.bullet_pool.get_bullet(
                     PlayerBasicBullet,
                     offset_x, offset_y, angle,
@@ -278,7 +292,7 @@ class Player:
                     self.basic_bullet_speed_multiplier,
                     math.ceil(self.basic_bullet_piercing_multiplier),
                     scales_with_distance_travelled=self.basic_bullet_scales_with_distance_travelled,
-                    projectile_skin=projectile_skin
+                    projectile_skin=bullet_skin
                 )
 
     def shoot_special(self, mouse_pos):
@@ -292,8 +306,14 @@ class Player:
         self.last_special_shot_time = game_state.in_game_ticks_elapsed
         effective_multiplier = self.effective_damage_multiplier
 
-        # Retrieve the current skin's special projectile skin.
-        projectile_skin = self.skins[self.current_skin_id].projectile_skin_special
+        base_skin = self.skins[self.current_skin_id].projectile_skin_special
+        if hasattr(base_skin, "clone_with_firing_rotation"):
+            projectile_skin = base_skin.clone_with_firing_rotation(angle)
+        elif hasattr(base_skin, "clone"):
+            projectile_skin = base_skin.clone()
+        else:
+            projectile_skin = base_skin
+
         game_state.bullet_pool.get_bullet(
             PlayerSpecialBullet,
             self.x, self.y, angle,
