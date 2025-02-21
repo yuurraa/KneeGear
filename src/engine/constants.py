@@ -28,13 +28,13 @@ player_basic_bullet_speed = 11
 player_basic_bullet_damage = 10
 player_basic_bullet_size = 4
 player_basic_bullet_pierce = 1
-player_basic_bullet_cooldown = 0.1
+player_basic_bullet_cooldown = 1
 
 player_special_bullet_speed = 16
 player_special_bullet_damage = 36
 player_special_bullet_size = 12
 player_special_bullet_pierce = 2
-player_special_bullet_cooldown = 0.1
+player_special_bullet_cooldown = 10
 
 player_damage_reduction_percent_cap = 97 # if damage reduction is greater than this, it will max out at 97%
 base_hp_pickup_healing_percent = 15  # Will heal 15% of max health
