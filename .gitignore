@@ -172,6 +172,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+.DS_Store
 
 # High score
 data/high_score.txt
