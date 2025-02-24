@@ -16,9 +16,10 @@ class Button:
         self.hover = False
 
     def draw(self, screen):
-        color = (min(self.color[0] + 30, 255), 
-                min(self.color[1] + 30, 255), 
-                min(self.color[2] + 30, 255)) if self.hover else self.color
+        # If hovering, darken the background by subtracting 30 from each RGB channel
+        color = (max(self.color[0] - 30, 0), 
+                 max(self.color[1] - 30, 0), 
+                 max(self.color[2] - 30, 0)) if self.hover else self.color
         pygame.draw.rect(screen, color, self.rect)
         pygame.draw.rect(screen, constants.BLACK, self.rect, 2)  # Border
 
@@ -26,6 +27,33 @@ class Button:
         text_surface = font.render(self.text, True, constants.BLACK)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            design_mouse_pos = get_design_mouse_pos(event.pos)
+            self.hover = self.rect.collidepoint(design_mouse_pos)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            design_mouse_pos = get_design_mouse_pos(event.pos)
+            if self.rect.collidepoint(design_mouse_pos):
+                return True
+        return False
+
+class IconButton:
+    def __init__(self, x, y, width, height, image, bg_color=constants.WHITE):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.image = image
+        self.bg_color = bg_color  # Original background color
+        self.hover = False
+
+    def draw(self, screen):
+        # If hovering, darken the background color
+        bg_color = (max(self.bg_color[0] - 30, 0),
+                    max(self.bg_color[1] - 30, 0),
+                    max(self.bg_color[2] - 30, 0)) if self.hover else self.bg_color
+        pygame.draw.rect(screen, bg_color, self.rect, border_radius=8)
+        pygame.draw.rect(screen, constants.BLACK, self.rect, width=2, border_radius=8)
+        image_rect = self.image.get_rect(center=self.rect.center)
+        screen.blit(self.image, image_rect)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
@@ -518,34 +546,47 @@ def draw_pause_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Create menu panel with proportional sizes
-    panel_width = int(game_state.screen_width * 0.30)  # ~26% of screen width
-    panel_height = int(game_state.screen_height * 0.35)  # ~30% of screen height
+    panel_width = int(game_state.screen_width * 0.30)
+    panel_height = int(game_state.screen_height * 0.35 * ui_scaling_factor)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
-    
+
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
-    # Pause menu text
+    # Pause menu title
     font = pygame.font.Font(None, get_text_scaling_factor(48))
     text = font.render("Paused", True, constants.BLACK)
-    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50 * ui_scaling_factor))
+    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + int(50 * ui_scaling_factor)))
     screen.blit(text, text_rect)
+    
+    # Standard icon size and padding
+    icon_size = int(35 * ui_scaling_factor)
+    icon_padding = int(10 * ui_scaling_factor)
+    
+    # Slider dimensions (adjusted length)
+    slider_width = int((panel_width - (icon_size + 2 * icon_padding)) * 0.8)
+    slider_height = int(game_state.screen_height * 0.019)
+    slider_y = panel_y + int(90 * ui_scaling_factor)
+    
+    # --- Center the Volume Icon and Slider as a Group ---
+    # Calculate total width of the volume group (icon + padding + slider)
+    total_volume_width = icon_size + icon_padding + slider_width
+    # Determine the starting x so the group is centered within the panel
+    group_start_x = panel_x + (panel_width - total_volume_width) // 2
+    volume_icon_x = group_start_x
+    slider_x = group_start_x + icon_size + icon_padding
 
-    # Initialize existing UI elements (resume, quit, volume, upgrades, stats)...
+    music_bar_y = slider_y + int(50 * ui_scaling_factor)
+    buttons_y = music_bar_y + int(45 * ui_scaling_factor)
+
+    # Initialize UI elements if not already created
     if not hasattr(game_state, 'pause_ui'):
-        # [Existing button creation code here...]
         button_width = int(game_state.screen_width * 0.104)
         button_height = int(game_state.screen_height * 0.056)
         button_x = (game_state.screen_width - (button_width * 2 + int(game_state.screen_width * 0.01))) // 2
         buttons_spacing = 20 * ui_scaling_factor
 
-        slider_width = int(game_state.screen_width * 0.156)
-        slider_height = int(game_state.screen_height * 0.019)
-        slider_x = (game_state.screen_width - slider_width) // 2
-        slider_y = panel_y + int(105 * ui_scaling_factor)  # Move volume slider up slightly
-        music_bar_y = slider_y + int(50 * ui_scaling_factor)  # Place music bar below volume
-        buttons_y = music_bar_y + int(40 * ui_scaling_factor)  # Push buttons below music bar
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
         upgrades_button = Button(button_x, buttons_y, button_width, button_height, "Upgrades", constants.BLUE)
@@ -562,32 +603,34 @@ def draw_pause_menu(screen):
         }
 
     # ---- NEW: Music Control Bar UI ----
-    # Initialize the music bar elements only once
     if not hasattr(game_state, 'pause_music_ui'):
-        # Let’s position the music bar below the "Paused" text.
         music_bar_margin = 25
         music_bar_width = panel_width - (2 * music_bar_margin)
-        music_bar_height = 35  # height of the music bar
         music_bar_x = panel_x + music_bar_margin
-        music_bar_y = panel_y + 135 * ui_scaling_factor  # adjust as needed
+        music_bar_y = panel_y + int(121 * ui_scaling_factor)
 
-        # Define square button size (using music_bar_height)
-        btn_size = music_bar_height
+        btn_size = icon_size
 
-        # Create buttons (using unicode symbols for simplicity)
-        playlist_button = Button(music_bar_x, music_bar_y, btn_size, btn_size, "🔀", constants.BLUE)
-        previous_button = Button(music_bar_x + btn_size + 5, music_bar_y, btn_size, btn_size, "⏮", constants.BLUE)
-        skip_button = Button(music_bar_x + music_bar_width - btn_size + 5, music_bar_y, btn_size, btn_size, "⏭", constants.BLUE)
+        playlist_icon = pygame.image.load("assets/ui/playlist.png").convert_alpha()
+        previous_icon = pygame.image.load("assets/ui/previous.png").convert_alpha()
+        next_icon = pygame.image.load("assets/ui/next.png").convert_alpha()
+
+        playlist_icon = pygame.transform.scale(playlist_icon, (icon_size - 3, icon_size - 3))
+        previous_icon = pygame.transform.scale(previous_icon, (icon_size - 12, icon_size - 12))
+        next_icon = pygame.transform.scale(next_icon, (icon_size - 12, icon_size - 12))
+
+        playlist_button = IconButton(music_bar_x, music_bar_y, btn_size, btn_size, image=playlist_icon)
+        previous_button = IconButton(music_bar_x + btn_size + 5, music_bar_y, btn_size, btn_size, image=previous_icon)
+        next_button = IconButton(music_bar_x + music_bar_width - btn_size + 5, music_bar_y, btn_size, btn_size, image=next_icon)
         
-        # The song name display area sits between the left buttons and the skip button.
-        song_display_x = music_bar_x + (2 * btn_size + 20) -5
+        song_display_x = music_bar_x + (2 * btn_size + 20) - 5
         song_display_width = music_bar_width - (3 * btn_size + 20)
         song_display_rect = pygame.Rect(song_display_x, music_bar_y, song_display_width, btn_size)
         
         game_state.pause_music_ui = {
             'playlist_button': playlist_button,
             'previous_button': previous_button,
-            'skip_button': skip_button,
+            'next_button': next_button,
             'song_display_rect': song_display_rect
         }
 
@@ -598,66 +641,51 @@ def draw_pause_menu(screen):
     game_state.pause_ui['upgrades_button'].draw(screen)
     game_state.pause_ui['stats_button'].draw(screen)
 
-    # Draw volume label (existing code)
-    small_font = pygame.font.Font(None, get_text_scaling_factor(30))
-    volume_text = small_font.render("Volume", True, constants.BLACK)
-    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + int(90 * ui_scaling_factor)))
-    screen.blit(volume_text, volume_text_rect)
+    # ---- Draw Volume Icon ----
+    volume_icon = pygame.image.load("assets/ui/volume.png").convert_alpha()
+    volume_icon = pygame.transform.scale(volume_icon, (icon_size, icon_size))
+    volume_icon_y = slider_y + (slider_height - icon_size) // 2
+    screen.blit(volume_icon, (volume_icon_x, volume_icon_y))
 
     # ---- Draw Music Bar ----
     music_ui = game_state.pause_music_ui
     music_ui['playlist_button'].draw(screen)
     music_ui['previous_button'].draw(screen)
-    music_ui['skip_button'].draw(screen)
+    music_ui['next_button'].draw(screen)
     
-    # Draw a background for the song title display area
     pygame.draw.rect(screen, constants.LIGHT_GREY, music_ui['song_display_rect'])
     pygame.draw.rect(screen, constants.BLACK, music_ui['song_display_rect'], 2)
     
-    # Retrieve the currently playing song’s display name (set in main.py)
     current_song_display = getattr(game_state, 'current_song_display', "No Song")
     song_font = pygame.font.Font(None, get_text_scaling_factor(24))
     text_surface = song_font.render(current_song_display, True, constants.BLACK)
     
-    # Define padding (in pixels) between repeated song names
     padding = 30  
-    # The total width of one ticker "item" is the text width plus the padding
     ticker_width = text_surface.get_width() + padding
 
-    # Get the display area (song display rect) dimensions
     display_rect = music_ui['song_display_rect']
     display_width = display_rect.width
     display_height = display_rect.height
 
-    # Initialize the ticker offset if not already present
     if not hasattr(game_state, "song_ticker_offset"):
         game_state.song_ticker_offset = 0.0
 
-    # Increase the ticker offset for continuous scrolling.
-    # Adjust the value (e.g., 0.5) to control the scroll speed.
     game_state.song_ticker_offset += 0.5  
-    # Wrap the offset when it exceeds one ticker item
     if game_state.song_ticker_offset >= ticker_width:
         game_state.song_ticker_offset -= ticker_width
 
-    # Vertically center the text in the display area.
     center_y = display_rect.y + (display_height - text_surface.get_height()) // 2
 
-    # Save the current clip and set the clip region to the display rect
     previous_clip = screen.get_clip()
     screen.set_clip(display_rect)
 
-    # Start drawing from an offset so that the text appears to scroll continuously
     start_x = -game_state.song_ticker_offset
     while start_x < display_width:
         screen.blit(text_surface, (display_rect.x + start_x, center_y))
         start_x += ticker_width
 
-    # Restore the previous clip region
     screen.set_clip(previous_clip)
 
-
-    # Return all relevant UI elements for event handling
     return (game_state.pause_ui['quit_button'],
             game_state.pause_ui['resume_button'],
             game_state.pause_ui['volume_slider'],
@@ -665,8 +693,7 @@ def draw_pause_menu(screen):
             game_state.pause_ui['stats_button'],
             game_state.pause_music_ui['playlist_button'],
             game_state.pause_music_ui['previous_button'],
-            game_state.pause_music_ui['skip_button'])
-
+            game_state.pause_music_ui['next_button'])
 
 def draw_upgrades_tab(screen):
     # Create semi-transparent overlay
