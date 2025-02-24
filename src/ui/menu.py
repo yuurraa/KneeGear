@@ -4,7 +4,6 @@ from src.engine.helpers import get_design_mouse_pos, get_text_scaling_factor, ge
 from src.engine.music_handler import save_music_settings
 import src.engine.constants as constants
 import src.engine.game_state as game_state
-from src.player.upgrades import UpgradePool
 import math
 import random
 
@@ -483,6 +482,7 @@ def draw_level_up_menu(screen):
     # Create buttons if they don't exist
     if not hasattr(game_state, 'current_upgrade_buttons'):
         # Get random upgrades
+        from src.player.upgrades import UpgradePool
         upgrade_pool = UpgradePool()
         upgrades = upgrade_pool.get_random_upgrades(num_choices, game_state.player)
         
@@ -957,23 +957,13 @@ def draw_skin_selection_menu(screen):
     button_height = int(game_state.screen_height * 0.075)
     button_spacing = 20
 
-    # Calculate the phase for the shimmer effect based on time
-    phase = ((pygame.time.get_ticks() / 5) % 360) / 360.0
-
     # Draw available skins as buttons with shimmer effect.
     # NOTE: If game_state.player.skins is now a dictionary, iterate over its values.
     skin_buttons = []
     for skin in game_state.player.skins.values():
         button_x = (game_state.screen_width - button_width) // 2
         button_y = 100 + (button_height + button_spacing) * len(skin_buttons)
-
-        # Get the rarity color and compute the shimmer surface
-        rarity_color = UpgradeButton.RARITY_COLORS.get(skin.rarity, constants.LIGHT_GREY)
-        shimmer_surface = compute_shimmer_surface_for_tab_icon(rarity_color, skin.rarity, button_width, button_height, phase)
-        
-        # Draw the shimmer background first
-        screen.blit(shimmer_surface, (button_x, button_y))
-        
+      
         # Then draw the black border
         pygame.draw.rect(screen, constants.BLACK, (button_x, button_y, button_width, button_height), 2)
         

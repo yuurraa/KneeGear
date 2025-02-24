@@ -96,6 +96,7 @@ def fade_from_black_step(surface, step=5):
     
     # Draw the overlay on top of the current scene.
     surface.blit(overlay, (0, 0))
+    pygame.display.flip()
     
     return game_state.fade_alpha
 

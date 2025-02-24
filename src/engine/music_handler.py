@@ -85,17 +85,16 @@ def load_song_list_for(folder_name):
         if f.endswith('.mp3')
     ]
 
+# Set a custom event for when the music ends.
+MUSIC_END_EVENT = pygame.USEREVENT + 1
+pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
+
 def play_current_song():
-    """
-    Play the song at game_state.song_list[game_state.current_song_index].
-    Always start the song from the beginning.
-    """
     if game_state.song_list:
         index = game_state.current_song_index
         song_path = game_state.song_list[index]
         game_state.current_song = song_path
 
-        # Create a display string from the filename.
         base = os.path.basename(song_path)
         name_artist = os.path.splitext(base)[0]
         game_state.current_song_display = name_artist
@@ -109,10 +108,11 @@ def play_current_song():
 
         pygame.mixer.music.load(song_path)
         pygame.mixer.music.set_volume(constants.music_volume)
-        # Always start from the beginning (start_pos = 0)
-        pygame.mixer.music.play(-1, start=0)
+        # Register the music end event for this song.
+        pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
+        # Play the song once (no looping)
+        pygame.mixer.music.play(0, start=0)
 
-        # Save the current song settings so that this song will be resumed next time.
         save_current_song_settings()
 
 def previous_song():

@@ -1,5 +1,4 @@
 import pygame
-from mutagen import File
 import threading
 import os  # Import os module to check for file existence
 
@@ -9,11 +8,20 @@ import src.engine.logic as logic
 import src.ui.drawing as drawing
 import src.engine.score as score
 from src.player.player import Player, PlayerState
-from src.engine.helpers import reset_game, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
-from src.ui.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
-import random
+from src.engine.helpers import (
+    reset_game, get_design_mouse_pos, get_text_scaling_factor, 
+    fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
+)
+from src.ui.menu import (
+    draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, 
+    draw_main_menu, draw_skin_selection_menu
+)
+from src.engine.music_handler import (
+    MUSIC_END_EVENT, switch_playlist, previous_song, next_song, 
+    load_and_play_music
+)
 from src.enemies.enemy_pool import EnemyPool
-from src.engine.music_handler import switch_playlist, previous_song, next_song, load_and_play_music, load_music_settings
+
 
 def show_intro_screen(screen, screen_width, screen_height):
     # Create text surface using design resolution
@@ -26,101 +34,79 @@ def show_intro_screen(screen, screen_width, screen_height):
         screen.fill(constants.BLACK)
         text.set_alpha(alpha)
         screen.blit(text, text_rect)
-        
-        # Scale and update display
         pygame.display.flip()
         pygame.time.wait(10)
     
-    # Display text for 2 seconds (you can still wait on the screen if needed)
+    # Display text for 2 seconds
     pygame.time.wait(2000)
     
-    # Fade-out to black using an overlay on the dummy surface
+    # Fade-out to black using an overlay
     fade_surface = pygame.Surface((screen_width, screen_height))
     fade_surface.fill(constants.BLACK)
     for alpha in range(0, 256, 5):
         fade_surface.set_alpha(alpha)
-        # Draw the fade overlay onto the screen
         screen.blit(fade_surface, (0, 0))
-        
-        # Scale and update display
         pygame.display.flip()
         pygame.time.wait(10)
-
+    game_state.fade_alpha = 255   
 
 def show_game_over_screen(screen, screen_width, screen_height, alpha):
-    # Create a surface with per-pixel alpha for fading
     game_over_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-    # Fill with black background using the provided alpha for transparency
     game_over_surface.fill((0, 0, 0, alpha))
     
-    # Render "YOU DIED" text
     large_font = pygame.font.Font(None, get_text_scaling_factor(74))
     text_large = large_font.render("YOU DIED", True, constants.WHITE)
     text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 120))
     game_over_surface.blit(text_large, text_large_rect)
     
-    # Render time, score, high score, and restart prompt
     small_font = pygame.font.Font(None, get_text_scaling_factor(36))
-    
-    # Final time (ensure it's available)
     final_time = getattr(game_state, 'final_time', 0)
     minutes = final_time // 60
     seconds = final_time % 60
-    
-    # Time survived
     timer_text = small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
     timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - 40))
     game_over_surface.blit(timer_text, timer_text_rect)
     
-    # Score
     score_text = small_font.render(f"Score: {score.score}", True, constants.WHITE)
     score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 20))
     game_over_surface.blit(score_text, score_text_rect)
     
-    # High score
     high_score_text = small_font.render(f"High Score: {score.high_score}", True, constants.WHITE)
     high_score_text_rect = high_score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 60))
     game_over_surface.blit(high_score_text, high_score_text_rect)
     
-    # Restart prompt
     restart_text = small_font.render("Press SPACE to restart", True, constants.WHITE)
     restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
     game_over_surface.blit(restart_text, restart_text_rect)
     
-    # Add the version text at the bottom
-    version_font = pygame.font.Font(None, get_text_scaling_factor(24))  # Smaller font size
+    version_font = pygame.font.Font(None, get_text_scaling_factor(24))
     version_text = version_font.render("Gooner Game v0.1.3 - (WIP)", True, constants.WHITE)
-    version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))  # Position at the bottom
+    version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))
     game_over_surface.blit(version_text, version_text_rect)
     
-    # Draw the entire game over surface onto the main screen
     screen.blit(game_over_surface, (0, 0))
 
+
 def calculate_enemy_scaling(elapsed_seconds):
-    # Double stats every 200 seconds
-    # Using 2^(t/200) as scaling formula
     scaling_factor = 2.05 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
+
 def calculate_wave_spawn_interval(elapsed_seconds):
-    # Start with base_enemy_spawn_interval and halve it every enemy_spawn_rate_doubling_time_seconds
     spawn_interval = constants.base_wave_interval * (2 ** (-elapsed_seconds / constants.wave_spawn_rate_doubling_time_seconds))
-    
-    # Set a minimum spawn interval to prevent enemies from spawning too quickly
     return max(0.5, spawn_interval)
+
 
 def main():
     pygame.init()
-    pygame.mixer.init()  # Initialize the mixer
+    pygame.mixer.init()
 
-    # Set up the display first
+    # Set up display and game state.
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
-    # Replace your display setup with:
     game_state.screen = pygame.display.set_mode(
         (game_state.screen_width, game_state.screen_height), pygame.SCALED, pygame.FULLSCREEN
     )
-    # Create the player after screen dimensions are known
     game_state.player = Player(
         game_state.screen_width // 2,
         game_state.screen_height // 2,
@@ -128,50 +114,59 @@ def main():
         game_state.screen_height
     )
     
-    # Show the intro screen
     show_intro_screen(game_state.screen, game_state.screen_width, game_state.screen_height)
 
-    # Start music if it isn’t already playing
     if not pygame.mixer.music.get_busy():
         music_thread = threading.Thread(target=load_and_play_music, daemon=True)
         music_thread.start()
 
-    # Load skin selection at the start
     load_skin_selection()
 
-    while True:            
-        # ---- MAIN MENU LOOP ----
-        game_state.in_main_menu = True
-        main_menu_faded_in = False
-        game_state.fade_alpha = 255
-        
-        # Main menu event loop:
-        while game_state.in_main_menu:
+    # Initialize state flags.
+    game_state.in_main_menu = True
+    game_state.skin_menu = False
+    game_state.running = False
+    game_state.paused = False
+    game_state.game_over = False
+    main_menu_faded_in = False
+    game_loop_faded_in = False
+    game_state.skin_buttons, game_state.close_button = draw_skin_selection_menu(game_state.screen)
+
+    # Create a clock once for the game loop.
+    clock = pygame.time.Clock()
+    enemy_pool = EnemyPool()  # Ideally created once (adjust as needed)
+
+    # Main loop (state-machine style).
+    while True:
+        # Poll events once per frame.
+        events = pygame.event.get()
+        for event in events:
+            if event.type == MUSIC_END_EVENT:
+                next_song()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        # ---------------- Main Menu State ----------------
+        if game_state.in_main_menu:
             game_state.screen.fill(constants.WHITE)
             start_button, quit_button, skin_button = draw_main_menu(game_state.screen)
-            
             if not main_menu_faded_in:
                 if game_state.fade_alpha > 0:
                     fade_from_black_step(game_state.screen, step=30)
                 else:
                     main_menu_faded_in = True
-                
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+            for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     design_mouse_pos = get_design_mouse_pos(event.pos)
                     if start_button.rect.collidepoint(design_mouse_pos):
-                        # Fade out main menu (from white to black)
                         main_menu_faded_in = False
                         game_state.in_main_menu = False
                         game_state.running = True
                         fade_to_black(game_state.screen, 5, 10)
                         game_state.screen.fill(constants.BLACK)
                         game_state.fade_alpha = 255
-                        break
                     elif skin_button.rect.collidepoint(design_mouse_pos):
                         game_state.skin_menu = True
                         game_state.in_main_menu = False
@@ -179,133 +174,109 @@ def main():
                         fade_to_black(game_state.screen, 5, 10)
                         game_state.screen.fill(constants.BLACK)
                         game_state.fade_alpha = 255
-                        break
                     elif quit_button.rect.collidepoint(design_mouse_pos):
                         pygame.quit()
-                        exit()  # Immediately exit
+                        exit()
             pygame.display.flip()
-
-        skin_buttons, close_button = draw_skin_selection_menu(game_state.screen)
-        # ---- SKIN SELECTION MENU ----
-        while game_state.skin_menu:
+            continue  # Process next frame
+        
+        # ---------------- Skin Selection State ----------------
+        if game_state.skin_menu:
+            clock.tick(constants.FPS)  # Regulate frame rate
+            # Redraw entire skin selection menu
             game_state.screen.fill(constants.WHITE)
-            draw_skin_selection_menu(game_state.screen)  
-            for btn in skin_buttons:
+            draw_skin_selection_menu(game_state.screen)
+            # Draw overlay, title, and buttons each frame
+            for btn in game_state.skin_buttons:
                 btn.draw(game_state.screen)
-            
+                    
             if game_state.fade_alpha > 0:
                 fade_from_black_step(game_state.screen, step=30)
 
-            for event in pygame.event.get():
+            for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     design_mouse_pos = get_design_mouse_pos(event.pos)
-                    if close_button.rect.collidepoint(design_mouse_pos):
+                    if game_state.close_button.rect.collidepoint(design_mouse_pos):
                         game_state.skin_menu = False
                         game_state.in_main_menu = True
-                        game_state.running = False
+                        game_state.running = False  
                         fade_to_black(game_state.screen, 5, 10)
                         game_state.screen.fill(constants.BLACK)
-                        break
+                        game_state.fade_alpha = 255  # Reset fade alpha for main menu
+                        main_menu_faded_in = False  # Reset local fade flag for main menu
                     else:
-                        for btn in skin_buttons:
+                        for btn in game_state.skin_buttons:
                             if btn.rect.collidepoint(design_mouse_pos):
                                 btn.trigger_glow()
                                 game_state.player.change_skin(btn.skin_id)
                                 save_skin_selection()
-
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     game_state.skin_menu = False
                     game_state.in_main_menu = True
                     game_state.running = False
                     fade_to_black(game_state.screen, 5, 10)
                     game_state.screen.fill(constants.BLACK)
-                    break
+                    game_state.fade_alpha = 255  # Reset fade alpha for main menu
+                    main_menu_faded_in = False  # Reset local fade flag for main menu
             pygame.display.flip()
+            continue
 
-        # ---- GAME LOOP ----
-        clock = pygame.time.Clock()
-        score.reset_score()
-        game_state.start_time_ms = pygame.time.get_ticks()
-
-        # Main game loop
-        game_loop_faded_in = False
-        # Load volume at the start
-        constants.music_volume = load_music_settings()
-
-        enemy_pool = EnemyPool()
-        while game_state.running:
+        # ---------------- Game Loop State ----------------
+        if game_state.running:
             clock.tick(constants.FPS)
-            # Fill the background:
             game_state.screen.fill(constants.LIGHT_GREY)
             
-            # POLL EVENTS ONCE PER FRAME:
-            all_events = pygame.event.get()
+            # Filter events for in-game processing.
             filtered_events = []
-            escHandled = False  # We will mark the first ESC key as handled
-            
-            for event in all_events:
+            escHandled = False
+            for event in events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    if not game_state.game_over:
-                        if not escHandled:
-                            # When pausing, capture a snapshot of the current screen
-                            if not game_state.paused:
-                                game_state.pause_background = game_state.screen.copy()
-                            game_state.paused = not game_state.paused
-                            game_state.showing_stats = False
-                            game_state.showing_upgrades = False
-                            escHandled = True
-                    # Skip passing this ESC event further
+                    if not game_state.game_over and not escHandled:
+                        if not game_state.paused:
+                            game_state.pause_background = game_state.screen.copy()
+                        game_state.paused = not game_state.paused
+                        game_state.showing_stats = False
+                        game_state.showing_upgrades = False
+                        escHandled = True
                 else:
                     filtered_events.append(event)
             events = filtered_events
 
             reset_triggered = False
             for event in events:
-                if event.type == pygame.QUIT:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game_state.game_over:
                     reset_game()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE and game_state.game_over:
-                        reset_game()
-                        game_state.screen.fill(constants.LIGHT_GREY)
-                        game_loop_faded_in = False
-                        game_state.fade_alpha = 255
-                        reset_triggered = True
-                        break
+                    game_state.screen.fill(constants.LIGHT_GREY)
+                    game_loop_faded_in = False
+                    game_state.fade_alpha = 255
+                    reset_triggered = True
+                    break
             if reset_triggered:
                 continue
 
-            # Process normal game input if no menus are active:
             if (not getattr(game_state, 'paused', False) and 
                 game_state.player.state != PlayerState.LEVELING_UP and 
                 not getattr(game_state, 'showing_upgrades', False) and 
                 not getattr(game_state, 'showing_stats', False)):
                 logic.handle_input()
                 game_state.player.update_angle(pygame.mouse.get_pos())
-                
-            # Draw enemies, projectiles, hearts, score and player
+
             enemy_pool.draw(game_state.screen)
-
             game_state.bullet_pool.draw(game_state.screen)
-
             for heart in game_state.hearts:
-                heart.update()  # Update particle animation
-                heart.draw(game_state.screen)  # Draw the heart effect
-
+                heart.update()
+                heart.draw(game_state.screen)
             game_state.player.draw(game_state.screen)
             score.draw_score(game_state.screen)
             
-            # Update enemy scaling and wave spawning based on elapsed time
             in_game_seconds = game_state.in_game_ticks_elapsed / constants.FPS
             game_state.enemy_scaling = calculate_enemy_scaling(in_game_seconds)
             game_state.wave_interval = calculate_wave_spawn_interval(in_game_seconds)
-
-            # Draw cooldown icons and experience bar
             left_click_cooldown_progress, right_click_cooldown_progress = game_state.player.get_cooldown_progress()
             fps = clock.get_fps()
             drawing.draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress, fps)
             drawing.draw_experience_bar()
             
-            # Draw stopwatch (time survived)
             elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
             minutes = elapsed_seconds // 60
             seconds = elapsed_seconds % 60
@@ -323,11 +294,9 @@ def main():
             
             drawing.draw_notification()
             drawing.draw_player_state_value_updates()
-            # ---- PAUSE MENU ----
-            if getattr(game_state, 'paused', False):                
-                # Draw the pause menu UI on top.
+            
+            if getattr(game_state, 'paused', False):
                 quit_button, resume_button, volume_slider, upgrades_button, stats_button, playlist_button, previous_button, skip_button = draw_pause_menu(game_state.screen)
-
                 for event in events:
                     volume_slider.handle_event(event)
                     quit_button.handle_event(event)
@@ -344,9 +313,11 @@ def main():
                             fade_to_black(game_state.screen, 5, 10)
                             game_state.screen.fill(constants.BLACK)
                             game_state.running = False
+                            game_state.fade_alpha = 255  # Reset fade alpha for main menu
+                            main_menu_faded_in = False  # Reset local fade flag for main menu
                             break
                         elif resume_button.rect.collidepoint(design_mouse_pos):
-                            game_state.paused = False  # Close the pause menu
+                            game_state.paused = False
                         elif upgrades_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_upgrades = True
                             game_state.paused = False
@@ -360,9 +331,8 @@ def main():
                         elif skip_button.rect.collidepoint(design_mouse_pos):
                             next_song()
                 pygame.display.flip()
-                continue  # Skip the rest of this frame
-
-            # ---- UPGRADES TAB ----
+                continue
+            
             if getattr(game_state, 'showing_upgrades', False):
                 close_button = draw_upgrades_tab(game_state.screen)
                 for event in events:
@@ -378,8 +348,7 @@ def main():
                             game_state.paused = True
                 pygame.display.flip()
                 continue
-
-            # ---- STATS TAB ----
+            
             if getattr(game_state, 'showing_stats', False):
                 close_button = draw_stats_tab(game_state.screen)
                 for event in events:
@@ -395,8 +364,7 @@ def main():
                             game_state.paused = True
                 pygame.display.flip()
                 continue
-
-            # ---- LEVEL-UP MENU ----
+            
             if game_state.player.state == PlayerState.LEVELING_UP:
                 upgrade_buttons = draw_level_up_menu(game_state.screen)
                 for event in events:
@@ -412,9 +380,8 @@ def main():
                             break
                 pygame.display.flip()
                 continue
-
-            # ---- GAME LOGIC & DRAWING ----
-            # Spawn new waves or enemies if appropriate
+            
+            # Wave spawning logic
             if not game_state.wave_active:
                 if (in_game_seconds - game_state.last_wave_time >= game_state.wave_interval or 
                     len(game_state.enemies) == 0):
@@ -423,21 +390,18 @@ def main():
                     game_state.next_enemy_spawn_time = in_game_seconds + 0.5
             else:
                 if in_game_seconds >= game_state.next_enemy_spawn_time and game_state.wave_enemies_spawned < 5:
-                    enemy_pool.spawn_enemy()  # Now handled by EnemyPool
+                    enemy_pool.spawn_enemy()
                     game_state.wave_enemies_spawned += 1
                     game_state.next_enemy_spawn_time = in_game_seconds + 0.5
                 if game_state.wave_enemies_spawned >= 5:
                     game_state.wave_active = False
                     game_state.last_wave_time = in_game_seconds
 
-
-            # Update game objects
             enemy_pool.update()
             logic.update_projectiles()
             logic.spawn_heart()
             logic.update_hearts()
 
-            # Check for game over
             if game_state.player.health <= 0:
                 game_state.game_over = True
                 if not hasattr(game_state, 'final_time'):
@@ -447,13 +411,11 @@ def main():
                 game_state.fade_alpha = min(game_state.fade_alpha + 10, 255)
                 game_state.player.x = game_state.screen_width // 2
                 game_state.player.y = game_state.screen_height // 2
-                game_state.enemies.clear()  # Remove all enemies
+                game_state.enemies.clear()
                 score.update_high_score()
-                show_game_over_screen(game_state.screen, game_state.screen_width, 
-                                        game_state.screen_height, game_state.fade_alpha)
+                show_game_over_screen(game_state.screen, game_state.screen_width, game_state.screen_height, game_state.fade_alpha)
 
             game_state.in_game_ticks_elapsed += 1
-
             if not game_loop_faded_in:
                 if game_state.fade_alpha > 0:
                     fade_from_black_step(game_state.screen, step=20)
@@ -461,13 +423,15 @@ def main():
                     game_loop_faded_in = True
 
             pygame.display.flip()
-
+            continue
+        
         # End of the game loop.
         if not game_state.quit:
             continue
         else:
             break
 
+    # (Optional: if you have any other state, process it here.)
     pygame.mixer.quit()
     pygame.quit()
     exit()
