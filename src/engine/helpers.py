@@ -48,28 +48,6 @@ def reset_game():
     game_state.notification_queue = []
     game_state.paused = False
     
-def load_music_settings():
-    """Load music settings from a file."""
-    try:
-        if not os.path.exists("data/settings.txt"):
-            save_music_settings(constants.music_volume)
-
-        with open("data/settings.txt", "r") as file:
-            volume_line = file.readline().strip()
-            volume = float(volume_line)
-            return max(0.0, min(1.0, volume))
-    except Exception as e:
-        print(f"Error loading settings: {e}")
-        return constants.music_volume
-
-def save_music_settings(volume):
-    """Save music settings to a file."""
-    try:
-        with open("data/settings.txt", "w") as file:
-            file.write(f"{volume}\n")
-    except Exception as e:
-        print(f"Error saving settings: {e}")
-    
 def get_design_mouse_pos(mouse_pos):
     """
     Convert a mouse position from screen coordinates to design coordinates.
@@ -143,3 +121,34 @@ def queue_notification(message):
         # Optionally, you can include other data like a fixed y-position
         "y": 50  # for example, when fully visible
     })
+
+def get_settings_file_path():
+    """Return the full path for the settings file in the base data folder."""
+    return os.path.join("data", "settings.txt")
+
+def load_settings():
+    """
+    Load settings from the settings file.
+    Expected format (one per line): key: value
+    Returns a dictionary of settings.
+    """
+    settings_file = get_settings_file_path()
+    settings = {}
+    if os.path.exists(settings_file):
+        with open(settings_file, "r") as f:
+            for line in f:
+                if ':' in line:
+                    key, val = line.split(":", 1)
+                    settings[key.strip()] = val.strip()
+    return settings
+
+def save_settings(settings):
+    """
+    Save the settings dictionary to the settings file.
+    Each setting is saved on its own line in the format: key: value
+    """
+    settings_file = get_settings_file_path()
+    os.makedirs(os.path.dirname(settings_file), exist_ok=True)
+    with open(settings_file, "w") as f:
+        for key, val in settings.items():
+            f.write(f"{key}: {val}\n")

@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
-from src.engine.helpers import save_music_settings, get_design_mouse_pos, get_text_scaling_factor, get_ui_scaling_factor
+from src.engine.helpers import get_design_mouse_pos, get_text_scaling_factor, get_ui_scaling_factor
+from src.engine.music_handler import save_music_settings
 import src.engine.constants as constants
 import src.engine.game_state as game_state
 from src.player.upgrades import UpgradePool
@@ -517,8 +518,8 @@ def draw_pause_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Create menu panel with proportional sizes
-    panel_width = int(game_state.screen_width * 0.26)  # ~26% of screen width
-    panel_height = int(game_state.screen_height * 0.30)  # ~32% of screen height
+    panel_width = int(game_state.screen_width * 0.30)  # ~26% of screen width
+    panel_height = int(game_state.screen_height * 0.35)  # ~30% of screen height
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
@@ -531,33 +532,26 @@ def draw_pause_menu(screen):
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50 * ui_scaling_factor))
     screen.blit(text, text_rect)
 
-    # Initialize UI elements once
+    # Initialize existing UI elements (resume, quit, volume, upgrades, stats)...
     if not hasattr(game_state, 'pause_ui'):
-        # Button dimensions - proportional
-        button_width = int(game_state.screen_width * 0.104)  # ~10.4% of screen width
-        button_height = int(game_state.screen_height * 0.056)  # ~5.6% of screen height
-
-        # Calculate positions for resume and quit buttons (already side by side)
+        # [Existing button creation code here...]
+        button_width = int(game_state.screen_width * 0.104)
+        button_height = int(game_state.screen_height * 0.056)
         button_x = (game_state.screen_width - (button_width * 2 + int(game_state.screen_width * 0.01))) // 2
-        button_y = panel_y + int(panel_height * 0.74)  # ~74% down the panel
+        buttons_spacing = 20 * ui_scaling_factor
 
-        # Quit button
-        buttons_spacing = 20 * ui_scaling_factor  # spacing between buttons
-        quit_button = Button(button_x + button_width + buttons_spacing, button_y, button_width, button_height, "Quit", constants.RED)
-
-        # Resume button
-        resume_button = Button(button_x, button_y, button_width, button_height, "Resume", constants.GREEN)
-
-        # Volume Slider - proportional
-        slider_width = int(game_state.screen_width * 0.156)  # ~15.6% of screen width
-        slider_height = int(game_state.screen_height * 0.019)  # ~1.9% of screen height
+        slider_width = int(game_state.screen_width * 0.156)
+        slider_height = int(game_state.screen_height * 0.019)
         slider_x = (game_state.screen_width - slider_width) // 2
-        slider_y = panel_y + int(100 * ui_scaling_factor)  # ~34% down the panel
+        slider_y = panel_y + int(105 * ui_scaling_factor)  # Move volume slider up slightly
+        music_bar_y = slider_y + int(50 * ui_scaling_factor)  # Place music bar below volume
+        buttons_y = music_bar_y + int(40 * ui_scaling_factor)  # Push buttons below music bar
         volume_slider = Slider(slider_x, slider_y, slider_width, slider_height, constants.music_volume)
 
-        # Calculate positions for Upgrades and Stats buttons (side by side)
-        upgrades_button = Button(button_x, slider_y + 40 * ui_scaling_factor, button_width, button_height, "Upgrades", constants.BLUE)
-        stats_button = Button(button_x + button_width + buttons_spacing, slider_y + 40 * ui_scaling_factor, button_width, button_height, "Stats", constants.ORANGE)
+        upgrades_button = Button(button_x, buttons_y, button_width, button_height, "Upgrades", constants.BLUE)
+        stats_button = Button(button_x + button_width + buttons_spacing, buttons_y, button_width, button_height, "Stats", constants.ORANGE)
+        resume_button = Button(button_x, buttons_y + button_height + buttons_spacing, button_width, button_height, "Resume", constants.GREEN)
+        quit_button = Button(button_x + button_width + buttons_spacing, buttons_y + button_height + buttons_spacing, button_width, button_height, "Quit", constants.RED)
 
         game_state.pause_ui = {
             'quit_button': quit_button,
@@ -567,24 +561,111 @@ def draw_pause_menu(screen):
             'stats_button': stats_button
         }
 
-    # Draw persistent elements
+    # ---- NEW: Music Control Bar UI ----
+    # Initialize the music bar elements only once
+    if not hasattr(game_state, 'pause_music_ui'):
+        # Let’s position the music bar below the "Paused" text.
+        music_bar_margin = 25
+        music_bar_width = panel_width - (2 * music_bar_margin)
+        music_bar_height = 35  # height of the music bar
+        music_bar_x = panel_x + music_bar_margin
+        music_bar_y = panel_y + 135 * ui_scaling_factor  # adjust as needed
+
+        # Define square button size (using music_bar_height)
+        btn_size = music_bar_height
+
+        # Create buttons (using unicode symbols for simplicity)
+        playlist_button = Button(music_bar_x, music_bar_y, btn_size, btn_size, "🔀", constants.BLUE)
+        previous_button = Button(music_bar_x + btn_size + 5, music_bar_y, btn_size, btn_size, "⏮", constants.BLUE)
+        skip_button = Button(music_bar_x + music_bar_width - btn_size + 5, music_bar_y, btn_size, btn_size, "⏭", constants.BLUE)
+        
+        # The song name display area sits between the left buttons and the skip button.
+        song_display_x = music_bar_x + (2 * btn_size + 20) -5
+        song_display_width = music_bar_width - (3 * btn_size + 20)
+        song_display_rect = pygame.Rect(song_display_x, music_bar_y, song_display_width, btn_size)
+        
+        game_state.pause_music_ui = {
+            'playlist_button': playlist_button,
+            'previous_button': previous_button,
+            'skip_button': skip_button,
+            'song_display_rect': song_display_rect
+        }
+
+    # Draw the persistent pause UI
     game_state.pause_ui['quit_button'].draw(screen)
     game_state.pause_ui['resume_button'].draw(screen)
     game_state.pause_ui['volume_slider'].draw(screen)
     game_state.pause_ui['upgrades_button'].draw(screen)
     game_state.pause_ui['stats_button'].draw(screen)
 
-    # Draw "Volume" label above the slider
+    # Draw volume label (existing code)
     small_font = pygame.font.Font(None, get_text_scaling_factor(30))
     volume_text = small_font.render("Volume", True, constants.BLACK)
-    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + int(85 * ui_scaling_factor)))
+    volume_text_rect = volume_text.get_rect(center=(game_state.screen_width // 2, panel_y + int(90 * ui_scaling_factor)))
     screen.blit(volume_text, volume_text_rect)
 
+    # ---- Draw Music Bar ----
+    music_ui = game_state.pause_music_ui
+    music_ui['playlist_button'].draw(screen)
+    music_ui['previous_button'].draw(screen)
+    music_ui['skip_button'].draw(screen)
+    
+    # Draw a background for the song title display area
+    pygame.draw.rect(screen, constants.LIGHT_GREY, music_ui['song_display_rect'])
+    pygame.draw.rect(screen, constants.BLACK, music_ui['song_display_rect'], 2)
+    
+    # Retrieve the currently playing song’s display name (set in main.py)
+    current_song_display = getattr(game_state, 'current_song_display', "No Song")
+    song_font = pygame.font.Font(None, get_text_scaling_factor(24))
+    text_surface = song_font.render(current_song_display, True, constants.BLACK)
+    
+    # Define padding (in pixels) between repeated song names
+    padding = 30  
+    # The total width of one ticker "item" is the text width plus the padding
+    ticker_width = text_surface.get_width() + padding
+
+    # Get the display area (song display rect) dimensions
+    display_rect = music_ui['song_display_rect']
+    display_width = display_rect.width
+    display_height = display_rect.height
+
+    # Initialize the ticker offset if not already present
+    if not hasattr(game_state, "song_ticker_offset"):
+        game_state.song_ticker_offset = 0.0
+
+    # Increase the ticker offset for continuous scrolling.
+    # Adjust the value (e.g., 0.5) to control the scroll speed.
+    game_state.song_ticker_offset += 0.5  
+    # Wrap the offset when it exceeds one ticker item
+    if game_state.song_ticker_offset >= ticker_width:
+        game_state.song_ticker_offset -= ticker_width
+
+    # Vertically center the text in the display area.
+    center_y = display_rect.y + (display_height - text_surface.get_height()) // 2
+
+    # Save the current clip and set the clip region to the display rect
+    previous_clip = screen.get_clip()
+    screen.set_clip(display_rect)
+
+    # Start drawing from an offset so that the text appears to scroll continuously
+    start_x = -game_state.song_ticker_offset
+    while start_x < display_width:
+        screen.blit(text_surface, (display_rect.x + start_x, center_y))
+        start_x += ticker_width
+
+    # Restore the previous clip region
+    screen.set_clip(previous_clip)
+
+
+    # Return all relevant UI elements for event handling
     return (game_state.pause_ui['quit_button'],
             game_state.pause_ui['resume_button'],
             game_state.pause_ui['volume_slider'],
             game_state.pause_ui['upgrades_button'],
-            game_state.pause_ui['stats_button'])
+            game_state.pause_ui['stats_button'],
+            game_state.pause_music_ui['playlist_button'],
+            game_state.pause_music_ui['previous_button'],
+            game_state.pause_music_ui['skip_button'])
 
 
 def draw_upgrades_tab(screen):

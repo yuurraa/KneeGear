@@ -9,10 +9,11 @@ import src.engine.logic as logic
 import src.ui.drawing as drawing
 import src.engine.score as score
 from src.player.player import Player, PlayerState
-from src.engine.helpers import reset_game, load_music_settings, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
+from src.engine.helpers import reset_game, get_design_mouse_pos, get_text_scaling_factor, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
 from src.ui.menu import draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, draw_main_menu, draw_skin_selection_menu
 import random
 from src.enemies.enemy_pool import EnemyPool
+from src.engine.music_handler import switch_playlist, previous_song, next_song, load_and_play_music, load_music_settings
 
 def show_intro_screen(screen, screen_width, screen_height):
     # Create text surface using design resolution
@@ -107,37 +108,6 @@ def calculate_wave_spawn_interval(elapsed_seconds):
     
     # Set a minimum spawn interval to prevent enemies from spawning too quickly
     return max(0.5, spawn_interval)
-
-def load_and_play_music():
-    """
-    Function to load and play music asynchronously.
-    Uses Mutagen to get the duration without loading the entire sound.
-    """
-    try:
-        # Load music volume from settings
-        constants.music_volume = load_music_settings()
-
-        # Use Mutagen to get the duration
-        audio = File(constants.music_path)
-        if audio is None or not hasattr(audio.info, 'length'):
-            raise ValueError("Unsupported audio format or corrupted file.")
-        
-        duration = audio.info.length  # Duration in seconds
-        print(f"Music duration: {duration} seconds")
-
-        # Load music with pygame mixer
-        pygame.mixer.music.load(constants.music_path)
-        pygame.mixer.music.set_volume(constants.music_volume)
-
-        # Calculate random start position, avoiding the last 10 seconds
-        max_start = max(0, duration - 10)
-        start_pos = random.uniform(0, max_start)
-        print(f"Starting music at position: {start_pos} seconds")
-
-        pygame.mixer.music.play(-1, start=start_pos)  # -1 for infinite loop
-
-    except Exception as e:
-        print(f"Error loading music: {e}")
 
 def main():
     pygame.init()
@@ -356,12 +326,15 @@ def main():
             # ---- PAUSE MENU ----
             if getattr(game_state, 'paused', False):                
                 # Draw the pause menu UI on top.
-                quit_button, resume_button, volume_slider, upgrades_button, stats_button = draw_pause_menu(game_state.screen)
+                quit_button, resume_button, volume_slider, upgrades_button, stats_button, playlist_button, previous_button, skip_button = draw_pause_menu(game_state.screen)
 
                 for event in events:
                     volume_slider.handle_event(event)
                     quit_button.handle_event(event)
                     resume_button.handle_event(event)
+                    playlist_button.handle_event(event)
+                    previous_button.handle_event(event)
+                    skip_button.handle_event(event)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         design_mouse_pos = get_design_mouse_pos(event.pos)
                         if quit_button.rect.collidepoint(design_mouse_pos):
@@ -380,6 +353,12 @@ def main():
                         elif stats_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_stats = True
                             game_state.paused = False
+                        elif playlist_button.rect.collidepoint(design_mouse_pos):
+                            switch_playlist()
+                        elif previous_button.rect.collidepoint(design_mouse_pos):
+                            previous_song()
+                        elif skip_button.rect.collidepoint(design_mouse_pos):
+                            next_song()
                 pygame.display.flip()
                 continue  # Skip the rest of this frame
 
