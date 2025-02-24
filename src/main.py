@@ -158,6 +158,9 @@ def main():
                     main_menu_faded_in = True
 
             for event in events:
+                start_button.handle_event(event)
+                skin_button.handle_event(event)
+                quit_button.handle_event(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     design_mouse_pos = get_design_mouse_pos(event.pos)
                     if start_button.rect.collidepoint(design_mouse_pos):
@@ -194,6 +197,10 @@ def main():
                 fade_from_black_step(game_state.screen, step=30)
 
             for event in events:
+                for btn in game_state.skin_buttons:
+                    btn.handle_event(event)
+                game_state.close_button.handle_event(event)
+                
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     design_mouse_pos = get_design_mouse_pos(event.pos)
                     if game_state.close_button.rect.collidepoint(design_mouse_pos):
@@ -301,6 +308,8 @@ def main():
                     volume_slider.handle_event(event)
                     quit_button.handle_event(event)
                     resume_button.handle_event(event)
+                    upgrades_button.handle_event(event)
+                    stats_button.handle_event(event)
                     playlist_button.handle_event(event)
                     previous_button.handle_event(event)
                     skip_button.handle_event(event)
@@ -336,6 +345,7 @@ def main():
             if getattr(game_state, 'showing_upgrades', False):
                 close_button = draw_upgrades_tab(game_state.screen)
                 for event in events:
+                    close_button.handle_event(event)
                     if event.type == pygame.QUIT:
                         game_state.running = False
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -352,6 +362,7 @@ def main():
             if getattr(game_state, 'showing_stats', False):
                 close_button = draw_stats_tab(game_state.screen)
                 for event in events:
+                    close_button.handle_event(event)
                     if event.type == pygame.QUIT:
                         game_state.running = False
                     elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -425,6 +436,7 @@ def main():
             pygame.display.flip()
             continue
         
+        pygame.display.update()
         # End of the game loop.
         if not game_state.quit:
             continue
