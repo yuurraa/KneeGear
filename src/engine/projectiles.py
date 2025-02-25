@@ -130,9 +130,9 @@ class PlayerBaseBullet(BaseBullet):
             y=y,
             angle=angle,
             alignment=Alignment.PLAYER,
-            speed=speed,
+            speed=speed * ui_scaling_factor,
             damage=damage,
-            size=size,
+            size=size * ui_scaling_factor,
             colour=colour,
             pierce=pierce,
             can_repierce=can_repierce
@@ -233,9 +233,9 @@ class BaseEnemyBullet(BaseBullet):
             y=y,
             angle=angle,
             alignment=Alignment.ENEMY,
-            speed=speed,
+            speed=speed * ui_scaling_factor,
             damage=damage,
-            size=size,
+            size=size * ui_scaling_factor,
             colour=colour,
             pierce=1
         )

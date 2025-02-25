@@ -4,9 +4,11 @@ import math
 import random
 
 from src.engine.projectiles import PlayerBasicBullet, PlayerSpecialBullet
-from src.engine.helpers import calculate_angle, get_design_mouse_pos
+from src.engine.helpers import calculate_angle, get_ui_scaling_factor
 import src.engine.constants as constants
 from src.player.skins import Skin
+
+ui_scaling_factor = get_ui_scaling_factor()
 
 class PlayerState(Enum):
     ALIVE = "alive"
@@ -30,18 +32,18 @@ class Player:
         # Initialize skins
         self.skins = {
             "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
-            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.7, scale_factor_y=2.7, weapon_scale_factor_x=16, weapon_scale_factor_y=16, base_rotation=90, weapon_offset_distance=23),
-            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.8, scale_factor_y=2.8, weapon_scale_factor_x=23, weapon_scale_factor_y=23, base_rotation=90, weapon_offset_distance=20),
+            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.6, scale_factor_y=2.6, weapon_scale_factor_x=16, weapon_scale_factor_y=16, base_rotation=90, weapon_offset_distance=23),
+            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.7, scale_factor_y=2.7, weapon_scale_factor_x=23, weapon_scale_factor_y=23, base_rotation=90, weapon_offset_distance=20),
         }
         self.current_skin_id = "default"
 
     def reset(self):
         # Stats
-        self.size = constants.player_size  # Base size of the player square
+        self.size = constants.player_size * ui_scaling_factor  # Base size of the player square
         self.health: float = constants.base_player_health
         self.max_health = constants.base_player_health
         self.hp_regen = constants.base_player_hp_regen_percent  # hp regen percent per second
-        self.speed = constants.player_speed
+        self.speed = constants.player_speed * ui_scaling_factor
         self.player_experience = 0
         self.player_level = 1
         self.experience_to_next_level = constants.initial_experience_to_next_level

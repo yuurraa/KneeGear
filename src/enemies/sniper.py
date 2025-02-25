@@ -22,8 +22,8 @@ class SniperEnemy(BaseEnemy):
         self.shots_fired_in_volley = 69
         
         self.speed = constants.sniper_move_speed * ui_scaling_factor
-        self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE
-        self.inner_size = constants.SNIPER_ENEMY_INNER_SIZE
+        self.outline_size = constants.SNIPER_ENEMY_OUTLINE_SIZE * ui_scaling_factor
+        self.inner_size = constants.SNIPER_ENEMY_INNER_SIZE * ui_scaling_factor
         self.outline_color = constants.SNIPER_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.SNIPER_ENEMY_INNER_COLOR
         

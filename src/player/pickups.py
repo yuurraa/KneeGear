@@ -1,5 +1,8 @@
 import random
 import pygame
+from src.engine.helpers import get_ui_scaling_factor
+
+ui_scaling_factor = get_ui_scaling_factor()
 
 def generate_shades(base_color, variation=30):
     """Generate a random shade of the given base color with slight variation."""
@@ -14,7 +17,7 @@ class HeartParticle:
     def __init__(self, pos, base_color):
         self.pos = list(pos)
         self.velocity = [random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)]
-        self.radius = random.randint(5, 8)
+        self.radius = random.randint(int(10 * ui_scaling_factor), int(16 * ui_scaling_factor))
         self.lifetime = random.randint(30, 50)
         self.color = generate_shades(base_color)  # Assign a dynamically generated shade
 
@@ -31,7 +34,7 @@ class HeartParticle:
 
     def draw(self, screen):
         if self.lifetime > 0 and self.radius > 0:
-            diameter = int(self.radius * 8)
+            diameter = int(self.radius * 16 * ui_scaling_factor)
             particle_surf = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
             pygame.draw.circle(particle_surf, self.color, (int(self.radius), int(self.radius)), int(self.radius))
             screen.blit(particle_surf, (self.pos[0] - self.radius, self.pos[1] - self.radius))

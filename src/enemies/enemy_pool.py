@@ -5,6 +5,9 @@ from src.enemies.basic import BasicEnemy
 from src.enemies.tank import TankEnemy
 from src.enemies.charger import ChargerEnemy
 from src.enemies.sniper import SniperEnemy
+from src.engine.helpers import get_ui_scaling_factor
+
+ui_scaling_factor = get_ui_scaling_factor()
 
 class EnemyPool:
     def __init__(self, max_enemies=50):
@@ -29,15 +32,15 @@ class EnemyPool:
         side = random.choice(["top", "bottom", "left", "right"])
         if side == "top":
             x = random.randint(0, game_state.screen_width)
-            y = -20
+            y = -40 * ui_scaling_factor
         elif side == "bottom":
             x = random.randint(0, game_state.screen_width)
-            y = game_state.screen_height + 20
+            y = game_state.screen_height + 40 * ui_scaling_factor
         elif side == "left":
-            x = -20
+            x = -40 * ui_scaling_factor
             y = random.randint(0, game_state.screen_height)
         else:  # "right"
-            x = game_state.screen_width + 20
+            x = game_state.screen_width + 40 * ui_scaling_factor
             y = random.randint(0, game_state.screen_height)
         
         # First, filter the pool for inactive enemies.

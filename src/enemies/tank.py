@@ -13,8 +13,8 @@ class TankEnemy(BaseEnemy):
         self._health = self.max_health
         self.score_reward = math.floor(constants.base_tank_xp_reward * self.scaling)
         self.speed = constants.tank_speed * ui_scaling_factor
-        self.outline_size = constants.TANK_ENEMY_OUTLINE_SIZE
-        self.inner_size = constants.TANK_ENEMY_INNER_SIZE
+        self.outline_size = constants.TANK_ENEMY_OUTLINE_SIZE * ui_scaling_factor
+        self.inner_size = constants.TANK_ENEMY_INNER_SIZE * ui_scaling_factor
         self.outline_color = constants.TANK_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.TANK_ENEMY_INNER_COLOR
         self.initial_delay_ticks = random.uniform(1.0, constants.tank_shotgun_interval) * constants.FPS

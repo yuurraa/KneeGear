@@ -26,10 +26,10 @@ class ChargerEnemy(BaseEnemy):
         self.max_speed = constants.CHARGER_MAX_SPEED * ui_scaling_factor       
         
         # Appearance attributes (if you want to scale these, multiply them too):
-        self.outline_size = constants.CHARGER_ENEMY_OUTLINE_SIZE  
+        self.outline_size = constants.CHARGER_ENEMY_OUTLINE_SIZE * ui_scaling_factor  
         # If your outline size is defined in design pixels and you want it larger on lower-res screens,
         # you might do: self.outline_size = constants.CHARGER_ENEMY_OUTLINE_SIZE * ui_scaling_factor
-        self.inner_size = constants.CHARGER_ENEMY_INNER_SIZE  
+        self.inner_size = constants.CHARGER_ENEMY_INNER_SIZE * ui_scaling_factor  
         # (Same note applies to inner_size if needed.)
         self.outline_color = constants.CHARGER_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.CHARGER_ENEMY_INNER_COLOR
@@ -37,7 +37,7 @@ class ChargerEnemy(BaseEnemy):
         self.charge_cooldown = 0  # Cooldown timer for charging
         # Already scaled:
         self.charge_distance = 350 * ui_scaling_factor  # ← Good
-        self.charge_speed = 42.0 * ui_scaling_factor      # ← Good
+        self.charge_speed = 40.0 * ui_scaling_factor      # ← Good
         self.charge_distance_max = 900 * ui_scaling_factor  # ← Good
         self.charge_distance_traveled = 0  # This accumulates; decide if you want it in design or scaled units.
         self.charge_cooldown_duration = 30  # Cooldown duration (0.7 seconds at 60 ticks per second)

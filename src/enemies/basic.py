@@ -25,8 +25,8 @@ class BasicEnemy(BaseEnemy):
         
         self.score_reward = math.floor(constants.base_basic_enemy_xp_reward * self.scaling)
         self.speed = constants.basic_enemy_speed * ui_scaling_factor
-        self.outline_size = constants.REGULAR_ENEMY_OUTLINE_SIZE
-        self.inner_size = constants.REGULAR_ENEMY_INNER_SIZE
+        self.outline_size = constants.REGULAR_ENEMY_OUTLINE_SIZE * ui_scaling_factor
+        self.inner_size = constants.REGULAR_ENEMY_INNER_SIZE * ui_scaling_factor
         self.outline_color = constants.REGULAR_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.REGULAR_ENEMY_INNER_COLOR
 

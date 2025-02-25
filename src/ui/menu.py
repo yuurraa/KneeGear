@@ -504,8 +504,8 @@ class SkinButton(UpgradeButton):
             if random.random() < 1:  # Adjust spawn rate as needed.
                 # Randomize the spawn position near the button's center.
                 particle_pos = (
-                    self.rect.centerx + random.uniform(-self.rect.width/2, self.rect.width/2),
-                    self.rect.centery + random.uniform(-self.rect.height/2, self.rect.height/2)
+                    self.rect.centerx + random.uniform(-self.rect.width / 2, self.rect.width / 2),
+                    self.rect.centery + random.uniform(-self.rect.height / 2, self.rect.height / 2)
                 )
                 self.particles.append(Particle(particle_pos, self.color))
         
@@ -572,7 +572,7 @@ def draw_level_up_menu(screen):
         game_state.current_upgrade_buttons = []
         for i, upgrade in enumerate(upgrades):
             x = start_x + (button_width + button_spacing) * i
-            y = panel_y + 150
+            y = panel_y + 230 * ui_scaling_factor
             icon_image = upgrade_pool.icon_images.get(upgrade.icon, None)
             button = UpgradeButton(x, y, button_width, button_height, upgrade, icon_image)
             game_state.current_upgrade_buttons.append(button)
@@ -601,7 +601,7 @@ def draw_pause_menu(screen):
 
     # Create menu panel with proportional sizes
     panel_width = int(game_state.screen_width * 0.6 * ui_scaling_factor)
-    panel_height = int(game_state.screen_height * 0.65 * ui_scaling_factor)
+    panel_height = int(game_state.screen_height * 0.675 * ui_scaling_factor)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
 
