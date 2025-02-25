@@ -43,24 +43,22 @@ level_up_xp_cost_scaling_factor = 1.5
 
 enemy_stat_doubling_time = 80 # seconds
 
-base_tank_health = 120
-base_tank_damage = 2
+base_tank_health = 110
+base_tank_damage = 3
 base_tank_xp_reward = 25
 
 tank_speed = 8
 tank_shotgun_interval = 4
-tank_shotgun_spread = 18
+tank_shotgun_spread = 20
 tank_shotgun_bullet_count = 20
-tank_bullet_speed_range = (22, 34)
+tank_bullet_speed_range = (27, 39)
 tank_bullet_size = 12
-
 
 base_enemy_bullet_size = 16
 
 base_basic_enemy_health = 23
 base_basic_enemy_damage = 4
 base_basic_enemy_xp_reward = 13
-
 
 basic_enemy_speed = 12
 basic_enemy_homing_bullet_speed = 30
@@ -86,10 +84,10 @@ sniper_bullet_damage = 12       # High damage per sniper bullet
 sniper_bullet_spread = 0.5   # sniper bullet spread in radians
 sniper_keep_distance = 1000             # If player is closer than this, retreat.
 sniper_approach_distance = 1300         # If player is farther than this, approach.
-sniper_strafe_duration = 50            # Duration (in ticks) before choosing a new strafe angle.
-sniper_strafe_retreat_factor = 0.7     # Additional movement away from the player during strafing.
+sniper_strafe_duration = 60            # Duration (in ticks) before choosing a new strafe angle.
+sniper_strafe_retreat_factor = 0.6     # Additional movement away from the player during strafing.
 sniper_move_speed = 5                # Base movement speed.      
-sniper_retreat_multiplier = 4        # Multiplier for retreat speed when player is too close.
+sniper_retreat_multiplier = 2.5        # Multiplier for retreat speed when player is too close.
 
 # Charger Enemy Constants
 base_charger_health = 55        # Moderate health since it's a kamikaze-style enemy

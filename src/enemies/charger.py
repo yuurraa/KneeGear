@@ -167,7 +167,8 @@ class ChargerEnemy(BaseEnemy):
         distance = math.hypot(self.x - player.x, self.y - player.y)
         if distance < (enemy_radius + player_radius):
             # Apply contact damage to the player. (nerfed damage)
-            player.take_damage((player.max_health * constants.CHARGER_MAX_HP_DAMAGE) + (constants.CHARGER_BASE_DAMAGE * self.damage_multiplier))
+            damage = (player.max_health * (constants.CHARGER_MAX_HP_DAMAGE + 0.05 * (self.scaling - 1))) + (constants.CHARGER_BASE_DAMAGE * self.damage_multiplier)
+            player.take_damage(damage)
             # The enemy deducts the damage dealt from its own health.
             # This call to apply_damage will also handle adding damage numbers and score rewards.
             if not player.is_dead():
@@ -188,8 +189,8 @@ class ChargerEnemy(BaseEnemy):
         self.outline_color = constants.CHARGER_ENEMY_OUTLINE_COLOR
         self.inner_color = constants.CHARGER_ENEMY_INNER_COLOR
         self.charge_cooldown = 0
-        self.charge_distance = 250 * ui_scaling_factor
-        self.charge_speed = 20.0 * ui_scaling_factor
+        self.charge_distance = 350 * ui_scaling_factor
+        self.charge_speed = 40.0 * ui_scaling_factor
         self.charge_distance_max = 900 * ui_scaling_factor
         self.charge_distance_traveled = 0
         self.charge_cooldown_duration = 30

@@ -3,8 +3,8 @@ import random
 
 import src.engine.game_state as game_state
 import src.engine.constants as constants
-from src.engine.helpers import get_text_scaling_factor, get_ui_scaling_factor
-from src.engine.score import score
+from src.engine.helpers import get_ui_scaling_factor
+import src.engine.score as score
     
 ui_scaling_factor = get_ui_scaling_factor()
     
