@@ -403,7 +403,7 @@ class Particle:
     def __init__(self, pos, base_color):
         self.pos = list(pos)
         self.velocity = [random.uniform(-1, 1), random.uniform(-1, 1)]
-        self.radius = random.randint(10 * ui_scaling_factor, 16 * ui_scaling_factor)
+        self.radius = random.randint(int(10 * ui_scaling_factor), int(16 * ui_scaling_factor))
         self.lifetime = random.randint(40, 60)
         # Generate a dynamic shade of the base color
         self.color = generate_shades(base_color)
