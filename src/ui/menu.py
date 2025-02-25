@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from src.engine.helpers import get_design_mouse_pos, get_text_scaling_factor, get_ui_scaling_factor
+from src.engine.helpers import get_text_scaling_factor, get_ui_scaling_factor
 from src.engine.music_handler import save_music_settings
 import src.engine.constants as constants
 import src.engine.game_state as game_state
@@ -56,7 +56,7 @@ class Button:
         
         # Draw the button background and border.
         pygame.draw.rect(screen, self.color, self.rect)
-        pygame.draw.rect(screen, constants.BLACK, self.rect, 2)
+        pygame.draw.rect(screen, constants.BLACK, self.rect, int(4 * ui_scaling_factor))
         
         # Draw the button text.
         font = pygame.font.Font(None, get_text_scaling_factor(36))
@@ -85,8 +85,8 @@ class IconButton:
         self.hover = False
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=8)
-        pygame.draw.rect(screen, constants.BLACK, self.rect, width=2, border_radius=8)
+        pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=int(16 * ui_scaling_factor))
+        pygame.draw.rect(screen, constants.BLACK, self.rect, width=int(4 * ui_scaling_factor), border_radius=int(16 * ui_scaling_factor))
         image_rect = self.image.get_rect(center=self.rect.center)
         screen.blit(self.image, image_rect)
         if self.hover:
@@ -110,8 +110,8 @@ class Slider:
         self.height = height
         self.value = value  # a float between 0 and 1
         # Define knob dimensions
-        self.knob_width = 10
-        self.knob_height = height + 4  # a little taller than the track
+        self.knob_width = 20 * ui_scaling_factor
+        self.knob_height = height + 8 * ui_scaling_factor  # a little taller than the track
         # Colors (you can adjust these or pull them from constants)
         self.track_color = constants.LIGHT_GREY
         self.fill_color = constants.DARK_GREY  # Color for the filled portion
@@ -124,7 +124,7 @@ class Slider:
         
         # Draw the slider track (background) with a black border
         pygame.draw.rect(screen, self.track_color, track_rect)
-        pygame.draw.rect(screen, constants.BLACK, track_rect, 2)  # 2-pixel black border
+        pygame.draw.rect(screen, constants.BLACK, track_rect, int(4 * ui_scaling_factor))  # 2-pixel black border
 
         # Calculate filled width based on current value
         filled_width = int(self.value * self.width)
@@ -135,7 +135,7 @@ class Slider:
         knob_x = self.x + filled_width - self.knob_width // 2
         knob_y = self.y + (self.height - self.knob_height) // 2
         pygame.draw.rect(screen, self.knob_color, (knob_x, knob_y, self.knob_width, self.knob_height))
-        pygame.draw.rect(screen, constants.BLACK, (knob_x, knob_y, self.knob_width, self.knob_height), 2)
+        pygame.draw.rect(screen, constants.BLACK, (knob_x, knob_y, self.knob_width, self.knob_height), int(4 * ui_scaling_factor))
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -301,7 +301,7 @@ class UpgradeButton(Button):
         
         # Draw the cached shimmer background and border
         screen.blit(self.cached_shimmer, self.rect)
-        pygame.draw.rect(screen, constants.BLACK, self.rect, 2)
+        pygame.draw.rect(screen, constants.BLACK, self.rect, int(4 * ui_scaling_factor))
         
         # Draw icon and texts
         font_name = pygame.font.Font(None, get_text_scaling_factor(32))
@@ -309,12 +309,12 @@ class UpgradeButton(Button):
         font_rarity = pygame.font.Font(None, get_text_scaling_factor(20))
 
         if self.icon_image:
-            icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 34, self.icon_size - 34))
-            circle_radius = self.icon_size // 2 - 5
-            circle_center = (self.rect.x + circle_radius - self.circle_margin - 15, 
-                             self.rect.y + circle_radius - self.circle_margin - 15)
+            icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 68 * ui_scaling_factor, self.icon_size - 68 * ui_scaling_factor))
+            circle_radius = self.icon_size // 2 - 10 * ui_scaling_factor
+            circle_center = (self.rect.x + circle_radius - self.circle_margin - 30 * ui_scaling_factor, 
+                             self.rect.y + circle_radius - self.circle_margin - 30 * ui_scaling_factor)
             pygame.draw.circle(screen, self.color, circle_center, circle_radius)
-            pygame.draw.circle(screen, constants.BLACK, circle_center, circle_radius, 2)
+            pygame.draw.circle(screen, constants.BLACK, circle_center, circle_radius, int(4 * ui_scaling_factor))
             icon_rect = icon_scaled.get_rect(center=circle_center)
             screen.blit(icon_scaled, icon_rect)
         
@@ -325,7 +325,7 @@ class UpgradeButton(Button):
         for word in words:
             test_line = ' '.join(current_line + [word])
             test_surface = font_name.render(test_line, True, constants.BLACK)
-            if test_surface.get_width() <= self.width - 20:
+            if test_surface.get_width() <= self.width - 40 * ui_scaling_factor:
                 current_line.append(word)
             else:
                 if current_line:
@@ -334,7 +334,7 @@ class UpgradeButton(Button):
         if current_line:
             title_lines.append(' '.join(current_line))
         
-        title_y = self.rect.y + 20 + (self.icon_size - 47) + getattr(self, "title_offset", 0)
+        title_y = self.rect.y + 40 * ui_scaling_factor + (self.icon_size - int(94 * ui_scaling_factor)) + getattr(self, "title_offset", 0)
         for line in title_lines:
             title_surface = font_name.render(line, True, constants.BLACK)
             title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
@@ -343,7 +343,7 @@ class UpgradeButton(Button):
         
         # Render rarity text below the title
         rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
-        rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - 2))
+        rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - int(4 * ui_scaling_factor)))
         screen.blit(rarity_surface, rarity_rect)
         
         # Render centralized wrapped description text below rarity
@@ -353,7 +353,7 @@ class UpgradeButton(Button):
         for word in desc_words:
             test_line = ' '.join(current_desc_line + [word])
             test_surface = font_desc.render(test_line, True, constants.BLACK)
-            if test_surface.get_width() <= self.width - 20:
+            if test_surface.get_width() <= self.width - 40 * ui_scaling_factor:
                 current_desc_line.append(word)
             else:
                 if current_desc_line:
@@ -362,7 +362,7 @@ class UpgradeButton(Button):
         if current_desc_line:
             desc_lines.append(' '.join(current_desc_line))
         
-        y_offset = rarity_rect.bottom + 18
+        y_offset = rarity_rect.bottom + 36 * ui_scaling_factor
         for line in desc_lines:
             desc_surface = font_desc.render(line, True, constants.BLACK)
             desc_rect = desc_surface.get_rect(center=(self.rect.centerx, y_offset))
@@ -403,7 +403,7 @@ class Particle:
     def __init__(self, pos, base_color):
         self.pos = list(pos)
         self.velocity = [random.uniform(-1, 1), random.uniform(-1, 1)]
-        self.radius = random.randint(5, 8)
+        self.radius = random.randint(10 * ui_scaling_factor, 16 * ui_scaling_factor)
         self.lifetime = random.randint(40, 60)
         # Generate a dynamic shade of the base color
         self.color = generate_shades(base_color)
@@ -440,7 +440,7 @@ class SkinButton(UpgradeButton):
         self.skin_id: Optional[str] = None  # Use skin_id instead of skin_index.
         self.pulse_phase = 0   # For the pulsing (scaling) effect.
         self.particles = []    # List to hold particle effects.
-        self.title_offset = -5
+        self.title_offset = -10 * ui_scaling_factor
 
     def trigger_glow(self):
         # Reset the glow timer and pulse phase for a fade-in and pulse effect.
@@ -452,7 +452,7 @@ class SkinButton(UpgradeButton):
         selected = (hasattr(self, 'skin_id') and game_state.player.current_skin_id == self.skin_id)
         
         # Base settings for the glow effect
-        base_glow_padding = 9      # Padding around the button for the glow.
+        base_glow_padding = 18 * ui_scaling_factor      # Padding around the button for the glow.
         fade_speed = 50            # Speed for fade in/out.
         
         if self.hover:
@@ -545,12 +545,12 @@ def draw_level_up_menu(screen):
     panel_y = (game_state.screen_height - panel_height) // 2
     
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
-    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
+    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Level up text
     font = pygame.font.Font(None, get_text_scaling_factor(48))
     text = font.render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
-    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
+    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 100 * ui_scaling_factor))
     screen.blit(text, text_rect)
 
     # Create buttons if they don't exist or if the list is empty
@@ -600,37 +600,37 @@ def draw_pause_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Create menu panel with proportional sizes
-    panel_width = int(game_state.screen_width * 0.29 * ui_scaling_factor)
-    panel_height = int(game_state.screen_height * 0.35 * ui_scaling_factor)
+    panel_width = int(game_state.screen_width * 0.6 * ui_scaling_factor)
+    panel_height = int(game_state.screen_height * 0.65 * ui_scaling_factor)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
 
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
-    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
+    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Pause menu title
     font = pygame.font.Font(None, get_text_scaling_factor(48))
     text = font.render("Pause Menu", True, constants.BLACK)
-    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + int(50 * ui_scaling_factor)))
+    text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + int(80 * ui_scaling_factor)))
     screen.blit(text, text_rect)
 
     # Standard icon size and padding
-    icon_size = int(35 * ui_scaling_factor) - 3
-    icon_padding = int(10 * ui_scaling_factor)
+    icon_size = int(65 * ui_scaling_factor)
+    icon_padding = int(40 * ui_scaling_factor)
 
     # Slider dimensions (adjusted length)
-    slider_width = int((panel_width - (icon_size + 2 * icon_padding)) * 0.8)
-    slider_height = int(game_state.screen_height * 0.019)
-    slider_y = panel_y + int(90 * ui_scaling_factor)
+    slider_width = int((panel_width - (icon_size + 5 * icon_padding) * 0.85))
+    slider_height = int(game_state.screen_height * 0.02)
+    slider_y = panel_y + int(150 * ui_scaling_factor)
 
     # --- Center the Volume Icon and Slider as a Group ---
     total_volume_width = icon_size + icon_padding + slider_width
     group_start_x = panel_x + (panel_width - total_volume_width) // 2
-    volume_icon_x = group_start_x
+    volume_icon_x = group_start_x + 20 * ui_scaling_factor
     slider_x = group_start_x + icon_size + icon_padding
 
-    music_bar_y = slider_y + int(50 * ui_scaling_factor)
-    buttons_y = music_bar_y + int(45 * ui_scaling_factor)
+    music_bar_y = slider_y + int(65 * ui_scaling_factor)
+    buttons_y = music_bar_y + int(120 * ui_scaling_factor)
 
     # Initialize UI elements if not already created
     if not hasattr(game_state, 'pause_ui') or not game_state.pause_ui:
@@ -656,10 +656,9 @@ def draw_pause_menu(screen):
 
     # ---- NEW: Music Control Bar UI ----
     if not hasattr(game_state, 'pause_music_ui') or not game_state.pause_music_ui:
-        music_bar_margin = 25
-        music_bar_width = panel_width - (2 * music_bar_margin)
+        music_bar_margin = 40 * ui_scaling_factor
+        music_bar_width = panel_width - (int(4 * ui_scaling_factor) * music_bar_margin)
         music_bar_x = panel_x + music_bar_margin
-        music_bar_y = panel_y + int(121 * ui_scaling_factor)
 
         btn_size = icon_size
 
@@ -667,16 +666,16 @@ def draw_pause_menu(screen):
         previous_icon = pygame.image.load("assets/ui/previous.png").convert_alpha()
         next_icon = pygame.image.load("assets/ui/next.png").convert_alpha()
 
-        playlist_icon = pygame.transform.scale(playlist_icon, (icon_size, icon_size))
-        previous_icon = pygame.transform.scale(previous_icon, (icon_size - 9, icon_size - 9))
-        next_icon = pygame.transform.scale(next_icon, (icon_size - 9, icon_size - 9))
+        playlist_icon = pygame.transform.scale(playlist_icon, (icon_size - int(4 * ui_scaling_factor), icon_size - int(4 * ui_scaling_factor)))
+        previous_icon = pygame.transform.scale(previous_icon, (icon_size - 20 * ui_scaling_factor, icon_size - 20 * ui_scaling_factor))
+        next_icon = pygame.transform.scale(next_icon, (icon_size - 20 * ui_scaling_factor, icon_size - 20 * ui_scaling_factor))
 
         playlist_button = IconButton(music_bar_x, music_bar_y, btn_size, btn_size, image=playlist_icon)
-        previous_button = IconButton(music_bar_x + btn_size + 5, music_bar_y, btn_size, btn_size, image=previous_icon)
-        next_button = IconButton(music_bar_x + music_bar_width - btn_size + 5, music_bar_y, btn_size, btn_size, image=next_icon)
+        previous_button = IconButton(music_bar_x + btn_size + 10 * ui_scaling_factor, music_bar_y, btn_size, btn_size, image=previous_icon)
+        next_button = IconButton(music_bar_x + music_bar_width - btn_size + 10 * ui_scaling_factor, music_bar_y, btn_size, btn_size, image=next_icon)
         
-        song_display_x = music_bar_x + (2 * btn_size + 20) - 5
-        song_display_width = music_bar_width - (3 * btn_size + 20)
+        song_display_x = music_bar_x + (2 * btn_size + 40 * ui_scaling_factor) - 10 * ui_scaling_factor
+        song_display_width = music_bar_width - (3 * btn_size + 40 * ui_scaling_factor)
         song_display_rect = pygame.Rect(song_display_x, music_bar_y, song_display_width, btn_size)
         
         game_state.pause_music_ui = {
@@ -695,7 +694,7 @@ def draw_pause_menu(screen):
 
     # ---- Draw Volume Icon ----
     volume_icon = pygame.image.load("assets/ui/volume.png").convert_alpha()
-    volume_icon = pygame.transform.scale(volume_icon, (icon_size, icon_size))
+    volume_icon = pygame.transform.scale(volume_icon, (icon_size - int(4 * ui_scaling_factor), icon_size - int(4 * ui_scaling_factor)))
     volume_icon_y = slider_y + (slider_height - icon_size) // 2
     screen.blit(volume_icon, (volume_icon_x, volume_icon_y))
 
@@ -712,7 +711,7 @@ def draw_pause_menu(screen):
     song_font = pygame.font.Font(None, get_text_scaling_factor(24))
     text_surface = song_font.render(current_song_display, True, constants.BLACK)
     
-    padding = 30  
+    padding = 60 * ui_scaling_factor  
     ticker_width = text_surface.get_width() + padding
 
     display_rect = music_ui['song_display_rect']
@@ -752,12 +751,12 @@ def draw_upgrades_tab(screen):
     screen.blit(overlay, (0, 0))
 
     # Constants for button dimensions
-    button_width = int(game_state.screen_width * 0.22)
+    button_width = int(game_state.screen_width * 0.25)
     button_height = int(game_state.screen_height * 0.046)
     button_spacing = int(game_state.screen_width * 0.01)  # Horizontal spacing
 
     # Use 75% of the screen height for the icon area
-    max_column_height = int(game_state.screen_height * 0.75)
+    max_column_height = int(game_state.screen_height * 0.8)
     title_height = int(game_state.screen_height * 0.037)
     close_button_height = int(game_state.screen_height * 0.046)
 
@@ -772,7 +771,7 @@ def draw_upgrades_tab(screen):
 
     # Dynamic panel height based on the total icon height
     dynamic_panel_height = min(total_icon_height, max_column_height)
-    panel_height = title_height + dynamic_panel_height + close_button_height + 60
+    panel_height = title_height + dynamic_panel_height + close_button_height + 120 * ui_scaling_factor
 
     # Calculate panel width based on the number of columns
     panel_width = num_columns * (button_width + button_spacing)
@@ -788,26 +787,26 @@ def draw_upgrades_tab(screen):
     # Draw title
     title_font = pygame.font.Font(None, get_text_scaling_factor(36))
     title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
-    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 5))
+    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 30 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
     # Draw upgrades
     phase = ((pygame.time.get_ticks() / 5) % 360) / 360.0
     column_width = button_width + button_spacing
 
-    y_offset = panel_y + title_height + 20  # Starting Y position
+    y_offset = panel_y + title_height + 60 * ui_scaling_factor  # Starting Y position
     for i, upgrade in enumerate(game_state.player.applied_upgrades):
         column_index = i % num_columns
         row_index = i // num_columns
 
         x_offset = panel_x + column_index * column_width + (column_width - button_width) // 2
-        current_y_offset = y_offset + row_index * (button_height + button_spacing) - 10
+        current_y_offset = y_offset + row_index * (button_height + button_spacing) - 20 * ui_scaling_factor
 
         rarity_color = UpgradeButton.RARITY_COLORS.get(upgrade.Rarity, constants.LIGHT_GREY)
         shimmer_surface = compute_shimmer_surface_for_tab_icon(rarity_color, upgrade.Rarity, button_width, button_height, phase)
         screen.blit(shimmer_surface, (x_offset, current_y_offset))
 
-        pygame.draw.rect(screen, constants.BLACK, (x_offset, current_y_offset, button_width, button_height), 2)
+        pygame.draw.rect(screen, constants.BLACK, (x_offset, current_y_offset, button_width, button_height), int(4 * ui_scaling_factor))
 
         # Draw upgrade name
         desc_font = pygame.font.Font(None, get_text_scaling_factor(24))
@@ -817,9 +816,9 @@ def draw_upgrades_tab(screen):
         screen.blit(name_surface, name_rect)
 
     # Draw close button
-    close_button_x = panel_x + (panel_width - 100) // 2
-    close_button_y = panel_y + panel_height - close_button_height - 20
-    close_button = Button(close_button_x, close_button_y, 100, close_button_height, "Close", constants.RED)
+    close_button_x = panel_x + (panel_width - 200 * ui_scaling_factor) // 2
+    close_button_y = panel_y + panel_height - close_button_height - 20 * ui_scaling_factor
+    close_button = Button(close_button_x, close_button_y, 200 * ui_scaling_factor, close_button_height, "Close", constants.RED)
     close_button.draw(screen)
 
     return (close_button)
@@ -839,12 +838,12 @@ def draw_stats_tab(screen):
 
     # Draw the panel background and border
     pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
-    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
+    pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Draw title at the top
     title_font = pygame.font.Font(None, get_text_scaling_factor(36))
     title_surface = title_font.render("Player Stats", True, constants.BLACK)
-    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + 30))
+    title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + 60 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
     # Define groups of stats with headers
@@ -869,6 +868,7 @@ def draw_stats_tab(screen):
             ("Basic Bullet Damage Multiplier", f"{game_state.player.basic_bullet_damage_multiplier:.1f}"),
             ("Basic Bullet Speed Multiplier", f"{game_state.player.basic_bullet_speed_multiplier:.1f}"),
             ("Basic Bullet Piercing Multiplier", f"{game_state.player.basic_bullet_piercing_multiplier:.1f}"),
+            ("Basic Bullet Cooldown", f"{game_state.player.shoot_cooldown:.1f}"),
             ("Basic Bullet Scales w/ Distance", f"{game_state.player.basic_bullet_scales_with_distance_travelled:.1f}"),
             ("Extra Projs/Shot", f"{game_state.player.basic_bullet_extra_projectiles_per_shot_bonus:.1f}"),
         ]),
@@ -880,6 +880,7 @@ def draw_stats_tab(screen):
             ("Special Bullet Speed Multiplier", f"{game_state.player.special_bullet_speed_multiplier:.1f}"),
             ("Special Bullet Piercing Multiplier", f"{game_state.player.special_bullet_piercing_multiplier:.1f}"),
             ("Special Bullet Radius Multiplier", f"{game_state.player.special_bullet_radius_multiplier:.1f}"),
+            ("Special Bullet Cooldown", f"{game_state.player.special_shot_cooldown:.1f}"),
             ("Special Bullet Can Repierce", f"{game_state.player.special_bullet_can_repierce:.1f}"),
             ("Special Bullet Scales w/ Dist", f"{game_state.player.special_bullet_scales_with_distance_travelled:.1f}"),
         ]),
@@ -902,28 +903,28 @@ def draw_stats_tab(screen):
     ]
 
     # Set up fonts
-    header_font = pygame.font.Font(None, get_text_scaling_factor(25 * ui_scaling_factor))
+    header_font = pygame.font.Font(None, get_text_scaling_factor(50 * ui_scaling_factor))
     header_font.set_underline(True)
-    stat_font = pygame.font.Font(None, get_text_scaling_factor(20 * ui_scaling_factor))
+    stat_font = pygame.font.Font(None, get_text_scaling_factor(40 * ui_scaling_factor))
 
     # Spacing and margin settings
-    top_margin = panel_y + 70  # space reserved at top (below title)
-    bottom_margin = 20         # bottom margin before close button area
-    left_margin = panel_x + 20
-    column_spacing = 15
+    top_margin = panel_y + 140 * ui_scaling_factor  # space reserved at top (below title)
+    bottom_margin = 40 * ui_scaling_factor         # bottom margin before close button area
+    left_margin = panel_x + 40 * ui_scaling_factor
+    column_spacing = 30 * ui_scaling_factor
 
     # Calculate the maximum available vertical space for the columns
     available_height = panel_y + panel_height - bottom_margin - top_margin
 
     # First, compute each group's height (header + each stat + intra-group spacing)
     group_heights = []
-    group_spacing = 15  # extra space after each group
+    group_spacing = 30 * ui_scaling_factor  # extra space after each group
     for header, stat_list in groups:
         # header height plus a small gap
-        h = header_font.get_linesize() + 15
+        h = header_font.get_linesize() + 30 * ui_scaling_factor
         # add each stat line height plus a small gap
         for _name, _value in stat_list:
-            h += stat_font.get_linesize() + 5
+            h += stat_font.get_linesize() + 10 * ui_scaling_factor
         # add extra spacing after the group
         h += group_spacing
         group_heights.append(h)
@@ -946,7 +947,7 @@ def draw_stats_tab(screen):
         columns.append(current_column)
 
     # Determine column width (distribute available width evenly)
-    available_width = panel_width - 40  # leaving some left/right margins
+    available_width = panel_width - 80 * ui_scaling_factor  # leaving some left/right margins
     num_columns = len(columns)
     column_width = (available_width - (num_columns - 1) * column_spacing) // num_columns
 
@@ -961,23 +962,23 @@ def draw_stats_tab(screen):
             # Render header
             header_surface = header_font.render(header, True, constants.BLACK)
             screen.blit(header_surface, (col_x, current_y))
-            current_y += header_font.get_linesize() + 2
+            current_y += header_font.get_linesize() + int(4 * ui_scaling_factor)
 
             # Render each stat line (indented slightly)
             for name, value in stat_list:
                 stat_text = f"{name}: {value}"
                 stat_surface = stat_font.render(stat_text, True, constants.BLACK)
-                screen.blit(stat_surface, (col_x + 10, current_y))
-                current_y += stat_font.get_linesize() + 5
+                screen.blit(stat_surface, (col_x + 20 * ui_scaling_factor, current_y))
+                current_y += stat_font.get_linesize() + 10 * ui_scaling_factor
 
             # Extra space after group
             current_y += group_spacing
 
     # Draw the close button at the bottom center of the panel
-    close_button_width = 100
+    close_button_width = 200 * ui_scaling_factor
     close_button_height = int(game_state.screen_height * 0.046)
     close_button_x = panel_x + (panel_width - close_button_width) // 2
-    close_button_y = panel_y + panel_height - close_button_height - 20
+    close_button_y = panel_y + panel_height - close_button_height - 40 * ui_scaling_factor
     close_button = Button(close_button_x, close_button_y, close_button_width, close_button_height, "Close", constants.RED)
     close_button.draw(screen)
 
@@ -997,20 +998,20 @@ def draw_main_menu(screen):
     screen.blit(title_text, title_rect)
 
     # Draw Start Game button
-    start_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2, 200, 50, "Start Game", constants.GREEN)
+    start_button = Button(game_state.screen_width // 2 - 200 * ui_scaling_factor, game_state.screen_height // 2, 400 * ui_scaling_factor, 100 * ui_scaling_factor, "Start Game", constants.GREEN)
     start_button.draw(screen)
 
     # Draw Skin Selection button
-    skin_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2 + 60, 200, 50, "Select Skin", constants.BLUE)
+    skin_button = Button(game_state.screen_width // 2 - 200 * ui_scaling_factor, game_state.screen_height // 2 + 120 * ui_scaling_factor, 400 * ui_scaling_factor, 100 * ui_scaling_factor, "Select Skin", constants.BLUE)
     skin_button.draw(screen)
 
     # Draw Quit button
-    quit_button = Button(game_state.screen_width // 2 - 100, game_state.screen_height // 2 + 120, 200, 50, "Quit", constants.RED)
+    quit_button = Button(game_state.screen_width // 2 - 200 * ui_scaling_factor, game_state.screen_height // 2 + 240 * ui_scaling_factor, 400 * ui_scaling_factor, 100 * ui_scaling_factor, "Quit", constants.RED)
     quit_button.draw(screen)
     
     version_font = pygame.font.Font(None, get_text_scaling_factor(24))
     version_text = version_font.render("v0.1.3 - (WIP)", True, constants.BLACK)
-    version_rect = version_text.get_rect(bottomright=(game_state.screen_width - 10, game_state.screen_height - 10))
+    version_rect = version_text.get_rect(bottomright=(game_state.screen_width - 20 * ui_scaling_factor, game_state.screen_height - 20 * ui_scaling_factor))
     screen.blit(version_text, version_rect)
 
     return (start_button, quit_button, skin_button)
@@ -1025,23 +1026,23 @@ def draw_skin_selection_menu(screen):
     # Draw title
     title_font = pygame.font.Font(None, get_text_scaling_factor(72))
     title_surface = title_font.render("Select Your Skin", True, constants.BLACK)
-    title_rect = title_surface.get_rect(center=(game_state.screen_width // 2, 50))
+    title_rect = title_surface.get_rect(center=(game_state.screen_width // 2, 100 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
     # Button dimensions
     button_width = int(game_state.screen_width * 0.15)
     button_height = int(game_state.screen_height * 0.075)
-    button_spacing = 20
+    button_spacing = 40 * ui_scaling_factor
 
     # Draw available skins as buttons with shimmer effect.
     # NOTE: If game_state.player.skins is now a dictionary, iterate over its values.
     skin_buttons = []
     for skin in game_state.player.skins.values():
         button_x = (game_state.screen_width - button_width) // 2
-        button_y = 100 + (button_height + button_spacing) * len(skin_buttons)
+        button_y = 200 * ui_scaling_factor + (button_height + button_spacing) * len(skin_buttons)
       
         # Then draw the black border
-        pygame.draw.rect(screen, constants.BLACK, (button_x, button_y, button_width, button_height), 2)
+        pygame.draw.rect(screen, constants.BLACK, (button_x, button_y, button_width, button_height), int(int(4 * ui_scaling_factor)))
         
         # Create a SkinButton and assign its skin_id
         skin_button = SkinButton(button_x, button_y, button_width, button_height, skin.name, skin.rarity)
@@ -1063,7 +1064,7 @@ def draw_skin_selection_menu(screen):
     close_button_width = int(button_width * 0.6)
     close_button_height = int(button_height * 0.6)
     close_button_x = (game_state.screen_width - close_button_width) // 2
-    close_button_y = game_state.screen_height - close_button_height - 30
+    close_button_y = game_state.screen_height - close_button_height - 60 * ui_scaling_factor
     close_button = Button(close_button_x, close_button_y, close_button_width, close_button_height, "Close", constants.RED)
     close_button.draw(screen)
 
