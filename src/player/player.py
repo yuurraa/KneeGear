@@ -133,8 +133,8 @@ class Player:
         
         # Direction arrow
         if not self.dying:  # Optionally, you can hide the arrow during the dissolve                
-            arrow_start_offset = self.size * 1.5  
-            arrow_length = self.size * 0.8        
+            arrow_start_offset = self.size * 1.1  
+            arrow_length = self.size * 0.4        
             angle_rad = math.radians(self.angle)
             start_x = self.x + arrow_start_offset * math.cos(angle_rad)
             start_y = self.y + arrow_start_offset * math.sin(angle_rad)

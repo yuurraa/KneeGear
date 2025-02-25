@@ -696,7 +696,7 @@ def draw_pause_menu(screen):
     current_song_display = getattr(game_state, 'current_song_display', "No Song")
     text_surface = game_state.FONTS["small"].render(current_song_display, True, constants.BLACK)
     
-    padding = 60 * ui_scaling_factor  
+    padding = 70 * ui_scaling_factor  
     ticker_width = text_surface.get_width() + padding
 
     display_rect = music_ui['song_display_rect']
