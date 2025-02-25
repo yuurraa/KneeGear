@@ -60,3 +60,12 @@ def handle_input():
         game_state.player.shoot_special(pygame.mouse.get_pos())
 
     return keys
+
+def calculate_enemy_scaling(elapsed_seconds):
+    scaling_factor = 2.05 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
+    return scaling_factor
+
+
+def calculate_wave_spawn_interval(elapsed_seconds):
+    spawn_interval = constants.base_wave_interval * (2 ** (-elapsed_seconds / constants.wave_spawn_rate_doubling_time_seconds))
+    return max(0.5, spawn_interval)

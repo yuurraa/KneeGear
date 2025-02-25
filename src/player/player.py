@@ -32,8 +32,8 @@ class Player:
         # Initialize skins
         self.skins = {
             "default": Skin(id="default", name="Default", color=constants.GREEN, shape="square", rarity="Common"),
-            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.6, scale_factor_y=2.6, weapon_scale_factor_x=16, weapon_scale_factor_y=16, base_rotation=90, weapon_offset_distance=23),
-            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.7, scale_factor_y=2.7, weapon_scale_factor_x=23, weapon_scale_factor_y=23, base_rotation=90, weapon_offset_distance=20),
+            "suisei": Skin(id="suisei", name="Hoshimachi Suisei", color=constants.GREEN, shape="hoshimachi_suisei", frames_folder="./assets/skins/hoshimachi_suisei", rarity="Legendary", scale_factor_x=2.3, scale_factor_y=2.3, weapon_scale_factor_x=16, weapon_scale_factor_y=16, base_rotation=90, weapon_offset_distance=23),
+            "mumei": Skin(id="mumei", name="Nanashi Mumei", color=constants.GREEN, shape="nanashi_mumei", frames_folder="./assets/skins/nanashi_mumei", rarity="Legendary", scale_factor_x=2.5, scale_factor_y=2.5, weapon_scale_factor_x=23, weapon_scale_factor_y=23, base_rotation=90, weapon_offset_distance=20),
         }
         self.current_skin_id = "default"
 

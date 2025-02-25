@@ -4,6 +4,7 @@ import random
 import src.engine.game_state as game_state
 import src.engine.constants as constants
 from src.engine.helpers import get_text_scaling_factor, get_ui_scaling_factor
+from src.engine.score import score
     
 ui_scaling_factor = get_ui_scaling_factor()
     
@@ -244,3 +245,68 @@ def draw_notification():
     game_state.screen.blit(text_surface, text_rect)
 
     # print(f"DEBUG: Notification drawn: {game_state.notification_message}")
+    
+def show_intro_screen(screen, screen_width, screen_height):
+    # Create text surface using design resolution
+    font = pygame.font.Font(None, get_text_scaling_factor(74))
+    text = font.render("GOONER INC.", True, constants.WHITE)
+    text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
+    
+    # Fade-in text on the dummy surface
+    for alpha in range(0, 256, 5):
+        screen.fill(constants.BLACK)
+        text.set_alpha(alpha)
+        screen.blit(text, text_rect)
+        pygame.display.flip()
+        pygame.time.wait(10)
+    
+    # Display text for 2 seconds
+    pygame.time.wait(2000)
+    
+    # Fade-out to black using an overlay
+    fade_surface = pygame.Surface((screen_width, screen_height))
+    fade_surface.fill(constants.BLACK)
+    for alpha in range(0, 256, 5):
+        fade_surface.set_alpha(alpha)
+        screen.blit(fade_surface, (0, 0))
+        pygame.display.flip()
+        pygame.time.wait(10)
+    game_state.fade_alpha = 255   
+
+def show_game_over_screen(screen, screen_width, screen_height, alpha):
+    game_over_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+    game_over_surface.fill((0, 0, 0, alpha))
+    
+    large_font = pygame.font.Font(None, get_text_scaling_factor(74))
+    text_large = large_font.render("YOU DIED", True, constants.WHITE)
+    text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 120))
+    game_over_surface.blit(text_large, text_large_rect)
+    
+    small_font = pygame.font.Font(None, get_text_scaling_factor(36))
+    final_time = getattr(game_state, 'final_time', 0)
+    minutes = final_time // 60
+    seconds = final_time % 60
+    timer_text = small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
+    timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - 40))
+    game_over_surface.blit(timer_text, timer_text_rect)
+    
+    # Use the captured final score instead of the live score
+    final_score = getattr(game_state, 'final_score', score.score)
+    score_text = small_font.render(f"Score: {final_score}", True, constants.WHITE)
+    score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 20))
+    game_over_surface.blit(score_text, score_text_rect)
+    
+    high_score_text = small_font.render(f"High Score: {score.high_score}", True, constants.WHITE)
+    high_score_text_rect = high_score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 60))
+    game_over_surface.blit(high_score_text, high_score_text_rect)
+    
+    restart_text = small_font.render("Press SPACE to restart", True, constants.WHITE)
+    restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
+    game_over_surface.blit(restart_text, restart_text_rect)
+    
+    version_font = pygame.font.Font(None, get_text_scaling_factor(24))
+    version_text = version_font.render("Gooner Game v0.1.3 - (WIP)", True, constants.WHITE)
+    version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))
+    game_over_surface.blit(version_text, version_text_rect)
+    
+    screen.blit(game_over_surface, (0, 0))
