@@ -68,3 +68,23 @@ scroll_offset = 0  # Initialize scroll offset for upgrades tab
 
 # Add this line to define the new game state
 skin_menu = False  # Flag to indicate if the skin selection menu is active
+
+import pygame
+from src.engine.helpers import get_text_scaling_factor
+font_path = "assets/fonts/SourceHanSansHW-VF.ttf.ttc"
+
+if not pygame.font.get_init():
+    pygame.font.init()
+FONTS = {
+    'massive': pygame.font.Font(font_path, get_text_scaling_factor(100)),
+    'huge': pygame.font.Font(font_path, get_text_scaling_factor(72)),
+    'large': pygame.font.Font(font_path, get_text_scaling_factor(48)),
+    'medium': pygame.font.Font(font_path, get_text_scaling_factor(36)),
+    'stat-header': pygame.font.Font(font_path, get_text_scaling_factor(26)),
+    'small': pygame.font.Font(font_path, get_text_scaling_factor(24)),
+    'stat-desc': pygame.font.Font(font_path, get_text_scaling_factor(21)),
+    'smaller': pygame.font.Font(font_path, get_text_scaling_factor(20)),
+    'tiny': pygame.font.Font(font_path, get_text_scaling_factor(18)),
+    # Add more as needed
+}
+FONTS['stat-header'].set_underline(True)

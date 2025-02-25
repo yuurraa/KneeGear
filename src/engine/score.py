@@ -72,9 +72,8 @@ def update_high_score():
         save_high_score()
 
 def draw_score(screen):
-    font = pygame.font.Font(None, get_text_scaling_factor(36))
-    score_text = font.render(f"Score: {score}", True, constants.BLACK)
-    high_score_text = font.render(f"High Score: {high_score}", True, constants.BLACK)
+    score_text = game_state.FONTS["medium"].render(f"Score: {score}", True, constants.BLACK)
+    high_score_text = game_state.FONTS["medium"].render(f"High Score: {high_score}", True, constants.BLACK)
     screen.blit(score_text, (20, 55))
     screen.blit(high_score_text, (20, 85))
     

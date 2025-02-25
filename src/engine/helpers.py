@@ -62,7 +62,7 @@ def get_text_scaling_factor(font_size):
     Scale font size by multiplying with 3 * the UI scaling factor.
     This increases all font sizes by a multiple of 3.
     """
-    return round(font_size * 2.1 * get_ui_scaling_factor())
+    return round(font_size * 1.5 * get_ui_scaling_factor())
       
 def fade_to_black(surface, wait_time=5, step=20):
     """

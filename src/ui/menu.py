@@ -52,8 +52,7 @@ class Button:
         pygame.draw.rect(screen, constants.BLACK, self.rect, int(4 * ui_scaling_factor))
         
         # Draw the button text.
-        font = pygame.font.Font(None, get_text_scaling_factor(36))
-        text_surface = font.render(self.text, True, constants.BLACK)
+        text_surface = game_state.FONTS["medium"].render(self.text, True, constants.BLACK)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
@@ -295,11 +294,7 @@ class UpgradeButton(Button):
         # Draw the cached shimmer background and border
         screen.blit(self.cached_shimmer, self.rect)
         pygame.draw.rect(screen, constants.BLACK, self.rect, int(4 * ui_scaling_factor))
-        
-        # Draw icon and texts
-        font_name = pygame.font.Font(None, get_text_scaling_factor(32))
-        font_desc = pygame.font.Font(None, get_text_scaling_factor(24))
-        font_rarity = pygame.font.Font(None, get_text_scaling_factor(20))
+
 
         if self.icon_image:
             icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 68 * ui_scaling_factor, self.icon_size - 68 * ui_scaling_factor))
@@ -317,7 +312,7 @@ class UpgradeButton(Button):
         current_line = []
         for word in words:
             test_line = ' '.join(current_line + [word])
-            test_surface = font_name.render(test_line, True, constants.BLACK)
+            test_surface = game_state.FONTS["medium"].render(test_line, True, constants.BLACK)
             if test_surface.get_width() <= self.width - 40 * ui_scaling_factor:
                 current_line.append(word)
             else:
@@ -329,13 +324,13 @@ class UpgradeButton(Button):
         
         title_y = self.rect.y + 40 * ui_scaling_factor + (self.icon_size - int(94 * ui_scaling_factor)) + getattr(self, "title_offset", 0)
         for line in title_lines:
-            title_surface = font_name.render(line, True, constants.BLACK)
+            title_surface = game_state.FONTS["medium"].render(line, True, constants.BLACK)
             title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
             screen.blit(title_surface, title_rect)
             title_y += title_surface.get_height()
         
         # Render rarity text below the title
-        rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
+        rarity_surface = game_state.FONTS["smaller"].render(self.upgrade.Rarity, True, constants.BLACK)
         rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - int(4 * ui_scaling_factor)))
         screen.blit(rarity_surface, rarity_rect)
         
@@ -345,7 +340,7 @@ class UpgradeButton(Button):
         current_desc_line = []
         for word in desc_words:
             test_line = ' '.join(current_desc_line + [word])
-            test_surface = font_desc.render(test_line, True, constants.BLACK)
+            test_surface = game_state.FONTS["small"].render(test_line, True, constants.BLACK)
             if test_surface.get_width() <= self.width - 40 * ui_scaling_factor:
                 current_desc_line.append(word)
             else:
@@ -357,7 +352,7 @@ class UpgradeButton(Button):
         
         y_offset = rarity_rect.bottom + 36 * ui_scaling_factor
         for line in desc_lines:
-            desc_surface = font_desc.render(line, True, constants.BLACK)
+            desc_surface = game_state.FONTS["small"].render(line, True, constants.BLACK)
             desc_rect = desc_surface.get_rect(center=(self.rect.centerx, y_offset))
             screen.blit(desc_surface, desc_rect)
             y_offset += desc_surface.get_height()
@@ -541,8 +536,7 @@ def draw_level_up_menu(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Level up text
-    font = pygame.font.Font(None, get_text_scaling_factor(48))
-    text = font.render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
+    text = game_state.FONTS["large"].render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 100 * ui_scaling_factor))
     screen.blit(text, text_rect)
 
@@ -602,8 +596,7 @@ def draw_pause_menu(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Pause menu title
-    font = pygame.font.Font(None, get_text_scaling_factor(48))
-    text = font.render("Pause Menu", True, constants.BLACK)
+    text = game_state.FONTS["large"].render("Pause Menu", True, constants.BLACK)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + int(80 * ui_scaling_factor)))
     screen.blit(text, text_rect)
 
@@ -701,8 +694,7 @@ def draw_pause_menu(screen):
     pygame.draw.rect(screen, constants.BLACK, music_ui['song_display_rect'], 2)
     
     current_song_display = getattr(game_state, 'current_song_display', "No Song")
-    song_font = pygame.font.Font(None, get_text_scaling_factor(24))
-    text_surface = song_font.render(current_song_display, True, constants.BLACK)
+    text_surface = game_state.FONTS["small"].render(current_song_display, True, constants.BLACK)
     
     padding = 60 * ui_scaling_factor  
     ticker_width = text_surface.get_width() + padding
@@ -778,8 +770,7 @@ def draw_upgrades_tab(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Draw title
-    title_font = pygame.font.Font(None, get_text_scaling_factor(36))
-    title_surface = title_font.render("Obtained Upgrades", True, constants.BLACK)
+    title_surface = game_state.FONTS["medium"].render("Obtained Upgrades", True, constants.BLACK)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 30 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
@@ -802,9 +793,8 @@ def draw_upgrades_tab(screen):
         pygame.draw.rect(screen, constants.BLACK, (x_offset, current_y_offset, button_width, button_height), int(4 * ui_scaling_factor))
 
         # Draw upgrade name
-        desc_font = pygame.font.Font(None, get_text_scaling_factor(24))
         display_name = f"{upgrade.name} ({game_state.player.upgrade_levels.get(upgrade.name, 0)}x)"
-        name_surface = desc_font.render(display_name, True, constants.BLACK)
+        name_surface = game_state.FONTS["small"].render(display_name, True, constants.BLACK)
         name_rect = name_surface.get_rect(center=(x_offset + button_width // 2, current_y_offset + button_height // 2))
         screen.blit(name_surface, name_rect)
 
@@ -834,8 +824,7 @@ def draw_stats_tab(screen):
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Draw title at the top
-    title_font = pygame.font.Font(None, get_text_scaling_factor(36))
-    title_surface = title_font.render("Player Stats", True, constants.BLACK)
+    title_surface = game_state.FONTS["medium"].render("Player Stats", True, constants.BLACK)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + 60 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
@@ -895,11 +884,6 @@ def draw_stats_tab(screen):
         ]),
     ]
 
-    # Set up fonts
-    header_font = pygame.font.Font(None, get_text_scaling_factor(50 * ui_scaling_factor))
-    header_font.set_underline(True)
-    stat_font = pygame.font.Font(None, get_text_scaling_factor(40 * ui_scaling_factor))
-
     # Spacing and margin settings
     top_margin = panel_y + 140 * ui_scaling_factor  # space reserved at top (below title)
     bottom_margin = 40 * ui_scaling_factor         # bottom margin before close button area
@@ -914,10 +898,10 @@ def draw_stats_tab(screen):
     group_spacing = 30 * ui_scaling_factor  # extra space after each group
     for header, stat_list in groups:
         # header height plus a small gap
-        h = header_font.get_linesize() + 30 * ui_scaling_factor
+        h = game_state.FONTS["stat-header"].get_linesize() + 30 * ui_scaling_factor
         # add each stat line height plus a small gap
         for _name, _value in stat_list:
-            h += stat_font.get_linesize() + 10 * ui_scaling_factor
+            h += game_state.FONTS["stat-desc"].get_linesize() + 10 * ui_scaling_factor
         # add extra spacing after the group
         h += group_spacing
         group_heights.append(h)
@@ -953,16 +937,16 @@ def draw_stats_tab(screen):
         for i in group_indices:
             header, stat_list = groups[i]
             # Render header
-            header_surface = header_font.render(header, True, constants.BLACK)
+            header_surface = game_state.FONTS["stat-header"].render(header, True, constants.BLACK)
             screen.blit(header_surface, (col_x, current_y))
-            current_y += header_font.get_linesize() + int(4 * ui_scaling_factor)
+            current_y += game_state.FONTS["stat-header"].get_linesize() + int(4 * ui_scaling_factor)
 
             # Render each stat line (indented slightly)
             for name, value in stat_list:
                 stat_text = f"{name}: {value}"
-                stat_surface = stat_font.render(stat_text, True, constants.BLACK)
+                stat_surface = game_state.FONTS["stat-desc"].render(stat_text, True, constants.BLACK)
                 screen.blit(stat_surface, (col_x + 20 * ui_scaling_factor, current_y))
-                current_y += stat_font.get_linesize() + 10 * ui_scaling_factor
+                current_y += game_state.FONTS["stat-desc"].get_linesize() + 10 * ui_scaling_factor
 
             # Extra space after group
             current_y += group_spacing
@@ -985,8 +969,7 @@ def draw_main_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Draw menu title
-    font = pygame.font.Font(None, get_text_scaling_factor(100))
-    title_text = font.render("Gooner Game", True, constants.BLACK)
+    title_text = game_state.FONTS["massive"].render("Gooner Game", True, constants.BLACK)
     title_rect = title_text.get_rect(center=(game_state.screen_width // 2, game_state.screen_height // 2 - 100))
     screen.blit(title_text, title_rect)
 
@@ -1002,8 +985,7 @@ def draw_main_menu(screen):
     quit_button = Button(game_state.screen_width // 2 - 200 * ui_scaling_factor, game_state.screen_height // 2 + 240 * ui_scaling_factor, 400 * ui_scaling_factor, 100 * ui_scaling_factor, "Quit", constants.RED)
     quit_button.draw(screen)
     
-    version_font = pygame.font.Font(None, get_text_scaling_factor(24))
-    version_text = version_font.render("v0.1.3 - (WIP)", True, constants.BLACK)
+    version_text = game_state.FONTS["small"].render("v0.1.3 - (WIP)", True, constants.BLACK)
     version_rect = version_text.get_rect(bottomright=(game_state.screen_width - 20 * ui_scaling_factor, game_state.screen_height - 20 * ui_scaling_factor))
     screen.blit(version_text, version_rect)
 
@@ -1017,8 +999,7 @@ def draw_skin_selection_menu(screen):
     screen.blit(overlay, (0, 0))
 
     # Draw title
-    title_font = pygame.font.Font(None, get_text_scaling_factor(72))
-    title_surface = title_font.render("Select Your Skin", True, constants.BLACK)
+    title_surface = game_state.FONTS["huge"].render("Select Your Skin", True, constants.BLACK)
     title_rect = title_surface.get_rect(center=(game_state.screen_width // 2, 100 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 

@@ -44,12 +44,11 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     y = padding + 120 * ui_scaling_factor
 
     # --- Draw FPS Counter ---
-    font = pygame.font.Font(None, get_text_scaling_factor(24))
     fps_text = f"FPS: {fps:.0f}"
     
     # Render FPS text with a black border (outline effect)
-    text_surface = font.render(fps_text, True, constants.WHITE)
-    text_outline = font.render(fps_text, True, constants.BLACK)
+    text_surface = game_state.FONTS["small"].render(fps_text, True, constants.WHITE)
+    text_outline = game_state.FONTS["small"].render(fps_text, True, constants.BLACK)
 
     # FPS position (below the timer, aligned along the same X-axis)
     fps_x = x - 146 * ui_scaling_factor
@@ -65,8 +64,7 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     # --- Draw Left Click Icon ---
     left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
     pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white background
-    font_large = pygame.font.Font(None, get_text_scaling_factor(36))
-    text = font_large.render("L", True, (0, 0, 0))  # Black "L"
+    text = game_state.FONTS["medium"].render("L", True, (0, 0, 0))  # Black "L"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     left_icon_surface.blit(text, text_rect)
 
@@ -82,7 +80,7 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     y += icon_size + padding  # Position below the left icon
     right_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
     pygame.draw.rect(right_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))
-    text = font_large.render("R", True, (0, 0, 0))  # Black "R"
+    text = game_state.FONTS["medium"].render("R", True, (0, 0, 0))  # Black "R"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     right_icon_surface.blit(text, text_rect)
     if right_click_cooldown_progress < 1:
@@ -115,7 +113,6 @@ def draw_player_state_value_updates():
         return
     
     screen = game_state.screen
-    font = pygame.font.SysFont(None, get_text_scaling_factor(18))  # Adjust font size as needed
 
     # Draw damage numbers
     for update in game_state.damage_numbers[:]:
@@ -124,7 +121,7 @@ def draw_player_state_value_updates():
             update["x_offset"] = random.randint(-60, 60)
             
         display_value = int(update["value"])
-        text = font.render(str(display_value), True, update["color"])
+        text = game_state.FONTS["tiny"].render(str(display_value), True, update["color"])
         text_surface = text.convert_alpha()
         screen.blit(text_surface, (update["x"] - text.get_width() // 2 + update["x_offset"], 
                                  update["y"] - text.get_height() // 2 + random.randint(-1, 1)))
@@ -143,7 +140,7 @@ def draw_player_state_value_updates():
         if "x_offset" not in exp_update:
             exp_update["x_offset"] = random.randint(-2, 2)
             
-        text = font.render(f"+{exp_update['value']} EXP", True, exp_update["color"])
+        text = game_state.FONTS["tiny"].render(f"+{exp_update['value']} EXP", True, exp_update["color"])
         text_surface = text.convert_alpha()
         screen.blit(text_surface, (exp_update["x"] - text.get_width() // 2 + exp_update["x_offset"], 
                                  exp_update["y"] - 30 * ui_scaling_factor - text.get_height() // 2))
@@ -227,9 +224,8 @@ def draw_notification():
         # print(f"DEBUG: Timer decremented to {game_state.notification_timer}")
 
     # Render the notification text.
-    font = pygame.font.SysFont(None, get_text_scaling_factor(32))
-    text_surface = font.render(game_state.notification_message, True, constants.WHITE)
-    text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 56 * ui_scaling_factor))
+    text_surface = game_state.FONTS["medium"].render(game_state.notification_message, True, constants.WHITE)
+    text_rect = text_surface.get_rect(center=(game_state.screen_width // 2, y + 60 * ui_scaling_factor))
 
     # Calculate background box dimensions.
     padding = 60 * ui_scaling_factor
@@ -248,8 +244,7 @@ def draw_notification():
     
 def show_intro_screen(screen, screen_width, screen_height):
     # Create text surface using design resolution
-    font = pygame.font.Font(None, get_text_scaling_factor(74))
-    text = font.render("GOONER INC.", True, constants.WHITE)
+    text = game_state.FONTS["huge"].render("GOONER INC.", True, constants.WHITE)
     text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
     
     # Fade-in text on the dummy surface
@@ -277,35 +272,32 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     game_over_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
     game_over_surface.fill((0, 0, 0, alpha))
     
-    large_font = pygame.font.Font(None, get_text_scaling_factor(74))
-    text_large = large_font.render("YOU DIED", True, constants.WHITE)
+    text_large = game_state.FONTS["huge"].render("YOU DIED", True, constants.WHITE)
     text_large_rect = text_large.get_rect(center=(screen_width // 2, screen_height // 2 - 120))
     game_over_surface.blit(text_large, text_large_rect)
     
-    small_font = pygame.font.Font(None, get_text_scaling_factor(36))
     final_time = getattr(game_state, 'final_time', 0)
     minutes = final_time // 60
     seconds = final_time % 60
-    timer_text = small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
+    timer_text = game_state.FONTS["medium"].render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
     timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - 40))
     game_over_surface.blit(timer_text, timer_text_rect)
     
     # Use the captured final score instead of the live score
     final_score = getattr(game_state, 'final_score', score.score)
-    score_text = small_font.render(f"Score: {final_score}", True, constants.WHITE)
+    score_text = game_state.FONTS["medium"].render(f"Score: {final_score}", True, constants.WHITE)
     score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 20))
     game_over_surface.blit(score_text, score_text_rect)
     
-    high_score_text = small_font.render(f"High Score: {score.high_score}", True, constants.WHITE)
+    high_score_text = game_state.FONTS["medium"].render(f"High Score: {score.high_score}", True, constants.WHITE)
     high_score_text_rect = high_score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 60))
     game_over_surface.blit(high_score_text, high_score_text_rect)
     
-    restart_text = small_font.render("Press SPACE to restart", True, constants.WHITE)
+    restart_text = game_state.FONTS["medium"].render("Press SPACE to restart", True, constants.WHITE)
     restart_text_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
     game_over_surface.blit(restart_text, restart_text_rect)
     
-    version_font = pygame.font.Font(None, get_text_scaling_factor(24))
-    version_text = version_font.render("Gooner Game v0.1.3 - (WIP)", True, constants.WHITE)
+    version_text = game_state.FONTS["small"].render("Gooner Game v0.1.3 - (WIP)", True, constants.WHITE)
     version_text_rect = version_text.get_rect(center=(screen_width // 2, screen_height - 20))
     game_over_surface.blit(version_text, version_text_rect)
     

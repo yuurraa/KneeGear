@@ -26,7 +26,7 @@ from src.enemies.enemy_pool import EnemyPool
 def main():
     pygame.init()
     pygame.mixer.init()
-
+    
     # Initialize display and game state.
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
@@ -221,8 +221,7 @@ def main():
             elapsed_seconds = game_state.in_game_ticks_elapsed // constants.FPS
             minutes = elapsed_seconds // 60
             seconds = elapsed_seconds % 60
-            font = pygame.font.Font(None, get_text_scaling_factor(36))
-            time_text = font.render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
+            time_text = game_state.FONTS["medium"].render(f"Time: {minutes:02d}:{seconds:02d}", True, constants.WHITE)
             time_rect = time_text.get_rect(topright=(game_state.screen_width - 20, 20))
             bg_rect = time_rect.copy()
             bg_rect.inflate_ip(20, 10)
