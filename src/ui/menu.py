@@ -7,12 +7,39 @@ import src.engine.game_state as game_state
 import math
 import random
 
+from typing import Optional
+
+# Dynamically assign attributes to game_state to satisfy linter type checking
+if not hasattr(game_state, 'pause_ui'):
+    game_state.pause_ui = {}  # type: ignore
+if not hasattr(game_state, 'pause_music_ui'):
+    game_state.pause_music_ui = {}  # type: ignore
+if not hasattr(game_state, 'song_ticker_offset'):
+    game_state.song_ticker_offset = 0.0  # type: ignore
+if not hasattr(game_state, 'current_upgrade_buttons'):
+    game_state.current_upgrade_buttons = []  # type: ignore
+if not hasattr(game_state, 'final_time'):
+    game_state.final_time = 0  # type: ignore
+if not hasattr(game_state, 'current_song_display'):
+    game_state.current_song_display = ""  # type: ignore
+if not hasattr(game_state, 'skin_buttons'):
+    game_state.skin_buttons = []  # type: ignore
+if not hasattr(game_state, 'close_button'):
+    game_state.close_button = None  # type: ignore
+
 def darken_color(color, factor=0.61):
     """Return a version of color darkened by the given factor (0 to 1)."""
     r, g, b = color
     return (max(0, int(r * factor)),
             max(0, int(g * factor)),
             max(0, int(b * factor)))
+
+# New: uniform hover overlay function
+def draw_hover_overlay(screen, rect):
+    """Draw a translucent gray overlay over the given rect."""
+    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+    overlay.fill((128, 128, 128, 100))
+    screen.blit(overlay, rect.topleft)
 
 ui_scaling_factor = get_ui_scaling_factor()
 class Button:
@@ -23,16 +50,23 @@ class Button:
         self.hover = False
 
     def draw(self, screen):
-        # Draw the button background and border first.
-        current_color = darken_color(self.color, 0.61) if self.hover else self.color
-        pygame.draw.rect(screen, current_color, self.rect)
+        # Update hover state based on current mouse position
+        mouse_pos = pygame.mouse.get_pos()
+        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        self.hover = self.rect.collidepoint(design_mouse_pos)
+        
+        # Draw the button background and border.
+        pygame.draw.rect(screen, self.color, self.rect)
         pygame.draw.rect(screen, constants.BLACK, self.rect, 2)
         
-        # Now draw the button text on top.
+        # Draw the button text.
         font = pygame.font.Font(None, get_text_scaling_factor(36))
         text_surface = font.render(self.text, True, constants.BLACK)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
+
+        if self.hover:
+            draw_hover_overlay(screen, self.rect)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
@@ -52,14 +86,12 @@ class IconButton:
         self.hover = False
 
     def draw(self, screen):
-        # If hovering, darken the background color
-        bg_color = (max(self.bg_color[0] - 40, 0),
-                    max(self.bg_color[1] - 40, 0),
-                    max(self.bg_color[2] - 40, 0)) if self.hover else self.bg_color
-        pygame.draw.rect(screen, bg_color, self.rect, border_radius=8)
+        pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=8)
         pygame.draw.rect(screen, constants.BLACK, self.rect, width=2, border_radius=8)
         image_rect = self.image.get_rect(center=self.rect.center)
         screen.blit(self.image, image_rect)
+        if self.hover:
+            draw_hover_overlay(screen, self.rect)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
@@ -250,45 +282,44 @@ class UpgradeButton(Button):
         self.cached_phase = None
 
     def draw(self, screen):
+        # Update hover state based on current mouse position (added for UpgradeButton)
+        mouse_pos = pygame.mouse.get_pos()
+        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        self.hover = self.rect.collidepoint(design_mouse_pos)
+        
         # Update the timer and compute the phase for the shimmer effect
         self.rainbow_timer = (self.rainbow_timer + 4) % 360
         phase = self.rainbow_timer / 360.0
-
+        
         # Get the rarity color safely
         rarity_color = self.RARITY_COLORS.get(self.upgrade.Rarity, constants.GREEN)
-
+        
         # Recompute the shimmer effect if needed
         if self.cached_shimmer is None or self.cached_phase is None or abs(phase - self.cached_phase) > 0.01:
             self.cached_shimmer = compute_shimmer_surface_for_tab_icon(
                 rarity_color, self.upgrade.Rarity, self.width, self.height, phase
             )
             self.cached_phase = phase
-
+        
         # Draw the cached shimmer background and border
         screen.blit(self.cached_shimmer, self.rect)
         pygame.draw.rect(screen, constants.BLACK, self.rect, 2)
         
-        if self.hover:
-            overlay = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 40))  # Alpha=25 for subtle darkening
-            screen.blit(overlay, self.rect.topleft)
-            
-        # Continue with drawing the rest (icon, text, etc.)
+        # Draw icon and texts
         font_name = pygame.font.Font(None, get_text_scaling_factor(32))
         font_desc = pygame.font.Font(None, get_text_scaling_factor(24))
         font_rarity = pygame.font.Font(None, get_text_scaling_factor(20))
 
-        # Draw the icon in a circle overlapping the top-left corner
         if self.icon_image:
             icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 34, self.icon_size - 34))
             circle_radius = self.icon_size // 2 - 5
             circle_center = (self.rect.x + circle_radius - self.circle_margin - 15, 
-                            self.rect.y + circle_radius - self.circle_margin - 15)
+                             self.rect.y + circle_radius - self.circle_margin - 15)
             pygame.draw.circle(screen, self.color, circle_center, circle_radius)
             pygame.draw.circle(screen, constants.BLACK, circle_center, circle_radius, 2)
             icon_rect = icon_scaled.get_rect(center=circle_center)
             screen.blit(icon_scaled, icon_rect)
-
+        
         # Draw centralized wrapped title text
         words = self.upgrade.name.split()
         title_lines = []
@@ -304,19 +335,19 @@ class UpgradeButton(Button):
                 current_line = [word]
         if current_line:
             title_lines.append(' '.join(current_line))
-
+        
         title_y = self.rect.y + 20 + (self.icon_size - 47) + getattr(self, "title_offset", 0)
         for line in title_lines:
             title_surface = font_name.render(line, True, constants.BLACK)
             title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
             screen.blit(title_surface, title_rect)
             title_y += title_surface.get_height()
-
+        
         # Render rarity text below the title
         rarity_surface = font_rarity.render(self.upgrade.Rarity, True, constants.BLACK)
         rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - 2))
         screen.blit(rarity_surface, rarity_rect)
-
+        
         # Render centralized wrapped description text below rarity
         desc_words = self.upgrade.description.split()
         desc_lines = []
@@ -332,13 +363,16 @@ class UpgradeButton(Button):
                 current_desc_line = [word]
         if current_desc_line:
             desc_lines.append(' '.join(current_desc_line))
-
+        
         y_offset = rarity_rect.bottom + 18
         for line in desc_lines:
             desc_surface = font_desc.render(line, True, constants.BLACK)
             desc_rect = desc_surface.get_rect(center=(self.rect.centerx, y_offset))
             screen.blit(desc_surface, desc_rect)
             y_offset += desc_surface.get_height()
+        
+        if self.hover:
+            draw_hover_overlay(screen, self.rect)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
@@ -405,7 +439,7 @@ class SkinButton(UpgradeButton):
         super().__init__(x, y, width, height, dummy_upgrade, icon_image)
         
         self.glow_timer = 0  # Animates from 0 up to 500 when selected.
-        self.skin_id = None  # Use skin_id instead of skin_index.
+        self.skin_id: Optional[str] = None  # Use skin_id instead of skin_index.
         self.pulse_phase = 0   # For the pulsing (scaling) effect.
         self.particles = []    # List to hold particle effects.
         self.title_offset = -5
@@ -507,7 +541,7 @@ def draw_level_up_menu(screen):
         num_choices = 4
 
     # Create menu panel - using proportional sizes and adjusting width based on number of choices
-    panel_width = int(game_state.screen_width * (0.65 if num_choices == 3 else 0.85))  # Wider panel for 4 choices
+    panel_width = int(game_state.screen_width * (0.65 if num_choices == 3 else 0.85))
     panel_height = int(game_state.screen_height * 0.4)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
@@ -521,8 +555,8 @@ def draw_level_up_menu(screen):
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 50))
     screen.blit(text, text_rect)
 
-    # Create buttons if they don't exist
-    if not hasattr(game_state, 'current_upgrade_buttons'):
+    # Create buttons if they don't exist or if the list is empty
+    if not getattr(game_state, 'current_upgrade_buttons', None) or not game_state.current_upgrade_buttons:
         # Get random upgrades
         from src.player.upgrades import UpgradePool
         upgrade_pool = UpgradePool()
@@ -553,6 +587,14 @@ def draw_level_up_menu(screen):
     return (game_state.current_upgrade_buttons)
 
 def draw_pause_menu(screen):
+    # Initialize dynamic attributes on game_state if not already set
+    if not hasattr(game_state, 'pause_ui'):
+        game_state.pause_ui = {}
+    if not hasattr(game_state, 'pause_music_ui'):
+        game_state.pause_music_ui = {}
+    if not hasattr(game_state, 'song_ticker_offset'):
+        game_state.song_ticker_offset = 0.0
+
     # Create semi-transparent overlay
     overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
     overlay.fill(constants.BLACK)
@@ -573,20 +615,18 @@ def draw_pause_menu(screen):
     text = font.render("Pause Menu", True, constants.BLACK)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + int(50 * ui_scaling_factor)))
     screen.blit(text, text_rect)
-    
+
     # Standard icon size and padding
     icon_size = int(35 * ui_scaling_factor) - 3
     icon_padding = int(10 * ui_scaling_factor)
-    
+
     # Slider dimensions (adjusted length)
     slider_width = int((panel_width - (icon_size + 2 * icon_padding)) * 0.8)
     slider_height = int(game_state.screen_height * 0.019)
     slider_y = panel_y + int(90 * ui_scaling_factor)
-    
+
     # --- Center the Volume Icon and Slider as a Group ---
-    # Calculate total width of the volume group (icon + padding + slider)
     total_volume_width = icon_size + icon_padding + slider_width
-    # Determine the starting x so the group is centered within the panel
     group_start_x = panel_x + (panel_width - total_volume_width) // 2
     volume_icon_x = group_start_x
     slider_x = group_start_x + icon_size + icon_padding
@@ -595,7 +635,7 @@ def draw_pause_menu(screen):
     buttons_y = music_bar_y + int(45 * ui_scaling_factor)
 
     # Initialize UI elements if not already created
-    if not hasattr(game_state, 'pause_ui'):
+    if not hasattr(game_state, 'pause_ui') or not game_state.pause_ui:
         button_width = int(game_state.screen_width * 0.104)
         button_height = int(game_state.screen_height * 0.056)
         button_x = (game_state.screen_width - (button_width * 2 + int(game_state.screen_width * 0.01))) // 2
@@ -617,7 +657,7 @@ def draw_pause_menu(screen):
         }
 
     # ---- NEW: Music Control Bar UI ----
-    if not hasattr(game_state, 'pause_music_ui'):
+    if not hasattr(game_state, 'pause_music_ui') or not game_state.pause_music_ui:
         music_bar_margin = 25
         music_bar_width = panel_width - (2 * music_bar_margin)
         music_bar_x = panel_x + music_bar_margin
@@ -662,7 +702,7 @@ def draw_pause_menu(screen):
     screen.blit(volume_icon, (volume_icon_x, volume_icon_y))
 
     # ---- Draw Music Bar ----
-    music_ui = game_state.pause_music_ui
+    music_ui = game_state.pause_music_ui  # type: ignore
     music_ui['playlist_button'].draw(screen)
     music_ui['previous_button'].draw(screen)
     music_ui['next_button'].draw(screen)
@@ -680,9 +720,6 @@ def draw_pause_menu(screen):
     display_rect = music_ui['song_display_rect']
     display_width = display_rect.width
     display_height = display_rect.height
-
-    if not hasattr(game_state, "song_ticker_offset"):
-        game_state.song_ticker_offset = 0.0
 
     game_state.song_ticker_offset += 0.5  
     if game_state.song_ticker_offset >= ticker_width:
