@@ -27,18 +27,11 @@ if not hasattr(game_state, 'skin_buttons'):
 if not hasattr(game_state, 'close_button'):
     game_state.close_button = None  # type: ignore
 
-def darken_color(color, factor=0.61):
-    """Return a version of color darkened by the given factor (0 to 1)."""
-    r, g, b = color
-    return (max(0, int(r * factor)),
-            max(0, int(g * factor)),
-            max(0, int(b * factor)))
-
 # New: uniform hover overlay function
 def draw_hover_overlay(screen, rect):
     """Draw a translucent gray overlay over the given rect."""
     overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-    overlay.fill((128, 128, 128, 100))
+    overlay.fill((100, 100, 100, 110))
     screen.blit(overlay, rect.topleft)
 
 ui_scaling_factor = get_ui_scaling_factor()
@@ -85,8 +78,8 @@ class IconButton:
         self.hover = False
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.bg_color, self.rect, border_radius=int(16 * ui_scaling_factor))
-        pygame.draw.rect(screen, constants.BLACK, self.rect, width=int(4 * ui_scaling_factor), border_radius=int(16 * ui_scaling_factor))
+        pygame.draw.rect(screen, self.bg_color, self.rect)
+        pygame.draw.rect(screen, constants.BLACK, self.rect, width=int(4 * ui_scaling_factor))
         image_rect = self.image.get_rect(center=self.rect.center)
         screen.blit(self.image, image_rect)
         if self.hover:
@@ -601,7 +594,7 @@ def draw_pause_menu(screen):
 
     # Create menu panel with proportional sizes
     panel_width = int(game_state.screen_width * 0.6 * ui_scaling_factor)
-    panel_height = int(game_state.screen_height * 0.675 * ui_scaling_factor)
+    panel_height = int(game_state.screen_height * 0.65 * ui_scaling_factor)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
 

@@ -9,7 +9,7 @@ import src.ui.drawing as drawing
 import src.engine.score as score
 from src.player.player import Player, PlayerState
 from src.engine.helpers import (
-    reset_game, get_design_mouse_pos, get_text_scaling_factor, 
+    reset_game, get_text_scaling_factor, 
     fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
 )
 from src.ui.menu import (
@@ -67,7 +67,9 @@ def show_game_over_screen(screen, screen_width, screen_height, alpha):
     timer_text_rect = timer_text.get_rect(center=(screen_width // 2, screen_height // 2 - 40))
     game_over_surface.blit(timer_text, timer_text_rect)
     
-    score_text = small_font.render(f"Score: {score.score}", True, constants.WHITE)
+    # Use the captured final score instead of the live score
+    final_score = getattr(game_state, 'final_score', score.score)
+    score_text = small_font.render(f"Score: {final_score}", True, constants.WHITE)
     score_text_rect = score_text.get_rect(center=(screen_width // 2, screen_height // 2 + 20))
     game_over_surface.blit(score_text, score_text_rect)
     
@@ -385,7 +387,20 @@ def main():
                 continue
             
             if game_state.player.state == PlayerState.LEVELING_UP:
+                # Record the time when the level up menu is first shown
+                if not hasattr(game_state, 'level_up_start_time'):
+                    game_state.level_up_start_time = pygame.time.get_ticks()
+
                 upgrade_buttons = draw_level_up_menu(game_state.screen)
+
+                # Calculate elapsed time since the menu was shown
+                elapsed = pygame.time.get_ticks() - game_state.level_up_start_time
+
+                # If less than 500ms have passed, skip processing clicks
+                if elapsed < 500:
+                    pygame.display.flip()
+                    continue
+
                 for event in events:
                     if event.type == pygame.QUIT:
                         game_state.running = False
@@ -396,9 +411,14 @@ def main():
                             game_state.player.state = PlayerState.ALIVE
                             if hasattr(game_state, 'current_upgrade_buttons'):
                                 delattr(game_state, 'current_upgrade_buttons')
+                            # Remove the timer attribute so that it resets next time
+                            if hasattr(game_state, 'level_up_start_time'):
+                                delattr(game_state, 'level_up_start_time')
                             break
+
                 pygame.display.flip()
                 continue
+
             
             # Wave spawning logic
             if not game_state.wave_active:
@@ -422,9 +442,10 @@ def main():
             logic.update_hearts()
 
             if game_state.player.health <= 0:
-                game_state.game_over = True
-                if not hasattr(game_state, 'final_time'):
+                if not game_state.game_over:  # Only do this once
+                    game_state.game_over = True
                     game_state.final_time = game_state.in_game_ticks_elapsed // constants.FPS
+                    game_state.final_score = score.score
 
             if game_state.game_over:
                 game_state.fade_alpha = min(game_state.fade_alpha + 10, 255)
