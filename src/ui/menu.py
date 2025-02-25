@@ -831,8 +831,8 @@ def draw_stats_tab(screen):
     screen.blit(overlay, (0, 0))
 
     # Panel dimensions and positioning
-    panel_width = int(game_state.screen_width * 0.44)
-    panel_height = int(game_state.screen_height * 0.7)
+    panel_width = int(game_state.screen_width * 0.6)
+    panel_height = int(game_state.screen_height * 0.75)
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
 
