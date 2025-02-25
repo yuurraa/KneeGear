@@ -51,8 +51,7 @@ class Button:
 
     def draw(self, screen):
         # Update hover state based on current mouse position
-        mouse_pos = pygame.mouse.get_pos()
-        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        design_mouse_pos = pygame.mouse.get_pos()
         self.hover = self.rect.collidepoint(design_mouse_pos)
         
         # Draw the button background and border.
@@ -70,10 +69,10 @@ class Button:
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             self.hover = self.rect.collidepoint(design_mouse_pos)
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             if self.rect.collidepoint(design_mouse_pos):
                 return True
         return False
@@ -95,10 +94,10 @@ class IconButton:
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             self.hover = self.rect.collidepoint(design_mouse_pos)
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             if self.rect.collidepoint(design_mouse_pos):
                 return True
         return False
@@ -140,7 +139,7 @@ class Slider:
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             
             # Calculate knob's x position based on current value
             knob_x = self.x + (self.value * (self.width - self.knob_width))
@@ -169,7 +168,7 @@ class Slider:
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.dragging = False
         elif event.type == pygame.MOUSEMOTION and self.dragging:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             mouse_x = design_mouse_pos[0]
             new_knob_x = max(
                 self.x,
@@ -283,8 +282,7 @@ class UpgradeButton(Button):
 
     def draw(self, screen):
         # Update hover state based on current mouse position (added for UpgradeButton)
-        mouse_pos = pygame.mouse.get_pos()
-        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        design_mouse_pos = pygame.mouse.get_pos()
         self.hover = self.rect.collidepoint(design_mouse_pos)
         
         # Update the timer and compute the phase for the shimmer effect
@@ -376,13 +374,13 @@ class UpgradeButton(Button):
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             self.hover = self.rect.collidepoint(design_mouse_pos)
         if self.cooldown > 0:  # Check if the button is on cooldown
             return False  # Ignore events if on cooldown
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Convert screen coordinates to design coordinates.
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             if self.rect.collidepoint(design_mouse_pos):
                 self.cooldown = 30  # Set cooldown (e.g., 30 frames)
                 return True
@@ -523,7 +521,7 @@ class SkinButton(UpgradeButton):
             
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
-            design_mouse_pos = get_design_mouse_pos(event.pos)
+            design_mouse_pos = pygame.mouse.get_pos()
             self.hover = self.rect.collidepoint(design_mouse_pos)
         return super().handle_event(event)
 

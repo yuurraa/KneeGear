@@ -52,8 +52,8 @@ screen_width = 1920
 screen_height = 1080
 screen = None
 dummy_surface = None
-DESIGN_WIDTH = 3840
-DESIGN_HEIGHT = 2160
+design_width = 3840
+design_height = 2160
 
 damage_numbers = []
 

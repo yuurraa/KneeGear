@@ -101,9 +101,17 @@ def main():
     pygame.init()
     pygame.mixer.init()
 
-    # Set up display and game state.
+    # Initialize display and game state.
     game_state.screen_width = pygame.display.Info().current_w
     game_state.screen_height = pygame.display.Info().current_h
+
+    # Set a reference design resolution (adjust these values as needed)
+    if not hasattr(game_state, 'design_width'):
+        game_state.design_width = 1920
+    if not hasattr(game_state, 'design_height'):
+        game_state.design_height = 1080
+
+    # Then create your display as usual
     game_state.screen = pygame.display.set_mode(
         (game_state.screen_width, game_state.screen_height), pygame.SCALED, pygame.FULLSCREEN
     )
@@ -162,7 +170,7 @@ def main():
                 skin_button.handle_event(event)
                 quit_button.handle_event(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    design_mouse_pos = get_design_mouse_pos(event.pos)
+                    design_mouse_pos = pygame.mouse.get_pos()
                     if start_button.rect.collidepoint(design_mouse_pos):
                         main_menu_faded_in = False
                         game_state.in_main_menu = False
@@ -202,7 +210,7 @@ def main():
                 game_state.close_button.handle_event(event)
                 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    design_mouse_pos = get_design_mouse_pos(event.pos)
+                    design_mouse_pos = pygame.mouse.get_pos()
                     if game_state.close_button.rect.collidepoint(design_mouse_pos):
                         game_state.skin_menu = False
                         game_state.in_main_menu = True
@@ -314,7 +322,7 @@ def main():
                     previous_button.handle_event(event)
                     skip_button.handle_event(event)
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        design_mouse_pos = get_design_mouse_pos(event.pos)
+                        design_mouse_pos = pygame.mouse.get_pos()
                         if quit_button.rect.collidepoint(design_mouse_pos):
                             reset_game()
                             game_state.in_main_menu = True
@@ -352,7 +360,7 @@ def main():
                         game_state.showing_upgrades = False
                         game_state.paused = True
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        design_mouse_pos = get_design_mouse_pos(event.pos)
+                        design_mouse_pos = pygame.mouse.get_pos()
                         if close_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_upgrades = False
                             game_state.paused = True
@@ -369,7 +377,7 @@ def main():
                         game_state.showing_stats = False
                         game_state.paused = True
                     elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        design_mouse_pos = get_design_mouse_pos(event.pos)
+                        design_mouse_pos = pygame.mouse.get_pos()
                         if close_button.rect.collidepoint(design_mouse_pos):
                             game_state.showing_stats = False
                             game_state.paused = True

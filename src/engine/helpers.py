@@ -52,15 +52,25 @@ def get_design_mouse_pos(mouse_pos):
     """
     Convert a mouse position from screen coordinates to design coordinates.
     """
-    scale_x = game_state.screen_width / game_state.screen_width
-    scale_y = game_state.screen_height / game_state.screen_height
+    scale_x = game_state.design_width / game_state.screen_width
+    scale_y = game_state.design_height / game_state.screen_height
     return (int(mouse_pos[0] * scale_x), int(mouse_pos[1] * scale_y))
 
 def get_ui_scaling_factor():
-    return game_state.screen_width / game_state.screen_width
+    """
+    Return a uniform scaling factor based on the design resolution.
+    This uses the smaller scale (min of x and y) so that UI elements maintain their aspect ratio.
+    """
+    scale_x = game_state.screen_width / game_state.design_width
+    scale_y = game_state.screen_height / game_state.design_height
+    return min(scale_x, scale_y)
 
 def get_text_scaling_factor(font_size):
-    return round(font_size * (game_state.screen_width / game_state.screen_width))
+    """
+    Scale font size by multiplying with 3 * the UI scaling factor.
+    This increases all font sizes by a multiple of 3.
+    """
+    return round(font_size * 2.5 * get_ui_scaling_factor())
       
 def fade_to_black(surface, wait_time=5, step=20):
     """

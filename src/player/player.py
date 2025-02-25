@@ -109,7 +109,7 @@ class Player:
         import random
         import pygame
 
-        design_mouse_pos = get_design_mouse_pos(pygame.mouse.get_pos())
+        design_mouse_pos = pygame.mouse.get_pos()
         mx, my = design_mouse_pos
         import src.engine.game_state as game_state
         flip = False
@@ -154,7 +154,7 @@ class Player:
         screen.blit(surface, (x, y))
 
     def update_angle(self, mouse_pos):
-        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        design_mouse_pos = pygame.mouse.get_pos()
         mx, my = design_mouse_pos
         self.angle = calculate_angle(self.x, self.y, mx, my)
         
@@ -236,7 +236,7 @@ class Player:
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_shot_time) < (self.shoot_cooldown * constants.FPS):
             return
 
-        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        design_mouse_pos = pygame.mouse.get_pos()
         mx, my = design_mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_shot_time = game_state.in_game_ticks_elapsed
@@ -300,7 +300,7 @@ class Player:
         if self.state == PlayerState.DEAD or (game_state.in_game_ticks_elapsed - self.last_special_shot_time) < (self.special_shot_cooldown * constants.FPS):
             return
 
-        design_mouse_pos = get_design_mouse_pos(mouse_pos)
+        design_mouse_pos = pygame.mouse.get_pos()
         mx, my = design_mouse_pos
         angle = calculate_angle(self.x, self.y, mx, my)
         self.last_special_shot_time = game_state.in_game_ticks_elapsed
