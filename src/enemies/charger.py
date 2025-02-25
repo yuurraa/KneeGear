@@ -36,8 +36,8 @@ class ChargerEnemy(BaseEnemy):
 
         self.charge_cooldown = 0  # Cooldown timer for charging
         # Already scaled:
-        self.charge_distance = 250 * ui_scaling_factor  # ← Good
-        self.charge_speed = 20.0 * ui_scaling_factor      # ← Good
+        self.charge_distance = 350 * ui_scaling_factor  # ← Good
+        self.charge_speed = 41.0 * ui_scaling_factor      # ← Good
         self.charge_distance_max = 900 * ui_scaling_factor  # ← Good
         self.charge_distance_traveled = 0  # This accumulates; decide if you want it in design or scaled units.
         self.charge_cooldown_duration = 30  # Cooldown duration (0.7 seconds at 60 ticks per second)
