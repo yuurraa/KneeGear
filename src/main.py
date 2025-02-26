@@ -9,8 +9,7 @@ import src.ui.drawing as drawing
 import src.engine.score as score
 from src.player.player import Player, PlayerState
 from src.engine.helpers import (
-    reset_game, get_text_scaling_factor, 
-    fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
+    reset_game, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
 )
 from src.ui.menu import (
     draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, 

@@ -6,7 +6,7 @@ import random
 import time
 
 import src.engine.game_state as game_state
-import src.engine.constants as constants
+import numpy as np
 
 def calculate_angle(x1, y1, x2, y2):
     return math.degrees(math.atan2(y2 - y1, x2 - x1))
@@ -155,3 +155,90 @@ def save_settings(settings):
     with open(settings_file, "w") as f:
         for key, val in settings.items():
             f.write(f"{key}: {val}\n")
+            
+# New: uniform hover overlay function
+def draw_hover_overlay(screen, rect):
+    """Draw a translucent gray overlay over the given rect."""
+    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+    overlay.fill((100, 100, 100, 110))
+    screen.blit(overlay, rect.topleft)
+    
+# Global caches
+_grid_cache = {}          # For coordinate grids (both raw and normalized)
+_shimmer_cache = {}       # For computed shimmer surfaces keyed by parameters
+LOW_RES_FACTOR = 2
+
+def get_coordinate_grids(width, height):
+    """Cache raw coordinate grids for given dimensions."""
+    key = ("raw", width, height)
+    if key not in _grid_cache:
+        x_grid, y_grid = np.meshgrid(np.arange(width), np.arange(height))
+        _grid_cache[key] = (x_grid, y_grid)
+    return _grid_cache[key]
+
+def get_normalized_grid(width, height):
+    """Return a precomputed normalized grid based on raw grids."""
+    key = ("norm", width, height)
+    if key not in _grid_cache:
+        x_grid, y_grid = get_coordinate_grids(width, height)
+        # Normalized so that each coordinate lies in [0,1]
+        norm_grid = (x_grid / width + y_grid / height) / 2.0
+        _grid_cache[key] = norm_grid
+    return _grid_cache[key]
+
+def quantize_phase(phase, step=0.025):
+    """Quantize phase to reduce the number of unique surfaces computed."""
+    return round(phase / step) * step
+
+def compute_shimmer_surface_for_tab_icon(rarity_color, rarity, width, height, phase, surface=None):
+    # Determine low resolution dimensions
+    low_width, low_height = width // LOW_RES_FACTOR, height // LOW_RES_FACTOR
+
+    # Optional: create a cache key based on parameters (including quantized phase)
+    q_phase = quantize_phase(phase)
+    cache_key = (rarity_color, rarity, low_width, low_height, q_phase)
+    if cache_key in _shimmer_cache:
+        cached_surf = _shimmer_cache[cache_key]
+        # Scale up to full size and return
+        return pygame.transform.smoothscale(cached_surf, (width, height))
+
+    # Get the precomputed normalized grid
+    norm_grid = get_normalized_grid(low_width, low_height)
+
+    # Compute the shifted grid based on phase (only need to do modulo on the precomputed grid)
+    diag = (norm_grid + phase) % 1.0
+
+    # Compute blend factor for shimmer effect
+    blend = np.abs(diag - 0.5) * 2  
+    shimmer_width = 0.3  
+    blend = 1 - np.clip(blend / shimmer_width, 0, 1)
+    blend = blend[:, :, None]  # Add a channel axis
+
+    # Precompute base and bright colors (as float32 arrays)
+    base_color = np.array(rarity_color, dtype=np.float32)
+    bright_offset = 30 if rarity == "Exclusive" else 70
+    bright_color = np.minimum(base_color + bright_offset, 255)
+
+    # Compute the final pixel array
+    pixel_array = base_color * (1 - blend) + bright_color * blend
+    pixel_array = np.clip(pixel_array, 0, 255).astype(np.uint8)
+
+    # Create or update the low-res surface
+    if surface is None:
+        surface = pygame.Surface((low_width, low_height))
+    pygame.surfarray.blit_array(surface, np.transpose(pixel_array, (1, 0, 2)))
+
+    # Cache the computed low-res surface
+    _shimmer_cache[cache_key] = surface.copy()
+
+    # Scale up to full size before returning
+    return pygame.transform.smoothscale(surface, (width, height))
+
+def generate_shades(base_color, variation=30):
+    """Generate a random shade of the given base color with slight variation."""
+    r, g, b = base_color
+    return (
+        max(0, min(255, r + random.randint(-variation, variation))),
+        max(0, min(255, g + random.randint(-variation, variation))),
+        max(0, min(255, b + random.randint(-variation, variation)))
+    )
