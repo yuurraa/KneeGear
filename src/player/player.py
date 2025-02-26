@@ -407,7 +407,7 @@ class Player:
             self.upgrade_levels[random_upgrade.name] = self.upgrade_levels.get(random_upgrade.name, 0) + 1
             self.applied_upgrades.add(random_upgrade)
             game_state.notification_queue.append(f"Obtained RANDOM Upgrade: {random_upgrade.name}")
-            game_state.notification_queue.append("Roll the Dice chances reset to 2%!")
+            game_state.notification_queue.append("Roll the Dice chances reset to 3%!")
 
     def apply_upgrade(self, upgrade, source="manual"):
         upgrade.apply(self)
@@ -432,8 +432,8 @@ class Player:
 
         if roll_triggered:
             self.gain_random_upgrade()
-            self.random_upgrade_chance = 0.02  # Reset after granting an upgrade
-            print("Guaranteed random upgrade! Roll the Dice chances reset to 2%!")
+            self.random_upgrade_chance = 0.03  # Reset after granting an upgrade
+            print("Guaranteed random upgrade! Roll the Dice chances reset to 3%!")
 
         # 3. **If Roll the Dice did NOT trigger, only increase the chance**
         elif has_roll_the_dice:

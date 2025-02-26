@@ -591,11 +591,11 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Greed",
-                description=r"Xp bar passively fills up 0.8% per second",
+                description=r"Xp bar passively fills up 1% per second",
                 Rarity="Mythic",
                 category=["utility"],
                 apply=lambda player: [
-                    setattr(player, 'passive_xp_gain_percent_bonus', player.passive_xp_gain_percent_bonus + 0.8),
+                    setattr(player, 'passive_xp_gain_percent_bonus', player.passive_xp_gain_percent_bonus + 1),
                 ][-1],
                 icon="greed",
                 max_level=1,
@@ -611,10 +611,10 @@ class UpgradePool:
             ),
             Upgrade(
                 name="Roll the Dice",
-                description="Start with a 2% chance to gain a random upgrade when leveling up. Chance doubles on failure and resets on success.",
+                description="Start with a 3% chance to gain a random upgrade when leveling up. Chance doubles on failure and resets on success.",
                 Rarity="Exclusive",
                 category=["utility"],
-                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.01), # 1% here because it gets doubled immediately
+                apply=lambda player: setattr(player, 'random_upgrade_chance', 0.015), # 1.5% here because it gets doubled immediately
                 max_level=1,
                 icon="roll_the_dice"
             ),

@@ -62,7 +62,7 @@ def handle_input():
     return keys
 
 def calculate_enemy_scaling(elapsed_seconds):
-    scaling_factor = 2.05 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
+    scaling_factor = 2.02 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
 
