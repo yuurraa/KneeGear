@@ -27,11 +27,11 @@ def draw_level_up_menu(screen):
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
     
-    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.DARKER_GREY, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Level up text
-    text = game_state.FONTS["large"].render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.BLACK)
+    text = game_state.FONTS["large"].render(f"Level {game_state.player.player_level} - Choose an Upgrade", True, constants.WHITE)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + 100 * ui_scaling_factor))
     screen.blit(text, text_rect)
 
@@ -87,11 +87,11 @@ def draw_pause_menu(screen):
     panel_x = (game_state.screen_width - panel_width) // 2
     panel_y = (game_state.screen_height - panel_height) // 2
 
-    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.DARKER_GREY, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Pause menu title
-    text = game_state.FONTS["large"].render("Pause Menu", True, constants.BLACK)
+    text = game_state.FONTS["large"].render("Pause Menu", True, constants.WHITE)
     text_rect = text.get_rect(center=(game_state.screen_width // 2, panel_y + int(80 * ui_scaling_factor)))
     screen.blit(text, text_rect)
 
@@ -142,6 +142,13 @@ def draw_pause_menu(screen):
         music_bar_x = panel_x + music_bar_margin
 
         btn_size = icon_size
+        
+        # ---- Draw Volume Icon ----
+        volume_icon = pygame.image.load("assets/ui/volume.png").convert_alpha()
+        volume_icon = pygame.transform.scale(volume_icon, (icon_size - int(14 * ui_scaling_factor), icon_size - int(14 * ui_scaling_factor)))
+        
+        volume_icon_y = slider_y + (slider_height - icon_size) // 2
+        volume_button = IconButton(volume_icon_x, volume_icon_y, btn_size, btn_size, image=volume_icon)
 
         playlist_icon = pygame.image.load("assets/ui/playlist.png").convert_alpha()
         previous_icon = pygame.image.load("assets/ui/previous.png").convert_alpha()
@@ -160,6 +167,7 @@ def draw_pause_menu(screen):
         song_display_rect = pygame.Rect(song_display_x, music_bar_y, song_display_width, btn_size)
         
         game_state.pause_music_ui = {
+            'volume_button': volume_button,
             'playlist_button': playlist_button,
             'previous_button': previous_button,
             'next_button': next_button,
@@ -173,14 +181,10 @@ def draw_pause_menu(screen):
     game_state.pause_ui['upgrades_button'].draw(screen)
     game_state.pause_ui['stats_button'].draw(screen)
 
-    # ---- Draw Volume Icon ----
-    volume_icon = pygame.image.load("assets/ui/volume.png").convert_alpha()
-    volume_icon = pygame.transform.scale(volume_icon, (icon_size - int(4 * ui_scaling_factor), icon_size - int(4 * ui_scaling_factor)))
-    volume_icon_y = slider_y + (slider_height - icon_size) // 2
-    screen.blit(volume_icon, (volume_icon_x, volume_icon_y))
 
     # ---- Draw Music Bar ----
     music_ui = game_state.pause_music_ui  # type: ignore
+    music_ui['volume_button'].draw(screen)
     music_ui['playlist_button'].draw(screen)
     music_ui['previous_button'].draw(screen)
     music_ui['next_button'].draw(screen)
@@ -219,6 +223,7 @@ def draw_pause_menu(screen):
             game_state.pause_ui['volume_slider'],
             game_state.pause_ui['upgrades_button'],
             game_state.pause_ui['stats_button'],
+            game_state.pause_music_ui['volume_button'],
             game_state.pause_music_ui['playlist_button'],
             game_state.pause_music_ui['previous_button'],
             game_state.pause_music_ui['next_button'])
@@ -261,11 +266,11 @@ def draw_upgrades_tab(screen):
     panel_y = (game_state.screen_height - panel_height) // 2
 
     # Draw the panel
-    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.DARKER_GREY, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), 2)
 
     # Draw title
-    title_surface = game_state.FONTS["medium"].render("Obtained Upgrades", True, constants.BLACK)
+    title_surface = game_state.FONTS["medium"].render("Obtained Upgrades", True, constants.WHITE)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + title_height // 2 + 30 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
@@ -315,11 +320,11 @@ def draw_stats_tab(screen):
     panel_y = (game_state.screen_height - panel_height) // 2
 
     # Draw the panel background and border
-    pygame.draw.rect(screen, constants.WHITE, (panel_x, panel_y, panel_width, panel_height))
+    pygame.draw.rect(screen, constants.DARKER_GREY, (panel_x, panel_y, panel_width, panel_height))
     pygame.draw.rect(screen, constants.BLACK, (panel_x, panel_y, panel_width, panel_height), int(4 * ui_scaling_factor))
 
     # Draw title at the top
-    title_surface = game_state.FONTS["medium"].render("Player Stats", True, constants.BLACK)
+    title_surface = game_state.FONTS["medium"].render("Player Stats", True, constants.WHITE)
     title_rect = title_surface.get_rect(center=(panel_x + panel_width // 2, panel_y + 60 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 
@@ -432,14 +437,14 @@ def draw_stats_tab(screen):
         for i in group_indices:
             header, stat_list = groups[i]
             # Render header
-            header_surface = game_state.FONTS["stat-header"].render(header, True, constants.BLACK)
+            header_surface = game_state.FONTS["stat-header"].render(header, True, constants.WHITE)
             screen.blit(header_surface, (col_x, current_y))
             current_y += game_state.FONTS["stat-header"].get_linesize() + int(4 * ui_scaling_factor)
 
             # Render each stat line (indented slightly)
             for name, value in stat_list:
                 stat_text = f"{name}: {value}"
-                stat_surface = game_state.FONTS["stat-desc"].render(stat_text, True, constants.BLACK)
+                stat_surface = game_state.FONTS["stat-desc"].render(stat_text, True, constants.WHITE)
                 screen.blit(stat_surface, (col_x + 20 * ui_scaling_factor, current_y))
                 current_y += game_state.FONTS["stat-desc"].get_linesize() + 10 * ui_scaling_factor
 

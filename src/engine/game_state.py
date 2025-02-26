@@ -76,7 +76,7 @@ font_path = "assets/fonts/SourceHanSansHW-VF.ttf.ttc"
 if not pygame.font.get_init():
     pygame.font.init()
 FONTS = {
-    'massive': pygame.font.Font(font_path, get_text_scaling_factor(100)),
+    'massive': pygame.font.Font(font_path, get_text_scaling_factor(120)),
     'huge': pygame.font.Font(font_path, get_text_scaling_factor(72)),
     'large': pygame.font.Font(font_path, get_text_scaling_factor(48)),
     'medium': pygame.font.Font(font_path, get_text_scaling_factor(36)),

@@ -9,7 +9,7 @@ import src.ui.drawing as drawing
 import src.engine.score as score
 from src.player.player import Player, PlayerState
 from src.engine.helpers import (
-    reset_game, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection
+    reset_game, fade_to_black, fade_from_black_step, load_skin_selection, save_skin_selection, get_background_image
 )
 from src.ui.menu import (
     draw_level_up_menu, draw_pause_menu, draw_upgrades_tab, draw_stats_tab, 
@@ -61,7 +61,7 @@ def main():
     game_state.running = False
     game_state.paused = False
     game_state.game_over = False
-    main_menu_faded_in = False
+    game_state.fade_alpha = 255
     game_loop_faded_in = False
     game_state.skin_buttons, game_state.close_button = draw_skin_selection_menu(game_state.screen)
 
@@ -82,13 +82,9 @@ def main():
 
         # ---------------- Main Menu State ----------------
         if game_state.in_main_menu:
-            game_state.screen.fill(constants.WHITE)
             start_button, quit_button, skin_button = draw_main_menu(game_state.screen)
-            if not main_menu_faded_in:
-                if game_state.fade_alpha > 0:
-                    fade_from_black_step(game_state.screen, step=30)
-                else:
-                    main_menu_faded_in = True
+            if game_state.fade_alpha > 0:
+                fade_from_black_step(game_state.screen, step=10)
 
             for event in events:
                 start_button.handle_event(event)
@@ -97,7 +93,6 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     design_mouse_pos = pygame.mouse.get_pos()
                     if start_button.rect.collidepoint(design_mouse_pos):
-                        main_menu_faded_in = False
                         game_state.in_main_menu = False
                         game_state.running = True
                         fade_to_black(game_state.screen, 5, 10)
@@ -120,7 +115,6 @@ def main():
         if game_state.skin_menu:
             clock.tick(constants.FPS)  # Regulate frame rate
             # Redraw entire skin selection menu
-            game_state.screen.fill(constants.WHITE)
             draw_skin_selection_menu(game_state.screen)
             # Draw overlay, title, and buttons each frame
             for btn in game_state.skin_buttons:
@@ -157,14 +151,14 @@ def main():
                     fade_to_black(game_state.screen, 5, 10)
                     game_state.screen.fill(constants.BLACK)
                     game_state.fade_alpha = 255  # Reset fade alpha for main menu
-                    main_menu_faded_in = False  # Reset local fade flag for main menu
             pygame.display.flip()
             continue
 
         # ---------------- Game Loop State ----------------
         if game_state.running:
             clock.tick(constants.FPS)
-            game_state.screen.fill(constants.LIGHT_GREY)
+            bg_image = get_background_image()
+            game_state.screen.blit(bg_image, (0, 0))  
             
             # Filter events for in-game processing.
             filtered_events = []
@@ -186,7 +180,8 @@ def main():
             for event in events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game_state.game_over:
                     reset_game()
-                    game_state.screen.fill(constants.LIGHT_GREY)
+                    bg_image = get_background_image()
+                    game_state.screen.blit(bg_image, (0, 0)) 
                     game_loop_faded_in = False
                     game_state.fade_alpha = 255
                     reset_triggered = True
@@ -235,13 +230,14 @@ def main():
             drawing.draw_player_state_value_updates()
             
             if getattr(game_state, 'paused', False):
-                quit_button, resume_button, volume_slider, upgrades_button, stats_button, playlist_button, previous_button, skip_button = draw_pause_menu(game_state.screen)
+                quit_button, resume_button, volume_slider, upgrades_button, stats_button, volume_button, playlist_button, previous_button, skip_button = draw_pause_menu(game_state.screen)
                 for event in events:
                     volume_slider.handle_event(event)
                     quit_button.handle_event(event)
                     resume_button.handle_event(event)
                     upgrades_button.handle_event(event)
                     stats_button.handle_event(event)
+                    volume_button.handle_event(event)
                     playlist_button.handle_event(event)
                     previous_button.handle_event(event)
                     skip_button.handle_event(event)

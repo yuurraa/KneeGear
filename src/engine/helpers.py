@@ -242,3 +242,11 @@ def generate_shades(base_color, variation=30):
         max(0, min(255, g + random.randint(-variation, variation))),
         max(0, min(255, b + random.randint(-variation, variation)))
     )
+
+_cached_bg_image = None
+def get_background_image():
+    global _cached_bg_image
+    if _cached_bg_image is None:
+        bg = pygame.image.load("assets/ui/menu_bg.png").convert()
+        _cached_bg_image = pygame.transform.scale(bg, (game_state.screen_width, game_state.screen_height))
+    return _cached_bg_image

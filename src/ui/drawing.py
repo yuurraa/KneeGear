@@ -63,8 +63,8 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
 
     # --- Draw Left Click Icon ---
     left_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
-    pygame.draw.rect(left_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))  # Translucent white background
-    text = game_state.FONTS["medium"].render("L", True, (0, 0, 0))  # Black "L"
+    pygame.draw.rect(left_icon_surface, (200, 200, 200, 128), (0, 0, icon_size, icon_size))  # Translucent white background
+    text = game_state.FONTS["medium"].render("L", True, constants.WHITE)  # Black "L"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     left_icon_surface.blit(text, text_rect)
 
@@ -79,8 +79,8 @@ def draw_skill_icons(left_click_cooldown_progress, right_click_cooldown_progress
     # --- Draw Right Click Icon ---
     y += icon_size + padding  # Position below the left icon
     right_icon_surface = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
-    pygame.draw.rect(right_icon_surface, (255, 255, 255, 128), (0, 0, icon_size, icon_size))
-    text = game_state.FONTS["medium"].render("R", True, (0, 0, 0))  # Black "R"
+    pygame.draw.rect(right_icon_surface, (200, 200, 200, 128), (0, 0, icon_size, icon_size))
+    text = game_state.FONTS["medium"].render("R", True, constants.WHITE)  # Black "R"
     text_rect = text.get_rect(center=(icon_size // 2, icon_size // 2))
     right_icon_surface.blit(text, text_rect)
     if right_click_cooldown_progress < 1:
@@ -233,7 +233,7 @@ def draw_notification():
     box_height = text_rect.height + padding
     box_rect = pygame.Rect((game_state.screen_width - box_width) // 2, y, box_width, box_height)
     background_surface = pygame.Surface((box_rect.width, box_rect.height), pygame.SRCALPHA)
-    background_surface.fill((50, 50, 50, 190))
+    background_surface.fill((120, 120, 120, 120))
 
     # Draw the background and border.
     game_state.screen.blit(background_surface, box_rect.topleft)

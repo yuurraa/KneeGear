@@ -48,7 +48,7 @@ class Button:
 
 
 class IconButton:
-    def __init__(self, x, y, width, height, image, bg_color=constants.WHITE):
+    def __init__(self, x, y, width, height, image, bg_color=constants.LIGHT_GREY):
         self.rect = pygame.Rect(x, y, width, height)
         self.image = image
         self.bg_color = bg_color  # Original background color
@@ -104,47 +104,64 @@ class UpgradeButton(Button):
         self.cached_phase = None
 
     def draw(self, screen):
-        # Update hover state based on current mouse position (added for UpgradeButton)
+        # Update hover state based on current mouse position.
         design_mouse_pos = pygame.mouse.get_pos()
         self.hover = self.rect.collidepoint(design_mouse_pos)
         
-        # Update the timer and compute the phase for the shimmer effect
+        # Update timer and compute shimmer phase.
         self.rainbow_timer = (self.rainbow_timer + 4) % 360
         phase = self.rainbow_timer / 360.0
         
-        # Get the rarity color safely
+        # Get rarity color safely.
         rarity_color = self.RARITY_COLORS.get(self.upgrade.Rarity, constants.GREEN)
         
-        # Recompute the shimmer effect if needed
+        # Recompute shimmer effect if needed.
         if self.cached_shimmer is None or self.cached_phase is None or abs(phase - self.cached_phase) > 0.01:
             self.cached_shimmer = compute_shimmer_surface_for_tab_icon(
                 rarity_color, self.upgrade.Rarity, self.width, self.height, phase
             )
             self.cached_phase = phase
         
-        # Draw the cached shimmer background and border
+        # Draw the cached shimmer background and border.
         screen.blit(self.cached_shimmer, self.rect)
         pygame.draw.rect(screen, constants.BLACK, self.rect, int(4 * ui_scaling_factor))
-
+        
+        # Variables for icon drawing.
+        icon_circle_center = None
+        icon_circle_radius = None
 
         if self.icon_image:
-            icon_scaled = pygame.transform.scale(self.icon_image, (self.icon_size - 68 * ui_scaling_factor, self.icon_size - 68 * ui_scaling_factor))
-            circle_radius = self.icon_size // 2 - 10 * ui_scaling_factor
-            circle_center = (self.rect.x + circle_radius - self.circle_margin - 30 * ui_scaling_factor, 
-                             self.rect.y + circle_radius - self.circle_margin - 30 * ui_scaling_factor)
-            pygame.draw.circle(screen, self.color, circle_center, circle_radius)
-            pygame.draw.circle(screen, constants.BLACK, circle_center, circle_radius, int(4 * ui_scaling_factor))
-            icon_rect = icon_scaled.get_rect(center=circle_center)
+            icon_scaled = pygame.transform.scale(
+                self.icon_image,
+                (self.icon_size - int(68 * ui_scaling_factor), self.icon_size - int(68 * ui_scaling_factor))
+            )
+            icon_circle_radius = self.icon_size // 2 - int(10 * ui_scaling_factor)
+            icon_circle_center = (
+                self.rect.x + icon_circle_radius - self.circle_margin - int(30 * ui_scaling_factor), 
+                self.rect.y + icon_circle_radius - self.circle_margin - int(30 * ui_scaling_factor)
+            )
+            # Draw the icon's background circle.
+            pygame.draw.circle(screen, self.color, icon_circle_center, icon_circle_radius)
+            pygame.draw.circle(screen, constants.BLACK, icon_circle_center, icon_circle_radius, int(4 * ui_scaling_factor))
+            
+            # Draw the icon image.
+            icon_rect = icon_scaled.get_rect(center=icon_circle_center)
             screen.blit(icon_scaled, icon_rect)
+            
+            # Draw the icon-specific hover overlay.
+            if self.hover:
+                icon_overlay = pygame.Surface((icon_circle_radius * 2, icon_circle_radius * 2), pygame.SRCALPHA)
+                pygame.draw.circle(icon_overlay, (100, 100, 100, 110), (icon_circle_radius, icon_circle_radius), icon_circle_radius)
+                screen.blit(icon_overlay, (icon_circle_center[0] - icon_circle_radius, icon_circle_center[1] - icon_circle_radius))
         
-        # Draw centralized wrapped title text
+        # Draw centralized wrapped title text.
         words = self.upgrade.name.split()
         title_lines = []
         current_line = []
         for word in words:
             test_line = ' '.join(current_line + [word])
             test_surface = game_state.FONTS["medium"].render(test_line, True, constants.BLACK)
-            if test_surface.get_width() <= self.width - 40 * ui_scaling_factor:
+            if test_surface.get_width() <= self.width - int(40 * ui_scaling_factor):
                 current_line.append(word)
             else:
                 if current_line:
@@ -153,26 +170,26 @@ class UpgradeButton(Button):
         if current_line:
             title_lines.append(' '.join(current_line))
         
-        title_y = self.rect.y + 40 * ui_scaling_factor + (self.icon_size - int(94 * ui_scaling_factor)) + getattr(self, "title_offset", 0)
+        title_y = self.rect.y + int(40 * ui_scaling_factor) + (self.icon_size - int(94 * ui_scaling_factor)) + getattr(self, "title_offset", 0)
         for line in title_lines:
             title_surface = game_state.FONTS["medium"].render(line, True, constants.BLACK)
             title_rect = title_surface.get_rect(center=(self.rect.centerx, title_y))
             screen.blit(title_surface, title_rect)
             title_y += title_surface.get_height()
         
-        # Render rarity text below the title
+        # Render rarity text below the title.
         rarity_surface = game_state.FONTS["smaller"].render(self.upgrade.Rarity, True, constants.BLACK)
         rarity_rect = rarity_surface.get_rect(center=(self.rect.centerx, title_y - int(4 * ui_scaling_factor)))
         screen.blit(rarity_surface, rarity_rect)
         
-        # Render centralized wrapped description text below rarity
+        # Render centralized wrapped description text below rarity.
         desc_words = self.upgrade.description.split()
         desc_lines = []
         current_desc_line = []
         for word in desc_words:
             test_line = ' '.join(current_desc_line + [word])
             test_surface = game_state.FONTS["small"].render(test_line, True, constants.BLACK)
-            if test_surface.get_width() <= self.width - 40 * ui_scaling_factor:
+            if test_surface.get_width() <= self.width - int(40 * ui_scaling_factor):
                 current_desc_line.append(word)
             else:
                 if current_desc_line:
@@ -181,15 +198,25 @@ class UpgradeButton(Button):
         if current_desc_line:
             desc_lines.append(' '.join(current_desc_line))
         
-        y_offset = rarity_rect.bottom + 36 * ui_scaling_factor
+        y_offset = rarity_rect.bottom + int(36 * ui_scaling_factor)
         for line in desc_lines:
             desc_surface = game_state.FONTS["small"].render(line, True, constants.BLACK)
             desc_rect = desc_surface.get_rect(center=(self.rect.centerx, y_offset))
             screen.blit(desc_surface, desc_rect)
             y_offset += desc_surface.get_height()
         
+        # --- Composite Hover Overlay for the Entire Button ---
         if self.hover:
-            draw_hover_overlay(screen, self.rect)
+            # Create an overlay for the whole button.
+            overall_overlay = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+            overall_overlay.fill((100, 100, 100, 110))  # Overall hover color.
+            # If an icon is present, subtract its area so it doesn’t double-darken.
+            if icon_circle_center and icon_circle_radius:
+                # Compute icon center relative to the button's top-left.
+                rel_icon_x = icon_circle_center[0] - self.rect.x
+                rel_icon_y = icon_circle_center[1] - self.rect.y
+                pygame.draw.circle(overall_overlay, (0, 0, 0, 0), (rel_icon_x, rel_icon_y), icon_circle_radius)
+            screen.blit(overall_overlay, self.rect)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:

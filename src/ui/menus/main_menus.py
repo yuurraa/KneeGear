@@ -2,20 +2,18 @@ import pygame
 
 import src.engine.constants as constants
 import src.engine.game_state as game_state
-from src.engine.helpers import get_ui_scaling_factor
+from src.engine.helpers import get_ui_scaling_factor, get_background_image
 from src.ui.components.ui_buttons import Button, SkinButton
 
 ui_scaling_factor = get_ui_scaling_factor()
 
 def draw_main_menu(screen):
     # Create a semi-transparent overlay for the menu
-    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
-    overlay.fill(constants.WHITE)
-    overlay.set_alpha(255)
-    screen.blit(overlay, (0, 0))
-
+    bg_image = get_background_image()
+    screen.blit(bg_image, (0, 0))
+    
     # Draw menu title
-    title_text = game_state.FONTS["massive"].render("Gooner Game", True, constants.BLACK)
+    title_text = game_state.FONTS["massive"].render("Gooner Game", True, constants.WHITE)
     title_rect = title_text.get_rect(center=(game_state.screen_width // 2, game_state.screen_height // 2 - 100))
     screen.blit(title_text, title_rect)
 
@@ -39,13 +37,11 @@ def draw_main_menu(screen):
 
 def draw_skin_selection_menu(screen):
     # Create semi-transparent overlay
-    overlay = pygame.Surface((game_state.screen_width, game_state.screen_height))
-    overlay.fill(constants.WHITE)
-    overlay.set_alpha(255)
-    screen.blit(overlay, (0, 0))
+    bg_image = get_background_image()
+    screen.blit(bg_image, (0, 0))
 
     # Draw title
-    title_surface = game_state.FONTS["huge"].render("Select Your Skin", True, constants.BLACK)
+    title_surface = game_state.FONTS["huge"].render("Select Your Skin", True, constants.WHITE)
     title_rect = title_surface.get_rect(center=(game_state.screen_width // 2, 100 * ui_scaling_factor))
     screen.blit(title_surface, title_rect)
 

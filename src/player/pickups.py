@@ -19,7 +19,7 @@ class HeartParticle:
         self.velocity = [random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)]
         self.radius = random.randint(int(10 * ui_scaling_factor), int(16 * ui_scaling_factor))
         self.lifetime = random.randint(30, 50)
-        self.color = generate_shades(base_color)  # Assign a dynamically generated shade
+        self.color = generate_shades(base_color)  # Dynamically generated shade
 
     def update(self):
         import src.engine.game_state as game_state
@@ -32,12 +32,33 @@ class HeartParticle:
             self.lifetime -= 1
             self.radius = max(0, self.radius - 0.1)
 
+    def _blur_surface(self, surface, scale_factor=0.25):
+        """Blurs a surface by downscaling then upscaling it."""
+        width, height = surface.get_size()
+        small_surface = pygame.transform.smoothscale(surface, (int(width * scale_factor), int(height * scale_factor)))
+        blurred_surface = pygame.transform.smoothscale(small_surface, (width, height))
+        return blurred_surface
+
     def draw(self, screen):
         if self.lifetime > 0 and self.radius > 0:
-            diameter = int(self.radius * 16 * ui_scaling_factor)
+            # --- Draw the main particle ---
+            diameter = int(self.radius * 2)
             particle_surf = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
             pygame.draw.circle(particle_surf, self.color, (int(self.radius), int(self.radius)), int(self.radius))
             screen.blit(particle_surf, (self.pos[0] - self.radius, self.pos[1] - self.radius))
+            
+            # --- Draw the bloom (glow) effect ---
+            # Use a larger radius for the bloom
+            glow_radius = self.radius * 1
+            diameter_glow = int(glow_radius * 1)
+            glow_surf = pygame.Surface((diameter_glow, diameter_glow), pygame.SRCALPHA)
+            # Append an alpha value to create a semi-transparent glow
+            glow_color = self.color + (50,)  # 50 is a low alpha for subtle glow
+            pygame.draw.circle(glow_surf, glow_color, (int(glow_radius), int(glow_radius)), int(glow_radius))
+            # Apply the blur to the glow surface
+            blurred_glow = self._blur_surface(glow_surf, scale_factor=0.25)
+            # Use additive blending to composite the bloom over the particle
+            screen.blit(blurred_glow, (self.pos[0] - glow_radius, self.pos[1] - glow_radius), special_flags=pygame.BLEND_ADD)
 
 class HeartEffect:
     def __init__(self, pos, base_color, particle_count=25):
