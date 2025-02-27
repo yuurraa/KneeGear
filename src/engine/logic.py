@@ -3,6 +3,7 @@ import random
 from src.player.pickups import HeartEffect
 import src.engine.game_state as game_state
 import src.engine.constants as constants
+from src.engine.helpers import get_ui_scaling_factor
 
 
 def update_projectiles():
@@ -10,13 +11,43 @@ def update_projectiles():
     game_state.bullet_pool.update()
 
 def spawn_heart():
-    # Use the player's max pickups to limit hearts
-    if len(game_state.hearts) < game_state.player.max_pickups_on_screen:
+    ui_zones = []
+    ui_zones.append(pygame.Rect(20, 20, 300, 20))  # Health bar
+
+    ui_scaling = get_ui_scaling_factor()  # Or use your existing ui_scaling_factor
+    icon_size = 140 * ui_scaling
+    padding = 20 * ui_scaling
+
+    left_icon_rect = pygame.Rect(game_state.screen_width - icon_size - padding,
+                                 padding + 120 * ui_scaling - 20 * ui_scaling,
+                                 icon_size, icon_size)
+    ui_zones.append(left_icon_rect)
+    right_icon_rect = pygame.Rect(game_state.screen_width - icon_size - padding,
+                                  padding + 120 * ui_scaling - 20 * ui_scaling + icon_size + padding,
+                                  icon_size, icon_size)
+    ui_zones.append(right_icon_rect)
+    fps_rect = pygame.Rect(game_state.screen_width - 140 * ui_scaling - padding,
+                           padding, 140 * ui_scaling, 30)
+    ui_zones.append(fps_rect)
+    
+    # Add a UI zone for the score text
+    score_rect = pygame.Rect(20, 55, 200, 40)  # Adjust width/height as needed
+    ui_zones.append(score_rect)
+
+    max_attempts = 1
+    valid_position = None
+    for _ in range(max_attempts):
         x = random.randint(25, game_state.screen_width - 25)
         y = random.randint(25, game_state.screen_height - 25)
-        # Create a HeartEffect object at (x, y)
-        heart = HeartEffect((x, y), constants.PINK, particle_count=20)
+        heart_rect = pygame.Rect(x - 10, y - 10, 20, 20)
+        if not any(heart_rect.colliderect(ui_rect) for ui_rect in ui_zones):
+            valid_position = (x, y)
+            break
+
+    if valid_position and len(game_state.hearts) < game_state.player.max_pickups_on_screen:
+        heart = HeartEffect(valid_position, constants.PINK, particle_count=20)
         game_state.hearts.append(heart)
+    # Otherwise, do nothing—no heart will spawn if a valid spot isn't found.
 
 def update_hearts():
     # Iterate over a copy since we might remove hearts
@@ -62,7 +93,7 @@ def handle_input():
     return keys
 
 def calculate_enemy_scaling(elapsed_seconds):
-    scaling_factor = 2.02 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
+    scaling_factor = 1.98 ** (elapsed_seconds / constants.enemy_stat_doubling_time)
     return scaling_factor
 
 

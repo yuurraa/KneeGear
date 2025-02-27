@@ -57,7 +57,7 @@ tank_bullet_size = 12
 
 base_enemy_bullet_size = 16
 
-base_basic_enemy_health = 23
+base_basic_enemy_health = 24
 base_basic_enemy_damage = 4
 base_basic_enemy_xp_reward = 15
 
@@ -91,8 +91,8 @@ sniper_move_speed = 5                # Base movement speed.
 sniper_retreat_multiplier = 2.5        # Multiplier for retreat speed when player is too close.
 
 # Charger Enemy Constants
-base_charger_health = 50        # Moderate health since it's a kamikaze-style enemy
-base_charger_xp_reward = 22     # Good reward since it's risky to deal with
+base_charger_health = 45        # Moderate health since it's a kamikaze-style enemy
+base_charger_xp_reward = 23     # Good reward since it's risky to deal with
 CHARGER_ACCELERATION = 0.7      # Gradual acceleration for some challenge
 CHARGER_MAX_SPEED = 38        # Fast max speed since charging is its main threat
 CHARGER_NORMAL_SPEED = 18
